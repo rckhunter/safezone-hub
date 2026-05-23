@@ -1,0 +1,2373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafeZone — Command Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, push, onValue, remove, update }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  window._fbReady = false;
+  window._db = null;
+  window._auth = null;
+
+  window.initFirebase = function(cfg) {
+    try {
+      const app = initializeApp(cfg);
+      window._db  = getDatabase(app);
+      window._auth = getAuth(app);
+      window._fbRef   = ref;
+      window._fbSet   = set;
+      window._fbPush  = push;
+      window._fbOn    = onValue;
+      window._fbDel   = remove;
+      window._fbUpd   = update;
+      window._fbReady = true;
+      window._fbSignIn = signInWithEmailAndPassword;
+      window._fbSignOut = signOut;
+      window._fbAuthChange = onAuthStateChanged;
+      console.log('Firebase ready');
+      if (window._onFirebaseReady) window._onFirebaseReady();
+    } catch(e) { console.error('Firebase init error:', e); }
+  };
+</script>
+<style>
+:root{
+  --b:#1E90FF;--bd:#0055cc;--bg:rgba(30,144,255,0.18);--bgg:rgba(30,144,255,0.06);
+  --g:#00e676;--y:#ffd600;--o:#ff9800;--r:#ff3d3d;--cy:#00e5ff;
+  --ink:#04070f;--ink2:#070c18;--ink3:#0b1122;--ink4:#0f1a2e;
+  --pan:rgba(7,12,24,0.98);--bor:rgba(30,144,255,0.12);--bhi:rgba(30,144,255,0.38);
+  --tx:#b8ccec;--dim:#3a5272;--dim2:#5a7a9a;
+  --mono:'Share Tech Mono',monospace;--disp:'Rajdhani',sans-serif;--body:'Exo 2',sans-serif;
+  --sb:242px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--ink);color:var(--tx);font-family:var(--body);font-size:14px;}
+body::before{content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);
+  pointer-events:none;z-index:9999;}
+body::after{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(30,144,255,0.035) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(30,144,255,0.035) 1px,transparent 1px);
+  background-size:50px 50px;pointer-events:none;z-index:0;}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:var(--ink2);}
+::-webkit-scrollbar-thumb{background:var(--bhi);}
+
+/* ══ LOGIN ══ */
+#login-wrap{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(30,144,255,0.06) 0%,var(--ink) 70%);}
+.lcard{width:420px;padding:50px 44px;background:var(--pan);border:1px solid var(--bhi);
+  position:relative;box-shadow:0 0 80px rgba(30,144,255,0.1),inset 0 0 60px rgba(30,144,255,0.02);
+  animation:fadeUp .5s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.lcard::before,.lcard::after{content:'';position:absolute;width:22px;height:22px;border-style:solid;border-color:var(--b);}
+.lcard::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.lcard::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+.ll{text-align:center;margin-bottom:38px;}
+.ll .ln{font-family:var(--disp);font-size:36px;font-weight:700;letter-spacing:8px;color:#fff;}
+.ll .ln em{color:var(--b);font-style:normal;}
+.ll .ls{font-family:var(--mono);font-size:9px;letter-spacing:4px;color:var(--dim2);margin-top:6px;}
+.lf{margin-bottom:18px;}
+.lf label{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim2);text-transform:uppercase;display:block;margin-bottom:7px;}
+.lf input{width:100%;background:rgba(30,144,255,0.04);border:1px solid var(--bor);color:var(--tx);
+  font-family:var(--mono);font-size:13px;padding:12px 14px;outline:none;transition:all .2s;letter-spacing:1px;}
+.lf input:focus{border-color:var(--b);box-shadow:0 0 0 2px rgba(30,144,255,0.15);}
+.lbtn{width:100%;background:var(--b);color:#fff;font-family:var(--disp);font-size:17px;font-weight:700;
+  letter-spacing:5px;text-transform:uppercase;padding:14px;border:none;cursor:pointer;transition:all .2s;}
+.lbtn:hover{background:var(--bd);box-shadow:0 0 24px rgba(30,144,255,0.3);}
+.lerr{font-family:var(--mono);font-size:11px;color:var(--r);text-align:center;margin-top:12px;display:none;}
+.lver{font-family:var(--mono);font-size:9px;color:var(--dim);text-align:center;margin-top:26px;letter-spacing:2px;}
+
+/* Firebase config panel */
+.fb-cfg{background:rgba(30,144,255,0.04);border:1px solid var(--bor);padding:16px;margin-bottom:18px;}
+.fb-cfg summary{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--b);cursor:pointer;text-transform:uppercase;outline:none;}
+.fb-cfg input{margin-top:8px;font-size:11px;}
+.fb-cfg .fb-hint{font-family:var(--mono);font-size:9px;color:var(--dim2);margin-top:8px;line-height:1.6;}
+
+/* ══ APP ══ */
+#app{display:none;height:100vh;position:relative;z-index:1;}
+.layout{display:flex;height:100vh;}
+
+/* ══ SIDEBAR ══ */
+.sb{width:var(--sb);flex-shrink:0;background:rgba(4,7,15,0.98);border-right:1px solid var(--bor);
+  display:flex;flex-direction:column;height:100vh;overflow:hidden;box-shadow:4px 0 20px rgba(0,0,0,0.5);}
+.sb-top{padding:20px 18px 16px;border-bottom:1px solid var(--bor);}
+.sb-brand{font-family:var(--disp);font-size:22px;font-weight:700;letter-spacing:5px;color:#fff;}
+.sb-brand em{color:var(--b);font-style:normal;}
+.sb-status{display:flex;align-items:center;gap:7px;margin-top:7px;}
+.sbdot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px var(--g);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.sb-on{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--g);}
+.sb-usr{padding:14px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;}
+.sb-av{width:36px;height:36px;border:1px solid var(--bhi);display:flex;align-items:center;justify-content:center;
+  font-family:var(--disp);font-size:16px;font-weight:700;color:var(--b);background:rgba(30,144,255,0.08);flex-shrink:0;}
+.sb-un{font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:1px;color:#fff;}
+.sb-ur{font-family:var(--mono);font-size:9px;color:var(--dim2);letter-spacing:1px;text-transform:uppercase;}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 0;}
+.ni{display:flex;align-items:center;gap:12px;padding:11px 18px;cursor:pointer;
+  transition:all .18s;border-left:2px solid transparent;}
+.ni:hover{background:rgba(30,144,255,0.05);color:#fff;}
+.ni.active{background:rgba(30,144,255,0.08);border-left-color:var(--b);color:var(--b);}
+.ni.active .nii{color:var(--b);}
+.nii{font-size:15px;width:20px;text-align:center;color:var(--dim2);transition:color .18s;flex-shrink:0;}
+.nil{font-family:var(--disp);font-size:14px;font-weight:600;letter-spacing:1px;transition:color .18s;}
+.nbadge{margin-left:auto;font-family:var(--mono);font-size:9px;padding:2px 7px;
+  background:rgba(255,61,61,0.15);color:var(--r);border:1px solid rgba(255,61,61,0.25);}
+.sb-foot{padding:14px 18px;border-top:1px solid var(--bor);}
+.logout{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim2);
+  background:none;border:1px solid var(--bor);padding:8px 14px;cursor:pointer;
+  transition:all .2s;width:100%;text-transform:uppercase;}
+.logout:hover{border-color:var(--r);color:var(--r);}
+
+/* ══ CONTENT ══ */
+.content{flex:1;overflow-y:auto;height:100vh;}
+.page{display:none;padding:28px 32px;animation:fadeIn .22s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* HEADER */
+.ph{margin-bottom:26px;}
+.phtitle{font-family:var(--disp);font-size:30px;font-weight:700;letter-spacing:3px;color:#fff;}
+.phsub{font-family:var(--mono);font-size:10px;color:var(--dim2);letter-spacing:2px;margin-top:4px;}
+
+/* SECTION LABEL */
+.slbl{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:4px;text-transform:uppercase;
+  color:var(--b);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.slbl::after{content:'';flex:1;height:1px;background:var(--bor);}
+.slbl.cy{color:var(--cy);}
+.slbl.gr{color:var(--g);}
+.slbl.rd{color:var(--r);}
+.slbl.yl{color:var(--y);}
+
+/* PANEL */
+.panel{background:var(--pan);border:1px solid var(--bor);padding:22px;position:relative;}
+.panel::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;background:var(--b);opacity:.5;}
+.panel.pgreen::before{background:var(--g);}
+.panel.pred::before{background:var(--r);}
+.panel.pyellow::before{background:var(--y);}
+.panel.pcyan::before{background:var(--cy);}
+
+/* STAT CARDS */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.sc{background:var(--pan);border:1px solid var(--bor);padding:20px;position:relative;overflow:hidden;transition:all .2s;}
+.sc:hover{border-color:var(--bhi);transform:translateY(-1px);}
+.sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--b);opacity:.4;}
+.sc.g::after{background:var(--g);}
+.sc.y::after{background:var(--y);}
+.sc.r::after{background:var(--r);}
+.scico{font-size:22px;margin-bottom:10px;opacity:.7;}
+.scval{font-family:var(--disp);font-size:34px;font-weight:700;color:#fff;line-height:1;}
+.sclbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--dim2);margin-top:5px;text-transform:uppercase;}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.mb{margin-bottom:16px;}
+.mb24{margin-bottom:24px;}
+
+/* FIELD */
+.flbl{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim2);text-transform:uppercase;margin-bottom:7px;display:block;}
+textarea,input[type=text],input[type=number],input[type=url],input[type=date],select{
+  width:100%;background:rgba(30,144,255,0.04);border:1px solid var(--bor);
+  color:var(--tx);font-family:var(--body);font-size:13px;padding:10px 12px;
+  outline:none;transition:border .2s,box-shadow .2s;resize:vertical;appearance:none;}
+textarea{min-height:72px;}
+select option{background:#070c18;}
+textarea:focus,input:focus,select:focus{border-color:var(--b);box-shadow:0 0 0 2px rgba(30,144,255,0.12);}
+
+/* SLIDER */
+.slwrap{display:flex;align-items:center;gap:12px;}
+input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:var(--bor);border:none;padding:0;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:0;background:var(--b);cursor:pointer;box-shadow:0 0 8px rgba(30,144,255,0.5);}
+.sval{font-family:var(--mono);font-size:13px;color:var(--b);min-width:26px;text-align:center;}
+
+/* BUTTONS */
+.btn{font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  padding:11px 28px;border:none;cursor:pointer;transition:all .2s;}
+.btn-b{background:var(--b);color:#fff;}
+.btn-b:hover{background:var(--bd);box-shadow:0 0 20px rgba(30,144,255,0.3);}
+.btn-gh{background:none;color:var(--b);border:1px solid var(--bhi);}
+.btn-gh:hover{background:rgba(30,144,255,0.07);}
+.btn-r{background:rgba(255,61,61,0.12);color:var(--r);border:1px solid rgba(255,61,61,0.25);}
+.btn-r:hover{background:rgba(255,61,61,0.2);}
+.btn-g{background:rgba(0,230,118,0.12);color:var(--g);border:1px solid rgba(0,230,118,0.25);}
+.btn-g:hover{background:rgba(0,230,118,0.2);}
+.btn-sm{padding:7px 16px;font-size:11px;letter-spacing:2px;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--dim2);
+  text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--bor);}
+.tbl td{padding:11px 14px;border-bottom:1px solid rgba(30,144,255,0.06);font-size:13px;vertical-align:middle;}
+.tbl tr:hover td{background:rgba(30,144,255,0.03);}
+.tbl tr:last-child td{border-bottom:none;}
+
+/* BADGES */
+.badge{font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:3px 9px;display:inline-block;}
+.bg{background:rgba(0,230,118,0.1);color:var(--g);border:1px solid rgba(0,230,118,0.2);}
+.bb{background:rgba(30,144,255,0.1);color:var(--b);border:1px solid rgba(30,144,255,0.2);}
+.by{background:rgba(255,214,0,0.1);color:var(--y);border:1px solid rgba(255,214,0,0.2);}
+.br{background:rgba(255,61,61,0.1);color:var(--r);border:1px solid rgba(255,61,61,0.2);}
+.bcy{background:rgba(0,229,255,0.1);color:var(--cy);border:1px solid rgba(0,229,255,0.2);}
+.bd{background:rgba(255,255,255,0.05);color:var(--dim2);border:1px solid var(--bor);}
+
+/* FEED */
+.fi{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid rgba(30,144,255,0.06);}
+.fi:last-child{border-bottom:none;}
+.fdot{width:6px;height:6px;border-radius:50%;background:var(--b);margin-top:5px;flex-shrink:0;box-shadow:0 0 6px var(--b);}
+.ftime{font-family:var(--mono);font-size:10px;color:var(--dim2);flex-shrink:0;min-width:50px;}
+.ftxt{font-size:12px;color:var(--tx);line-height:1.5;}
+.ftxt em{color:var(--b);font-style:normal;}
+
+/* PLAYER CARD */
+.pc{background:var(--pan);border:1px solid var(--bor);overflow:hidden;cursor:pointer;transition:all .2s;position:relative;}
+.pc:hover{border-color:var(--bhi);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+.pc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--b);opacity:.5;}
+.pc-ban{height:58px;background:linear-gradient(135deg,rgba(30,144,255,0.14),rgba(30,144,255,0.03));
+  display:flex;align-items:center;padding:0 16px;position:relative;overflow:hidden;}
+.pc-ban::before{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;
+  border:1px solid rgba(30,144,255,0.12);transform:rotate(45deg);}
+.pcav{width:38px;height:38px;border:1px solid var(--bhi);background:rgba(30,144,255,0.1);
+  display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:17px;font-weight:700;color:var(--b);}
+.pcbod{padding:14px 16px;}
+.pcnick{font-family:var(--disp);font-size:16px;font-weight:700;letter-spacing:2px;color:#fff;}
+.pcrl{font-family:var(--mono);font-size:9px;color:var(--dim2);letter-spacing:1px;margin-top:2px;}
+.pcst{display:flex;gap:8px;margin-top:10px;}
+.pcs{font-family:var(--mono);font-size:10px;color:var(--dim2);}
+.pcs em{color:var(--b);font-style:normal;}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(4,7,15,0.94);z-index:300;
+  display:none;align-items:flex-start;justify-content:center;padding:32px 20px;overflow-y:auto;}
+.ov.open{display:flex;}
+.modal{width:100%;max-width:880px;background:var(--ink3);border:1px solid var(--bhi);
+  padding:36px;position:relative;box-shadow:0 0 100px rgba(30,144,255,0.12);animation:fadeUp .22s ease;}
+.mc{position:absolute;top:16px;right:16px;font-size:20px;color:var(--dim2);
+  background:none;border:none;cursor:pointer;transition:color .2s;font-family:var(--mono);}
+.mc:hover{color:var(--r);}
+.mt{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:3px;color:#fff;margin-bottom:4px;}
+.ms{font-family:var(--mono);font-size:10px;color:var(--dim2);margin-bottom:24px;}
+
+/* SCORE BARS */
+.sbar{height:5px;background:var(--bor);position:relative;overflow:hidden;}
+.sfil{height:100%;background:var(--b);transition:width .6s ease;box-shadow:0 0 8px var(--b);}
+.sfil.g{background:var(--g);box-shadow:0 0 8px var(--g);}
+.sfil.y{background:var(--y);}
+.sfil.r{background:var(--r);}
+
+/* SPARK CHART */
+.spark{display:flex;align-items:flex-end;gap:3px;height:40px;}
+.spk{flex:1;background:rgba(30,144,255,0.22);transition:background .2s;min-width:8px;}
+.spk:hover{background:var(--b);}
+
+/* RANK ROW */
+.rrow{display:flex;align-items:center;gap:14px;padding:12px 16px;
+  border:1px solid var(--bor);margin-bottom:8px;background:rgba(30,144,255,0.02);transition:all .2s;}
+.rrow:hover{border-color:var(--bhi);}
+.rpos{font-family:var(--disp);font-size:26px;font-weight:700;color:var(--dim);width:30px;}
+.rpos.p1{color:var(--y);}.rpos.p2{color:#aaa;}.rpos.p3{color:#cd7f32;}
+.rnam{font-family:var(--disp);font-size:16px;font-weight:700;letter-spacing:1px;color:#fff;flex:1;}
+.rscr{font-family:var(--mono);font-size:13px;color:var(--b);}
+
+/* TABS */
+.ptabs{display:flex;border-bottom:1px solid var(--bor);margin-bottom:20px;}
+.ptab{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--dim2);padding:11px 18px;cursor:pointer;border:none;background:none;
+  border-bottom:2px solid transparent;transition:all .2s;position:relative;top:1px;}
+.ptab:hover{color:var(--tx);}
+.ptab.active{color:var(--b);border-bottom-color:var(--b);}
+
+/* ALERT ITEM */
+.ali{display:flex;align-items:center;gap:14px;padding:14px 18px;
+  border:1px solid var(--bor);margin-bottom:10px;background:var(--pan);transition:all .2s;}
+.ali:hover{border-color:var(--bhi);}
+.ali.crit{border-left:3px solid var(--r);}
+.ali.warn{border-left:3px solid var(--y);}
+.ali.info{border-left:3px solid var(--b);}
+.alit{font-family:var(--disp);font-size:14px;font-weight:600;letter-spacing:1px;color:#fff;}
+.alitm{font-family:var(--mono);font-size:9px;color:var(--dim2);margin-top:3px;}
+
+/* SCORE CIRCLE */
+.scircle{width:76px;height:76px;border-radius:50%;border:2px solid var(--b);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  background:rgba(30,144,255,0.06);flex-shrink:0;}
+.scn{font-family:var(--disp);font-size:22px;font-weight:700;color:var(--b);line-height:1;}
+.scl{font-family:var(--mono);font-size:8px;color:var(--dim2);letter-spacing:1px;}
+
+/* ══ TRYOUT STYLES ══ */
+.try-wrap{background:var(--ink3);border:1px solid var(--bhi);position:relative;}
+.try-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--b),var(--cy),var(--b));background-size:200%;animation:shimmer 3s infinite;}
+@keyframes shimmer{0%{background-position:0%;}100%{background-position:200%;}}
+.try-head{padding:18px 24px;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;}
+.try-head-title{font-family:var(--disp);font-size:16px;font-weight:700;letter-spacing:3px;color:#fff;}
+.try-body{padding:24px;}
+
+/* Criteria cards */
+.crit-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.crit-card{background:rgba(30,144,255,0.03);border:1px solid var(--bor);padding:18px;position:relative;}
+.crit-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:var(--b);opacity:.4;}
+.crit-name{font-family:var(--disp);font-size:15px;font-weight:700;letter-spacing:1px;color:#fff;margin-bottom:12px;}
+.score-opts{display:flex;gap:6px;}
+.sopt{width:36px;height:36px;border:1px solid var(--bor);background:none;
+  font-family:var(--disp);font-size:16px;font-weight:700;color:var(--dim2);
+  cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.sopt:hover{border-color:var(--bhi);color:var(--tx);}
+.sopt.s1.sel{background:rgba(255,61,61,0.15);border-color:var(--r);color:var(--r);}
+.sopt.s2.sel{background:rgba(255,152,0,0.15);border-color:var(--o);color:var(--o);}
+.sopt.s3.sel{background:rgba(255,214,0,0.12);border-color:var(--y);color:var(--y);}
+.sopt.s4.sel{background:rgba(30,144,255,0.12);border-color:var(--b);color:var(--b);}
+.sopt.s5.sel{background:rgba(0,230,118,0.12);border-color:var(--g);color:var(--g);}
+.score-desc{font-family:var(--mono);font-size:10px;color:var(--dim2);margin-top:8px;line-height:1.5;min-height:30px;}
+
+/* Result box */
+.res-box{background:var(--ink4);border:1px solid var(--bor);padding:22px;margin-top:20px;text-align:center;}
+.res-num{font-family:var(--disp);font-size:56px;font-weight:700;color:var(--b);line-height:1;}
+.res-max{font-family:var(--mono);font-size:11px;color:var(--dim2);letter-spacing:2px;margin-bottom:14px;}
+.rbar-wrap{height:6px;background:var(--bor);margin:0 auto 16px;max-width:300px;}
+.rbar{height:100%;background:var(--b);transition:width .6s ease;box-shadow:0 0 10px var(--b);}
+.div-badge{font-family:var(--disp);font-size:18px;font-weight:700;letter-spacing:3px;padding:8px 24px;display:inline-block;margin-bottom:12px;}
+.div-prime{background:rgba(255,61,61,0.1);color:var(--r);border:1px solid rgba(255,61,61,0.3);}
+.div-acad{background:rgba(30,144,255,0.1);color:var(--b);border:1px solid rgba(30,144,255,0.3);}
+.div-obs{background:rgba(255,214,0,0.1);color:var(--y);border:1px solid rgba(255,214,0,0.3);}
+.div-rep{background:rgba(255,255,255,0.06);color:var(--dim2);border:1px solid var(--bor);}
+.bkdown{margin-top:16px;text-align:left;border-top:1px solid var(--bor);padding-top:16px;}
+.bkrow{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.bklbl{font-family:var(--mono);font-size:10px;color:var(--dim2);flex:1;}
+.bkval{font-family:var(--disp);font-size:16px;font-weight:700;color:var(--b);min-width:24px;text-align:right;}
+
+/* Red flags */
+.rflag{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,61,61,0.08);font-size:13px;color:var(--dim2);align-items:flex-start;}
+.rflag:last-child{border-bottom:none;}
+.rflag::before{content:'⚠';color:var(--r);flex-shrink:0;margin-top:1px;}
+
+/* Q blocks */
+.qblock{background:rgba(30,144,255,0.03);border:1px solid var(--bor);border-left:3px solid var(--b);
+  padding:16px 18px;margin-bottom:12px;}
+.qblock.cy{border-left-color:var(--cy);}
+.qblock.yl{border-left-color:var(--y);}
+.qblock.rd{border-left-color:var(--r);}
+.qtxt{font-family:var(--disp);font-size:15px;font-weight:600;color:#fff;margin-bottom:8px;letter-spacing:.5px;}
+.qtip{font-size:12px;color:var(--dim2);line-height:1.6;}
+.qtip strong{color:var(--tx);}
+
+/* Print box */
+.print-box{background:rgba(0,0,0,0.3);border:1px solid var(--bor);padding:18px;margin-top:16px;
+  font-family:var(--mono);font-size:11px;color:var(--tx);line-height:1.8;white-space:pre-wrap;display:none;}
+
+/* LOG */
+.logi{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid rgba(30,144,255,0.06);align-items:flex-start;}
+.logi:last-child{border-bottom:none;}
+.logt{font-family:var(--mono);font-size:10px;color:var(--dim2);flex-shrink:0;min-width:80px;}
+.logi-ico{font-size:14px;flex-shrink:0;}
+.logx{font-size:12px;color:var(--tx);line-height:1.5;}
+.logx strong{color:#fff;}
+
+/* NOTE CARD */
+.nc{background:rgba(30,144,255,0.04);border:1px solid var(--bor);padding:14px;margin-bottom:10px;}
+.ncd{font-family:var(--mono);font-size:10px;color:var(--b);letter-spacing:2px;margin-bottom:5px;}
+.ncn{font-family:var(--disp);font-size:28px;font-weight:700;color:#fff;}
+.nco{font-size:12px;color:var(--dim2);margin-top:4px;}
+
+/* SYNC STATUS */
+.sync-badge{font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:0;
+  display:inline-flex;align-items:center;gap:5px;letter-spacing:1px;}
+.sync-ok{background:rgba(0,230,118,0.1);color:var(--g);border:1px solid rgba(0,230,118,0.2);}
+.sync-off{background:rgba(255,214,0,0.1);color:var(--y);border:1px solid rgba(255,214,0,0.2);}
+.sync-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+
+/* RESPONSIVE */
+@media(max-width:1100px){:root{--sb:200px;}.sg{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){.sb{position:fixed;left:-100%;z-index:100;transition:left .3s;}
+  .sb.open{left:0;}.g2,.g3,.g4,.crit-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ══════ LOGIN ══════ -->
+<div id="login-wrap">
+  <div class="lcard">
+    <div class="ll">
+      <div class="ln">SAFE<em>ZONE</em></div>
+      <div class="ls">COMMAND HUB v2.0 // ACESSO RESTRITO</div>
+    </div>
+
+    <!-- Firebase config -->
+    <details class="fb-cfg" id="fb-cfg-details">
+      <summary>⚙ Configurar Firebase</summary>
+      <div class="fb-hint">Cole o JSON de configuração do seu projeto Firebase (Realtime Database).</div>
+      <textarea id="fb-json" style="min-height:80px;margin-top:10px;font-size:10px;"
+        placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
+      <button class="btn btn-b btn-sm" style="margin-top:8px;width:100%;" onclick="applyFirebase()">CONECTAR FIREBASE</button>
+      <div id="fb-status" style="font-family:var(--mono);font-size:10px;margin-top:8px;color:var(--dim2);">Sem Firebase configurado — dados salvos localmente.</div>
+    </details>
+
+    <div class="lf">
+      <label>Usuário</label>
+      <input type="text" id="l-user" placeholder="usuario@safezone.gg" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="lf">
+      <label>Senha</label>
+      <input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="lbtn" onclick="doLogin()">ACESSAR O HUB</button>
+    <div class="lerr" id="l-err">Credenciais inválidas.</div>
+    <div class="lver">SAFEZONE ESPORTS © 2026 — SISTEMA INTERNO</div>
+  </div>
+</div>
+
+<!-- ══════ APP ══════ -->
+<div id="app">
+  <div class="layout">
+    <div class="sb" id="sidebar">
+      <div class="sb-top">
+        <div class="sb-brand">SAFE<em>ZONE</em></div>
+        <div class="sb-status">
+          <div class="sbdot"></div><span class="sb-on">SISTEMA ONLINE</span>
+          <span id="sync-indicator" class="sync-badge sync-off" style="margin-left:auto;">
+            <div class="sync-dot"></div>LOCAL
+          </span>
+        </div>
+      </div>
+      <div class="sb-usr">
+        <div class="sb-av" id="sb-av">—</div>
+        <div><div class="sb-un" id="sb-name">—</div><div class="sb-ur" id="sb-role">—</div></div>
+      </div>
+      <nav class="sb-nav">
+        <div class="ni active" onclick="goPage('dashboard',this)"><span class="nii ni-svg">▣</span><span class="nil">Dashboard</span></div>
+        <div class="ni" onclick="goPage('players',this)"><span class="nii ni-svg">◈</span><span class="nil">Players</span></div>
+        <div class="ni" onclick="goPage('reports',this)"><span class="nii ni-svg">◧</span><span class="nil">Advertências</span></div>
+        <div class="ni" onclick="goPage('scrims',this)"><span class="nii ni-svg">◉</span><span class="nil">Scrims</span></div>
+        <div class="ni" onclick="goPage('tryouts',this)"><span class="nii ni-svg">◎</span><span class="nil">Tryouts</span></div>
+        <div class="ni" onclick="goPage('rankings',this)"><span class="nii ni-svg">◆</span><span class="nil">Rankings</span></div>
+        <div class="ni" onclick="goPage('alerts',this)" id="nav-alerts"><span class="nii ni-svg">◬</span><span class="nil">Alerts</span><span class="nbadge" id="abadge">0</span></div>
+        <div class="ni" onclick="goPage('logs',this)"><span class="nii ni-svg">◫</span><span class="nil">Activity Logs</span></div>
+        <div class="ni" id="nav-settings" onclick="goPage('settings',this)"><span class="nii ni-svg">◐</span><span class="nil">Settings</span></div>
+      </nav>
+      <div class="sb-foot">
+        <button class="logout" onclick="doLogout()">↩ SAIR DO SISTEMA</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="ph"><div class="phtitle">DASHBOARD</div><div class="phsub" id="dash-time">—</div></div>
+        <div class="sg">
+          <div class="sc"><div class="scico" style="font-family:var(--disp);font-size:18px;font-weight:700;color:var(--b);opacity:1;">PLR</div><div class="scval" id="st-p">8</div><div class="sclbl">Players Ativos</div></div>
+          <div class="sc g"><div class="scico" style="font-family:var(--disp);font-size:18px;font-weight:700;color:var(--g);opacity:1;">REP</div><div class="scval" id="st-r">0</div><div class="sclbl">Reports</div></div>
+          <div class="sc y"><div class="scico" style="font-family:var(--disp);font-size:18px;font-weight:700;color:var(--y);opacity:1;">TRY</div><div class="scval" id="st-t">0</div><div class="sclbl">Tryouts</div></div>
+          <div class="sc r"><div class="scico" style="font-family:var(--disp);font-size:18px;font-weight:700;color:var(--r);opacity:1;">ALT</div><div class="scval" id="st-a">0</div><div class="sclbl">Alertas</div></div>
+        </div>
+        <div class="g2 mb24">
+          <div><div class="slbl">Ranking Semanal</div><div id="dash-rank"></div></div>
+          <div><div class="slbl">Feed de Atividade</div>
+            <div class="panel" style="max-height:280px;overflow-y:auto;" id="dash-feed"></div>
+          </div>
+        </div>
+        <div class="g2">
+          <div><div class="slbl">Últimos Relatórios</div><div id="dash-reps"></div></div>
+          <div><div class="slbl">Alertas</div><div id="dash-alerts"></div></div>
+        </div>
+      </div>
+
+      <!-- PLAYERS -->
+      <div class="page" id="page-players">
+        <div class="ph">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div><div class="phtitle">PLAYERS</div><div class="phsub">ELENCO SAFEZONE 2026</div></div>
+            <button class="btn btn-b btn-sm" onclick="openAddPlayer()">+ NOVO PLAYER</button>
+          </div>
+        </div>
+        <div class="g4" id="players-grid" style="margin-bottom:24px;"></div>
+      </div>
+
+      <!-- ADVERTÊNCIAS -->
+      <div class="page" id="page-reports">
+        <div class="ph">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div><div class="phtitle">ADVERTÊNCIAS</div><div class="phsub">PAINEL DE DISCIPLINA — COACH</div></div>
+            <button class="btn btn-b btn-sm" onclick="openAddAdv()">+ NOVA ADVERTÊNCIA</button>
+          </div>
+        </div>
+        <div class="g2">
+          <div>
+            <div class="slbl">Registros Ativos</div>
+            <div id="adv-list"></div>
+          </div>
+          <div>
+            <div class="slbl">Histórico Geral</div>
+            <div id="adv-hist" style="max-height:600px;overflow-y:auto;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCRIMS -->
+      <div class="page" id="page-scrims">
+        <div class="ph">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div><div class="phtitle">SCRIMS</div><div class="phsub" id="scrims-week-label">—</div></div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-gh btn-sm" onclick="scrimsShiftWeek(-1)">← Semana anterior</button>
+              <button class="btn btn-gh btn-sm" onclick="scrimsGoToday()">Hoje</button>
+              <button class="btn btn-gh btn-sm" onclick="scrimsShiftWeek(1)">Próxima →</button>
+            </div>
+          </div>
+        </div>
+        <!-- Calendar grid -->
+        <div id="scrims-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:28px;"></div>
+        <!-- Active form area -->
+        <div id="scrims-form-area"></div>
+      </div>
+
+      <!-- TRYOUTS -->
+      <div class="page" id="page-tryouts">
+        <div class="ph">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div><div class="phtitle">TRYOUTS</div><div class="phsub">SISTEMA DE SELEÇÃO SAFEZONE</div></div>
+            <button class="btn btn-b btn-sm" onclick="openNewTryout()">+ NOVA FICHA</button>
+          </div>
+        </div>
+        <!-- Tryout tabs -->
+        <div class="ptabs" id="try-tabs">
+          <button class="ptab active" onclick="switchTryTab('list',this)">Lista</button>
+          <button class="ptab" onclick="switchTryTab('agenda',this)">Agenda de Testes</button>
+          <button class="ptab" onclick="switchTryTab('ficha',this)">Ficha de Avaliação</button>
+          <button class="ptab" onclick="switchTryTab('conversa',this)">Conversa Final</button>
+          <button class="ptab" onclick="switchTryTab('guia',this)">Guia de Critérios</button>
+        </div>
+        <div id="trytab-list"></div>
+        <div id="trytab-agenda" style="display:none;"></div>
+        <div id="trytab-ficha" style="display:none;"></div>
+        <div id="trytab-conversa" style="display:none;"></div>
+        <div id="trytab-guia" style="display:none;"></div>
+      </div>
+
+      <!-- RANKINGS -->
+      <div class="page" id="page-rankings">
+        <div class="ph"><div class="phtitle">RANKINGS</div><div class="phsub">DESEMPENHO SEMANAL</div></div>
+        <div class="g2">
+          <div><div class="slbl">Ranking Geral</div><div id="rank-list"></div></div>
+          <div><div class="slbl">Evolução por Player</div><div id="rank-chart"></div></div>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="page" id="page-alerts">
+        <div class="ph"><div class="phtitle">ALERTS</div><div class="phsub">MONITORAMENTO</div></div>
+        <div id="alerts-list"></div>
+      </div>
+
+      <!-- LOGS -->
+      <div class="page" id="page-logs">
+        <div class="ph"><div class="phtitle">ACTIVITY LOGS</div><div class="phsub">REGISTRO DE ATIVIDADES</div></div>
+        <div class="panel" style="max-height:70vh;overflow-y:auto;"><div id="logs-list"></div></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="ph"><div class="phtitle">SETTINGS</div><div class="phsub">CONFIGURAÇÕES</div></div>
+        <div style="max-width:600px;">
+          <div class="slbl">Discord Webhooks</div>
+          <div class="panel mb24">
+            <div class="mb"><label class="flbl">Webhook — Logins</label><input type="url" id="wh-login" placeholder="https://discord.com/api/webhooks/..."></div>
+            <div class="mb"><label class="flbl">Webhook — Relatórios</label><input type="url" id="wh-reports" placeholder="https://discord.com/api/webhooks/..."></div>
+            <div class="mb"><label class="flbl">Webhook — Tryouts</label><input type="url" id="wh-tryouts" placeholder="https://discord.com/api/webhooks/..."></div>
+            <div class="mb"><label class="flbl">Webhook — Alertas</label><input type="url" id="wh-alerts" placeholder="https://discord.com/api/webhooks/..."></div>
+            <button class="btn btn-b" onclick="saveSettings()">SALVAR</button>
+            <span id="cfg-ok" style="font-family:var(--mono);font-size:11px;color:var(--g);margin-left:14px;display:none;">✓ Salvo</span>
+          </div>
+          <div class="slbl">Firebase</div>
+          <div class="panel mb24">
+            <div class="mb"><label class="flbl">Config JSON</label>
+              <textarea id="fb-json-settings" style="font-size:11px;min-height:100px;" placeholder='{"apiKey":"...","databaseURL":"...",...}'></textarea></div>
+            <button class="btn btn-b btn-sm" onclick="applyFirebaseFromSettings()">CONECTAR / RECONECTAR</button>
+            <div id="fb-st2" style="font-family:var(--mono);font-size:10px;margin-top:8px;color:var(--dim2);"></div>
+          </div>
+          <div class="slbl">Dados</div>
+          <div class="panel">
+            <button class="btn btn-r btn-sm" onclick="if(confirm('Limpar dados locais?'))clearLocal()">LIMPAR DADOS LOCAIS</button>
+            <p style="font-family:var(--mono);font-size:10px;color:var(--dim2);margin-top:10px;">Apaga relatórios, tryouts e logs do localStorage. Não afeta o Firebase.</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="ov" id="ov-player" onclick="closeOv('ov-player',event)">
+  <div class="modal"><button class="mc" onclick="closeOvD('ov-player')">✕</button><div id="ov-pb"></div></div>
+</div>
+<div class="ov" id="ov-add-player" onclick="closeOv('ov-add-player',event)">
+  <div class="modal" style="max-width:520px;"><button class="mc" onclick="closeOvD('ov-add-player')">✕</button><div id="ov-apb"></div></div>
+</div>
+<div class="ov" id="ov-tryout-view" onclick="closeOv('ov-tryout-view',event)">
+  <div class="modal"><button class="mc" onclick="closeOvD('ov-tryout-view')">✕</button><div id="ov-tvb"></div></div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  USERS (autenticação local)
+// ════════════════════════════════════
+const USERS = {
+  'staffsafezone.gg':  {pass:'sfzstaff2026', name:'Staff Admin', role:'Admin',  initials:'SA'},
+  'coachsafezone.gg':  {pass:'lucassfz',     name:'Lucas',       role:'Coach',  initials:'LC'},
+};
+
+const DEFAULT_PLAYERS = [
+  {id:'nemo',      nick:'Nemo',      role:'Duelista',    line:'Line Principal', elo:'Imortal 1',   status:'Ativo'},
+  {id:'henrique',  nick:'Henrique',  role:'Iniciador',   line:'Line Principal', elo:'Ascendente 3',status:'Ativo'},
+  {id:'nick',      nick:'Nick',      role:'Sentinela',   line:'Line Principal', elo:'Ascendente 2',status:'Ativo'},
+  {id:'bellatrix', nick:'Bellatrix', role:'Flex',        line:'Academy',        elo:'Imortal 1',   status:'Ativo'},
+  {id:'luiggi',    nick:'Luiggi',    role:'Controlador', line:'Academy',        elo:'Ascendente 3',status:'Ativo'},
+  {id:'derek',     nick:'Derek',     role:'Iniciador',   line:'Academy',        elo:'Ascendente 2',status:'Ativo'},
+  {id:'girafa',    nick:'Girafa',    role:'Duelista',    line:'Academy',        elo:'Ascendente 1',status:'Ativo'},
+  {id:'angel',     nick:'Angel',     role:'Sentinela',   line:'Academy',        elo:'Diamante 3',  status:'Ativo'},
+];
+const REP_METRICS = ['Mira','Comunicação','Mental','Game Sense','Consistência','Trabalho em equipe'];
+
+const CRIT_SCORES = {
+  'Mecânica & Mira':[
+    'Erra duelos fáceis, crosshair no chão',
+    'Mira inconsistente, perde a maioria dos 1v1',
+    'Acerta o que deveria no elo, nada surpreendente',
+    'Mira firme, ganha duelos difíceis',
+    'Mira claramente acima do elo, mecânica que chama atenção',
+  ],
+  'Visão de Jogo':[
+    'Vai pra lugares errados, morre sozinho',
+    'Posicionamento ruim, decisões erradas',
+    'Joga no automático, não lê o jogo',
+    'Bom posicionamento, decisões corretas com frequência',
+    'Lê o round antes de acontecer',
+  ],
+  'Comunicação':[
+    'Não fala nada ou fala besteira / tilt',
+    'Fala pouco, calls tardias ou imprecisas',
+    'Comunica o básico, dá as calls obrigatórias',
+    'Calls claras e no momento certo',
+    'Comanda o round, eleva o nível da equipe',
+  ],
+  'Domínio da Função':[
+    'Não sabe usar a função, util desperdiçada',
+    'Usa o básico mas sem consistência',
+    'Executa o papel sem se destacar',
+    'Usa util no momento certo, entende a função',
+    'Domina a função, muda rounds com util',
+  ],
+  'Atitude & Comprometimento':[
+    'Tilt, arrogante, reclama dos outros',
+    'Passivo, desinteressado',
+    'Neutro, não atrapalha, mas sem vontade real',
+    'Receptivo ao feedback, positivo, interesse real',
+    'Atitude exemplar, quer melhorar, já parece do time',
+  ],
+};
+const CRIT_KEYS = Object.keys(CRIT_SCORES);
+const tryScores = {};
+
+// ════════════════════════════════════
+//  STATE
+// ════════════════════════════════════
+let currentUser = null;
+let useFirebase = false;
+
+// ════════════════════════════════════
+//  FIREBASE
+// ════════════════════════════════════
+function applyFirebase(){
+  const raw = document.getElementById('fb-json').value.trim();
+  _tryConnectFirebase(raw, 'fb-status');
+}
+function applyFirebaseFromSettings(){
+  const raw = document.getElementById('fb-json-settings').value.trim();
+  _tryConnectFirebase(raw, 'fb-st2');
+}
+function _tryConnectFirebase(raw, statusId){
+  try {
+    const cfg = JSON.parse(raw);
+    if(!cfg.databaseURL){throw new Error('databaseURL ausente no JSON');}
+    window._onFirebaseReady = ()=>{
+      useFirebase = true;
+      LS.set('fb-cfg', raw);
+      document.getElementById(statusId).textContent='✓ Firebase conectado!';
+      document.getElementById(statusId).style.color='var(--g)';
+      document.getElementById('sync-indicator').className='sync-badge sync-ok';
+      document.getElementById('sync-indicator').innerHTML='<div class="sync-dot"></div>FIREBASE';
+      if(currentUser) bindFirebase();
+    };
+    window.initFirebase(cfg);
+  } catch(e) {
+    document.getElementById(statusId).textContent='Erro: ' + e.message;
+    document.getElementById(statusId).style.color='var(--r)';
+  }
+}
+
+function bindFirebase(){
+  if(!window._fbReady||!window._db) return;
+  const db = window._db;
+  // players
+  window._fbOn(window._fbRef(db,'players'), snap=>{
+    const val = snap.val();
+    if(val){
+      const arr = Object.values(val);
+      LS.set('players', arr);
+      renderPlayers();
+      buildRepForm();
+    }
+  });
+  // reports
+  window._fbOn(window._fbRef(db,'reports'), snap=>{
+    const val = snap.val();
+    const arr = val ? Object.entries(val).map(([k,v])=>({...v,_fbkey:k})).reverse() : [];
+    LS.set('reports', arr);
+    renderAdvPage();
+    renderDashboard();
+  });
+  // tryouts
+  window._fbOn(window._fbRef(db,'tryouts'), snap=>{
+    const val = snap.val();
+    const arr = val ? Object.entries(val).map(([k,v])=>({...v,_fbkey:k})).reverse() : [];
+    LS.set('tryouts', arr);
+    renderTryList();
+    renderDashboard();
+  });
+  // logs
+  window._fbOn(window._fbRef(db,'logs'), snap=>{
+    const val = snap.val();
+    const arr = val ? Object.entries(val).map(([k,v])=>({...v,_fbkey:k})).reverse().slice(0,100) : [];
+    LS.set('logs', arr);
+    renderLogs();
+    renderDashboard();
+  });
+  // alerts
+  window._fbOn(window._fbRef(db,'alerts'), snap=>{
+    const val = snap.val();
+    const arr = val ? Object.entries(val).map(([k,v])=>({...v,_fbkey:k})).reverse() : [];
+    LS.set('alerts', arr);
+    updateAbadge();
+    renderAlerts();
+    renderDashboard();
+  });
+}
+
+async function fbSave(path, data){
+  if(useFirebase && window._fbReady){
+    try{ await window._fbSet(window._fbRef(window._db, path), data); return; }
+    catch(e){ console.warn('FB set error:', e); }
+  }
+}
+async function fbPush(path, data){
+  if(useFirebase && window._fbReady){
+    try{
+      const r = await window._fbPush(window._fbRef(window._db, path), data);
+      return r.key;
+    } catch(e){ console.warn('FB push error:', e); }
+  }
+  return null;
+}
+async function fbDel(path){
+  if(useFirebase && window._fbReady){
+    try{ await window._fbDel(window._fbRef(window._db, path)); } catch(e){}
+  }
+}
+
+// ════════════════════════════════════
+//  LOCAL STORAGE
+// ════════════════════════════════════
+const LS = {
+  get:(k,d=[])=>{ try{return JSON.parse(localStorage.getItem('sz_'+k))||d;}catch{return d;}},
+  set:(k,v)=>localStorage.setItem('sz_'+k,JSON.stringify(v)),
+  cfg:(k,v)=>{ if(v===undefined){const d=LS.get('cfg',{});return d[k]||'';}
+    const d=LS.get('cfg',{});d[k]=v;LS.set('cfg',d);}
+};
+
+function getPlayers(){
+  const p=LS.get('players',null);
+  if(!p){LS.set('players',DEFAULT_PLAYERS);return DEFAULT_PLAYERS;}
+  return p;
+}
+function getReports(){return LS.get('reports',[]);}
+function getTryouts(){return LS.get('tryouts',[]);}
+function getLogs(){return LS.get('logs',[]);}
+function getAlerts(){return LS.get('alerts',[]);}
+
+async function addLog(icon,text){
+  const logs=getLogs();
+  const now=new Date();
+  const entry={time:now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    date:now.toLocaleDateString('pt-BR'),icon,text,ts:Date.now()};
+  logs.unshift(entry);
+  if(logs.length>200)logs.splice(200);
+  LS.set('logs',logs);
+  if(!useFirebase){renderLogs();}
+  await fbPush('logs', entry);
+}
+
+async function addAlert(type,icon,title){
+  const a=getAlerts();
+  const entry={id:Date.now(),type,icon,title,time:new Date().toLocaleString('pt-BR')};
+  a.unshift(entry);
+  LS.set('alerts',a);
+  updateAbadge();
+  if(!useFirebase){renderAlerts();}
+  await fbPush('alerts', entry);
+}
+
+// ════════════════════════════════════
+//  LOGIN
+// ════════════════════════════════════
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim().toLowerCase();
+  const p=document.getElementById('l-pass').value;
+  const e=document.getElementById('l-err');
+  if(!USERS[u]||USERS[u].pass!==p){e.style.display='block';return;}
+  e.style.display='none';
+  currentUser=USERS[u];
+  document.getElementById('login-wrap').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('sb-av').textContent=currentUser.initials;
+  document.getElementById('sb-name').textContent=currentUser.name;
+  document.getElementById('sb-role').textContent=currentUser.role;
+  // try restore firebase
+  const savedCfg=LS.cfg('fb-cfg');
+  if(savedCfg && window.initFirebase){
+    try{
+      window._onFirebaseReady=()=>{
+        useFirebase=true;
+        document.getElementById('sync-indicator').className='sync-badge sync-ok';
+        document.getElementById('sync-indicator').innerHTML='<div class="sync-dot"></div>FIREBASE';
+        bindFirebase();
+      };
+      window.initFirebase(JSON.parse(savedCfg));
+    }catch(e){}
+  }
+  addLog('🟢',`<strong>${currentUser.name}</strong> entrou no portal [${currentUser.role}]`);
+  sendDiscord(LS.cfg('wh-login'),
+    `🟢 **LOGIN SAFEZONE**\n\n👤 Usuário: ${currentUser.name}\n🎯 Cargo: ${currentUser.role}\n🕒 Horário: ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`);
+  initApp();
+}
+function doLogout(){
+  addLog('🔴',`<strong>${currentUser.name}</strong> saiu do portal`);
+  currentUser=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('l-pass').value='';
+}
+
+// ════════════════════════════════════
+//  INIT
+// ════════════════════════════════════
+function initApp(){
+  updateDashTime();
+  setInterval(updateDashTime,60000);
+  loadSettings();
+  renderAll();
+  buildTryFicha();
+  buildTryConversa();
+  buildTryGuia();
+  scrimsInit();
+  // hide settings for Coach
+  if(currentUser.role==='Coach'){
+    const ns=document.getElementById('nav-settings');
+    if(ns) ns.style.display='none';
+    const ps=document.getElementById('page-settings');
+    if(ps) ps.style.display='none';
+  }
+}
+function updateDashTime(){
+  const now=new Date();
+  document.getElementById('dash-time').textContent=
+    now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}).toUpperCase()+
+    ' · '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+function renderAll(){
+  renderDashboard();
+  renderPlayers();
+  renderAdvPage();
+  renderTryList();
+  renderRankings();
+  renderAlerts();
+  renderLogs();
+  updateAbadge();
+}
+
+// ════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════
+function goPage(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='reports')renderAdvPage();
+  if(name==='rankings')renderRankings();
+  if(name==='scrims')scrimsInit();
+}
+
+// ════════════════════════════════════
+//  DISCORD
+// ════════════════════════════════════
+async function sendDiscord(url,msg){
+  if(!url||!url.startsWith('https://discord.com/api/webhooks/'))return;
+  try{
+    for(let i=0;i<msg.length;i+=1900)
+      await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({content:msg.slice(i,i+1900),username:'SafeZone Hub'})});
+  }catch(e){}
+}
+
+// ════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════
+function renderDashboard(){
+  const reports=getReports(), tryouts=getTryouts(), alerts=getAlerts();
+  document.getElementById('st-p').textContent=getPlayers().filter(p=>p.status==='Ativo').length;
+  document.getElementById('st-r').textContent=reports.length;
+  document.getElementById('st-t').textContent=tryouts.length;
+  document.getElementById('st-a').textContent=alerts.length;
+
+  const ranking=buildRanking();
+  document.getElementById('dash-rank').innerHTML=ranking.slice(0,5).map((r,i)=>`
+    <div class="rrow">
+      <div class="rpos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
+      <div class="rnam">${r.nick}</div>
+      <div class="rscr">${r.avg.toFixed(1)}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--y);">${'★'.repeat(Math.round(r.avg/2))}${'☆'.repeat(5-Math.round(r.avg/2))}</div>
+    </div>`).join('')||emptyMsg('NENHUM RELATÓRIO AINDA');
+
+  const logs=getLogs();
+  document.getElementById('dash-feed').innerHTML=logs.slice(0,12).map(l=>`
+    <div class="fi"><div class="fdot"></div><div class="ftime">${l.time}</div>
+    <div class="ftxt">${l.text}</div></div>`).join('')||emptyMsg('SEM ATIVIDADE');
+
+  document.getElementById('dash-reps').innerHTML=reports.slice(0,4).map(r=>`
+    <div class="panel mb24" style="display:flex;gap:14px;align-items:center;">
+      <div class="scircle"><div class="scn">${r.nota}</div><div class="scl">NOTA</div></div>
+      <div style="flex:1;">
+        <div style="font-family:var(--disp);font-size:15px;font-weight:700;color:#fff;">${r.player}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);">${r.date} · ${r.coach}</div>
+        ${r.pos?`<div style="font-size:12px;color:var(--tx);margin-top:3px;">${r.pos.slice(0,70)}...</div>`:''}
+      </div>
+    </div>`).join('')||emptyMsg('NENHUM RELATÓRIO');
+
+  document.getElementById('dash-alerts').innerHTML=alerts.slice(0,4).map(a=>`
+    <div class="ali ${a.type}">
+      <div style="font-size:18px;">${a.icon}</div>
+      <div style="flex:1;"><div class="alit">${a.title}</div><div class="alitm">${a.time}</div></div>
+    </div>`).join('')||emptyMsg('NENHUM ALERTA');
+}
+
+function emptyMsg(t){return `<div style="text-align:center;padding:28px;font-family:var(--mono);font-size:11px;color:var(--dim2);">${t}</div>`;}
+
+// ════════════════════════════════════
+//  PLAYERS
+// ════════════════════════════════════
+function renderPlayers(){
+  const players=getPlayers(), reports=getReports();
+  const grid=document.getElementById('players-grid');
+  if(!grid)return;
+  grid.innerHTML=players.map(p=>{
+    const pr=reports.filter(r=>r.playerId===p.id);
+    const avg=pr.length?(pr.reduce((s,r)=>s+parseFloat(r.nota),0)/pr.length).toFixed(1):'—';
+    return `<div class="pc" onclick="openPlayer('${p.id}')">
+      <div class="pc-ban">
+        <div class="pcav">${p.nick.slice(0,2).toUpperCase()}</div>
+        <div style="margin-left:12px;">
+          <div style="font-family:var(--disp);font-size:14px;font-weight:700;color:#fff;letter-spacing:2px;">${p.nick}</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--dim2);">${p.role}</div>
+        </div>
+      </div>
+      <div class="pcbod">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+          <span class="badge ${p.line==='Line Principal'?'bb':'bg'}">${p.line}</span>
+          <span class="badge bd">${p.elo}</span>
+          <span class="badge ${p.status==='Ativo'?'bg':'br'}">${p.status}</span>
+        </div>
+        <div class="pcst">
+          <div class="pcs">REPORTS <em>${pr.length}</em></div>
+          <div class="pcs">MÉDIA <em>${avg}</em></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openPlayer(id){
+  const p=getPlayers().find(x=>x.id===id);
+  if(!p)return;
+  const reports=getReports().filter(r=>r.playerId===id);
+  const avg=reports.length?(reports.reduce((s,r)=>s+parseFloat(r.nota),0)/reports.length).toFixed(1):'—';
+  const sparks=reports.slice(0,8).reverse().map(r=>{
+    const h=Math.max(8,Math.round((r.nota/10)*100));
+    return `<div class="spk" style="height:${h}%;" title="${r.nota}"></div>`;
+  }).join('');
+  document.getElementById('ov-pb').innerHTML=`
+    <div style="display:flex;align-items:center;gap:18px;margin-bottom:24px;">
+      <div style="width:60px;height:60px;border:2px solid var(--bhi);display:flex;align-items:center;justify-content:center;
+        font-family:var(--disp);font-size:26px;font-weight:700;color:var(--b);">${p.nick.slice(0,2).toUpperCase()}</div>
+      <div>
+        <div class="mt">${p.nick}</div>
+        <div class="ms">${p.role} · ${p.line} · ${p.elo}</div>
+        <div style="display:flex;gap:7px;"><span class="badge ${p.status==='Ativo'?'bg':'br'}">${p.status}</span><span class="badge bb">${p.line}</span></div>
+      </div>
+      <div class="scircle" style="margin-left:auto;"><div class="scn">${avg}</div><div class="scl">MÉDIA</div></div>
+    </div>
+    <div class="ptabs" id="ptabs-${id}">
+      <button class="ptab active" onclick="switchPTab('${id}','ov',this)">Overview</button>
+      <button class="ptab" onclick="switchPTab('${id}','rp',this)">Relatórios</button>
+      <button class="ptab" onclick="switchPTab('${id}','ed',this)">Editar</button>
+    </div>
+    <div id="ptab-${id}-ov">
+      <div class="slbl" style="font-size:10px;">Evolução</div>
+      <div style="background:var(--ink4);padding:16px;margin-bottom:20px;">
+        <div class="spark" style="height:60px;">${sparks||emptyMsg('SEM DADOS')}</div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim2);margin-top:6px;"><span>Mais antigo</span><span>Mais recente</span></div>
+      </div>
+      <div class="g2">
+        <div>
+          <div class="slbl" style="font-size:10px;">Métricas</div>
+          ${REP_METRICS.map(m=>{
+            const vals=reports.map(r=>r.metrics&&r.metrics[m]||0).filter(v=>v>0);
+            const a2=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):'—';
+            const pct=vals.length?((parseFloat(a2)/10)*100):0;
+            return `<div style="margin-bottom:12px;">
+              <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--dim2);margin-bottom:5px;">
+                <span>${m}</span><span style="color:var(--b);">${a2}</span></div>
+              <div class="sbar"><div class="sfil ${pct>=70?'g':pct>=40?'':''}" style="width:${pct}%;"></div></div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div>
+          <div class="slbl" style="font-size:10px;">Último Relatório</div>
+          ${reports[0]?`<div class="panel">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);margin-bottom:10px;">${reports[0].date} · ${reports[0].coach}</div>
+            ${reports[0].pos?`<div class="mb"><div class="flbl">Positivos</div><div style="font-size:12px;">${reports[0].pos}</div></div>`:''}
+            ${reports[0].neg?`<div><div class="flbl">A melhorar</div><div style="font-size:12px;">${reports[0].neg}</div></div>`:''}
+          </div>`:emptyMsg('NENHUM RELATÓRIO')}
+        </div>
+      </div>
+    </div>
+    <div id="ptab-${id}-rp" style="display:none;">
+      ${reports.length?reports.map(r=>`<div class="nc">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div class="ncd">${r.date}</div><div class="ncn">${r.nota}</div></div>
+        ${r.pos?`<div style="font-size:12px;color:var(--g);margin-bottom:4px;">✅ ${r.pos.slice(0,100)}</div>`:''}
+        ${r.neg?`<div style="font-size:12px;color:var(--r);">⚠ ${r.neg.slice(0,100)}</div>`:''}
+        <div style="font-family:var(--mono);font-size:9px;color:var(--dim2);margin-top:5px;">${r.coach}</div>
+      </div>`).join(''):emptyMsg('NENHUM RELATÓRIO')}
+    </div>
+    <div id="ptab-${id}-ed" style="display:none;">
+      <div class="g2">
+        <div class="mb"><label class="flbl">Nickname</label><input type="text" id="ep-nick" value="${p.nick}"></div>
+        <div class="mb"><label class="flbl">Role</label><select id="ep-role">${['Duelista','Iniciador','Controlador','Sentinela','Flex'].map(r=>`<option ${r===p.role?'selected':''}>${r}</option>`).join('')}</select></div>
+        <div class="mb"><label class="flbl">Line</label><select id="ep-line"><option ${p.line==='Line Principal'?'selected':''}>Line Principal</option><option ${p.line==='Academy'?'selected':''}>Academy</option></select></div>
+        <div class="mb"><label class="flbl">Elo</label><input type="text" id="ep-elo" value="${p.elo}"></div>
+        <div class="mb"><label class="flbl">Status</label><select id="ep-status">${['Ativo','Reserva','Afastado','Ex-player'].map(s=>`<option ${s===p.status?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="mb"><label class="flbl">Tracker</label><input type="text" id="ep-tracker" value="${p.tracker||''}"></div>
+      </div>
+      <div class="mb"><label class="flbl">Observações</label><textarea id="ep-obs">${p.obs||''}</textarea></div>
+      <button class="btn btn-b btn-sm" onclick="savePlayer('${id}')">SALVAR</button>
+    </div>`;
+  document.getElementById('ov-player').classList.add('open');
+}
+
+function switchPTab(id,tab,el){
+  ['ov','rp','ed'].forEach(t=>{const e=document.getElementById(`ptab-${id}-${t}`);if(e)e.style.display=t===tab?'block':'none';});
+  document.querySelectorAll(`#ptabs-${id} .ptab`).forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function savePlayer(id){
+  const players=getPlayers();
+  const idx=players.findIndex(p=>p.id===id);
+  if(idx<0)return;
+  Object.assign(players[idx],{
+    nick:document.getElementById('ep-nick').value,
+    role:document.getElementById('ep-role').value,
+    line:document.getElementById('ep-line').value,
+    elo:document.getElementById('ep-elo').value,
+    status:document.getElementById('ep-status').value,
+    tracker:document.getElementById('ep-tracker').value,
+    obs:document.getElementById('ep-obs').value,
+  });
+  LS.set('players',players);
+  if(useFirebase) await fbSave('players/'+id, players[idx]);
+  addLog('✏️',`<strong>${currentUser.name}</strong> editou <strong>${players[idx].nick}</strong>`);
+  renderPlayers();
+  closeOvD('ov-player');
+}
+
+function openAddPlayer(){
+  document.getElementById('ov-apb').innerHTML=`
+    <div class="mt">NOVO PLAYER</div><div class="ms">Adicionar ao elenco</div>
+    <div class="g2">
+      <div class="mb"><label class="flbl">Nickname</label><input type="text" id="np-nick" placeholder="Ex: Nemo"></div>
+      <div class="mb"><label class="flbl">Role</label><select id="np-role">${['Duelista','Iniciador','Controlador','Sentinela','Flex'].map(r=>`<option>${r}</option>`).join('')}</select></div>
+      <div class="mb"><label class="flbl">Line</label><select id="np-line"><option>Line Principal</option><option>Academy</option></select></div>
+      <div class="mb"><label class="flbl">Elo</label><input type="text" id="np-elo" placeholder="Ex: Imortal 1"></div>
+    </div>
+    <button class="btn btn-b" onclick="addPlayer()">ADICIONAR</button>`;
+  document.getElementById('ov-add-player').classList.add('open');
+}
+
+async function addPlayer(){
+  const nick=document.getElementById('np-nick').value.trim();
+  if(!nick)return;
+  const p={id:'p_'+Date.now(),nick,
+    role:document.getElementById('np-role').value,
+    line:document.getElementById('np-line').value,
+    elo:document.getElementById('np-elo').value,
+    status:'Ativo',tracker:'',obs:''};
+  const players=getPlayers();
+  players.push(p);
+  LS.set('players',players);
+  if(useFirebase) await fbSave('players/'+p.id, p);
+  addLog('➕',`<strong>${currentUser.name}</strong> adicionou o player <strong>${nick}</strong>`);
+  renderPlayers();
+  buildRepForm();
+  closeOvD('ov-add-player');
+}
+
+// ════════════════════════════════════
+//  REPORTS
+// ════════════════════════════════════
+// ════════════════════════════════════
+//  ADVERTÊNCIAS
+// ════════════════════════════════════
+function getAdvs(){return LS.get('advertencias',[]);}
+
+function renderAdvPage(){
+  const advs=getAdvs();
+  const players=getPlayers();
+  const active=advs.filter(a=>a.status!=='Resolvida');
+  const hist=advs;
+
+  const listDiv=document.getElementById('adv-list');
+  const histDiv=document.getElementById('adv-hist');
+  if(!listDiv)return;
+
+  listDiv.innerHTML=active.length?active.map(a=>{
+    const sev=a.severidade==='Grave'?'br':a.severidade==='Moderada'?'by':'bd';
+    return `<div class="panel pred" style="margin-bottom:14px;padding:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-family:var(--disp);font-size:16px;font-weight:700;color:#fff;">${a.player}</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="badge ${sev}">${a.severidade}</span>
+          <span class="badge bd">${a.date}</span>
+        </div>
+      </div>
+      <div style="font-family:var(--disp);font-size:14px;font-weight:600;color:var(--r);letter-spacing:1px;margin-bottom:6px;">${a.motivo}</div>
+      ${a.obs?`<div style="font-size:12px;color:var(--dim2);margin-bottom:10px;">${a.obs}</div>`:''}
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);margin-bottom:10px;">Por: ${a.coach}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-g btn-sm" onclick="advResolve('${a.id}')">✓ RESOLVER</button>
+        <button class="btn btn-r btn-sm" onclick="advDelete('${a.id}')">✕ EXCLUIR</button>
+      </div>
+    </div>`;
+  }).join(''): emptyMsg('NENHUMA ADVERTÊNCIA ATIVA');
+
+  if(histDiv) histDiv.innerHTML=hist.length?hist.map(a=>{
+    const sev=a.severidade==='Grave'?'br':a.severidade==='Moderada'?'by':'bd';
+    const res=a.status==='Resolvida';
+    return `<div style="background:var(--pan);border:1px solid var(--bor);padding:14px;margin-bottom:8px;${res?'opacity:.5;':''}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <div style="font-family:var(--disp);font-size:14px;font-weight:700;color:#fff;">${a.player}</div>
+        <span class="badge ${sev}">${a.severidade}</span>
+        ${res?'<span class="badge bg">RESOLVIDA</span>':''}
+        <span style="margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--dim2);">${a.date}</span>
+      </div>
+      <div style="font-size:12px;color:var(--dim2);">${a.motivo}</div>
+    </div>`;
+  }).join(''): emptyMsg('NENHUMA ADVERTÊNCIA REGISTRADA');
+}
+
+function openAddAdv(){
+  const players=getPlayers();
+  const ovBody = document.createElement('div');
+  ovBody.innerHTML = `
+    <div class="mt">NOVA ADVERTÊNCIA</div>
+    <div class="ms">Registrar ocorrência disciplinar</div>
+    <div class="mb"><label class="flbl">Player</label>
+      <select id="adv-player">${players.map(p=>`<option value="${p.id}">${p.nick}</option>`).join('')}</select></div>
+    <div class="g2 mb">
+      <div><label class="flbl">Severidade</label>
+        <select id="adv-sev"><option>Leve</option><option>Moderada</option><option>Grave</option></select></div>
+      <div><label class="flbl">Data</label>
+        <input type="text" id="adv-date" value="${new Date().toLocaleDateString('pt-BR')}"></div>
+    </div>
+    <div class="mb"><label class="flbl">Motivo</label>
+      <select id="adv-motivo">
+        <option>Falta sem aviso</option>
+        <option>Atraso sem aviso</option>
+        <option>Comportamento tóxico</option>
+        <option>Descumpriu regras internas</option>
+        <option>Falta em campeonato</option>
+        <option>Mensalidade em atraso</option>
+        <option>Falta de comprometimento</option>
+        <option>Outro</option>
+      </select></div>
+    <div class="mb"><label class="flbl">Observação</label>
+      <textarea id="adv-obs" placeholder="Detalhes da ocorrência..."></textarea></div>
+    <button class="btn btn-b" onclick="advSave()">REGISTRAR</button>
+    <span id="adv-msg" style="font-family:var(--mono);font-size:11px;margin-left:14px;display:none;"></span>`;
+
+  document.getElementById('ov-pb').innerHTML = ovBody.innerHTML;
+  document.getElementById('ov-player').classList.add('open');
+}
+
+async function advSave(){
+  const players=getPlayers();
+  const pid=document.getElementById('adv-player')?.value;
+  const p=players.find(x=>x.id===pid);
+  if(!p)return;
+  const adv={
+    id:'adv_'+Date.now(),
+    playerId:pid, player:p.nick,
+    severidade:document.getElementById('adv-sev')?.value||'Leve',
+    motivo:document.getElementById('adv-motivo')?.value||'',
+    obs:document.getElementById('adv-obs')?.value.trim()||'',
+    date:document.getElementById('adv-date')?.value||new Date().toLocaleDateString('pt-BR'),
+    coach:currentUser.name,
+    status:'Ativa', ts:Date.now()
+  };
+  const advs=getAdvs();
+  advs.unshift(adv);
+  LS.set('advertencias',advs);
+  await fbPush('advertencias', adv);
+  addLog('◧',`<strong>${currentUser.name}</strong> registrou advertência para <strong>${p.nick}</strong> — ${adv.motivo}`);
+  addAlert('warn','◧',`Advertência ${adv.severidade}: ${p.nick} — ${adv.motivo}`);
+  sendDiscord(LS.cfg('wh-alerts'),
+    `◧ **ADVERTÊNCIA SAFEZONE**
+
+👤 Player: ${p.nick}
+🔴 Severidade: ${adv.severidade}
+📋 Motivo: ${adv.motivo}
+📝 ${adv.obs||'—'}
+📅 ${adv.date} · ${adv.coach}`);
+  const msg=document.getElementById('adv-msg');
+  if(msg){msg.style.display='inline';msg.style.color='var(--g)';msg.textContent='✓ Registrada.';}
+  setTimeout(()=>{
+    document.getElementById('ov-player').classList.remove('open');
+    renderAdvPage();
+    renderDashboard();
+  },800);
+}
+
+function advResolve(id){
+  const advs=getAdvs();
+  const a=advs.find(x=>x.id===id);
+  if(!a)return;
+  a.status='Resolvida';
+  LS.set('advertencias',advs);
+  addLog('◧',`Advertência de <strong>${a.player}</strong> marcada como resolvida`);
+  renderAdvPage();
+}
+
+function advDelete(id){
+  if(!confirm('Excluir esta advertência?'))return;
+  const advs=getAdvs().filter(x=>x.id!==id);
+  LS.set('advertencias',advs);
+  renderAdvPage();
+}
+
+function buildRepForm(){
+  // kept for compatibility — populates player select if needed
+  const players=getPlayers();
+  const sel=document.getElementById('rep-player');
+  if(sel) sel.innerHTML=players.map(p=>`<option value="${p.id}">${p.nick}</option>`).join('');
+}
+
+async function submitReport(){}
+
+function renderRepHist(){
+  renderAdvPage();
+}
+
+function renderRepHist(){
+  const reports=getReports();
+  const div=document.getElementById('rep-hist');
+  if(!div)return;
+  div.innerHTML=reports.map(r=>`
+    <div class="panel mb24" style="display:flex;gap:14px;align-items:center;">
+      <div class="scircle"><div class="scn">${r.nota}</div><div class="scl">NOTA</div></div>
+      <div style="flex:1;">
+        <div style="font-family:var(--disp);font-size:15px;font-weight:700;color:#fff;">${r.player}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);">${r.date} · ${r.coach}</div>
+        ${r.pos?`<div style="font-size:12px;color:var(--g);margin-top:3px;">✅ ${r.pos.slice(0,80)}</div>`:''}
+        ${r.neg?`<div style="font-size:12px;color:var(--r);">⚠ ${r.neg.slice(0,80)}</div>`:''}
+      </div>
+    </div>`).join('')||emptyMsg('NENHUM RELATÓRIO');
+}
+
+// ════════════════════════════════════
+//  TRYOUTS
+// ════════════════════════════════════
+function switchTryTab(name,el){
+  ['list','agenda','ficha','conversa','guia'].forEach(t=>{
+    const e=document.getElementById('trytab-'+t);
+    if(e)e.style.display=t===name?'block':'none';
+  });
+  document.querySelectorAll('#try-tabs .ptab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if(name==='agenda') renderTryAgenda();
+}
+
+function renderTryList(){
+  const tryouts=getTryouts();
+  const div=document.getElementById('trytab-list');
+  if(!div)return;
+  if(!tryouts.length){div.innerHTML=emptyMsg('NENHUM CANDIDATO REGISTRADO');return;}
+  div.innerHTML=`<table class="tbl">
+    <thead><tr>
+      <th>Candidato</th><th>Elo</th><th>Função</th><th>Score</th><th>Resultado</th><th>Status</th><th></th>
+    </tr></thead><tbody>
+    ${tryouts.map(t=>{
+      const sc=calcScore(t);
+      const res=getResult(sc);
+      return `<tr>
+        <td><strong style="color:#fff;">${t.nick}</strong></td>
+        <td><span class="badge bd">${t.elo||'—'}</span></td>
+        <td>${t.role||'—'}</td>
+        <td><span style="font-family:var(--mono);font-size:13px;color:var(--b);">${sc}/25</span></td>
+        <td><span class="${res.cls}">${res.label}</span></td>
+        <td><span class="badge bd">${t.verdict||'Pendente'}</span></td>
+        <td><button class="btn btn-gh btn-sm" onclick="openTryoutView('${t.id||t.ts}')">VER</button></td>
+      </tr>`;
+    }).join('')}
+    </tbody></table>`;
+}
+
+function calcScore(t){
+  return CRIT_KEYS.reduce((s,k)=>s+(parseInt(t['s_'+k.replace(/[^a-z]/gi,'')])||0),0);
+}
+function getResult(sc){
+  if(sc>=20)return{label:'🔴 PRIME',cls:'div-badge div-prime'};
+  if(sc>=14)return{label:'🔵 ACADEMY',cls:'div-badge div-acad'};
+  if(sc>=9) return{label:'⏳ OBSERVAÇÃO',cls:'div-badge div-obs'};
+  return{label:'❌ REPROVADO',cls:'div-badge div-rep'};
+}
+
+function openNewTryout(){
+  CRIT_KEYS.forEach(k=>{ tryScores[k]=0; });
+  switchTryTab('ficha',document.querySelectorAll('#try-tabs .ptab')[1]);
+  document.querySelectorAll('#try-tabs .ptab')[1].classList.add('active');
+  buildTryFicha();
+  document.getElementById('trytab-ficha').scrollIntoView({behavior:'smooth'});
+}
+
+function buildTryFicha(){
+  const div=document.getElementById('trytab-ficha');
+  if(!div)return;
+  div.innerHTML=`
+  <div class="try-wrap">
+    <div class="try-head">
+      <div class="try-head-title">🦊 FICHA DE AVALIAÇÃO DE CANDIDATO</div>
+      <span class="badge bcy">INTERATIVO</span>
+    </div>
+    <div class="try-body">
+
+      <div class="slbl">Dados do Candidato</div>
+      <div class="g2 mb24">
+        <div><label class="flbl">Nick completo</label><input type="text" id="t-nick" placeholder="Ex: Kaiser#BR1"></div>
+        <div><label class="flbl">Elo Atual</label>
+          <select id="t-elo"><option value="">Selecionar</option>
+            ${['Ferro','Bronze','Prata','Ouro','Platina','Diamante','Ascendente','Imortal','Radiante'].map(e=>`<option>${e}</option>`).join('')}
+          </select>
+        </div>
+        <div><label class="flbl">Função</label>
+          <select id="t-role"><option value="">Selecionar</option>
+            ${['Duelista','Controlador','Iniciador','Sentinela','Flex'].map(r=>`<option>${r}</option>`).join('')}
+          </select>
+        </div>
+        <div><label class="flbl">Avaliado por</label><input type="text" id="t-eval" value="${currentUser?.name||''}"></div>
+        <div><label class="flbl">Data</label><input type="date" id="t-date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div><label class="flbl">Disponibilidade</label><input type="text" id="t-avail" placeholder="Ex: seg-sex 19h+"></div>
+      </div>
+
+      <div class="slbl">Critérios de Avaliação — 1 a 5</div>
+      <div class="crit-grid">
+        ${CRIT_KEYS.map(k=>{
+          const key=k.replace(/[^a-z]/gi,'');
+          return `<div class="crit-card" ${k==='Atitude & Comprometimento'?'style="grid-column:1/-1;"':''}>
+            <div class="crit-name">${k}</div>
+            <div class="score-opts" id="opts-${key}">
+              ${[1,2,3,4,5].map(n=>`<button class="sopt s${n}" onclick="setScore('${k}',${n},this)">${n}</button>`).join('')}
+            </div>
+            <div class="score-desc" id="desc-${key}">Selecione uma nota para ver a descrição.</div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="mb"><label class="flbl">Observações Gerais</label>
+        <textarea id="t-obs" placeholder="Pontos fortes, fraquezas, comportamento durante o teste..."></textarea></div>
+
+      <div class="mb"><label class="flbl">Veredicto Final</label>
+        <select id="t-verdict">
+          <option value="">— Selecionar —</option>
+          <option value="PRIME">✅ Aprovado — PRIME</option>
+          <option value="ACADEMY">✅ Aprovado — ACADEMY</option>
+          <option value="OBSERVAÇÃO">⏳ Em Observação</option>
+          <option value="REPROVADO">❌ Reprovado</option>
+        </select>
+      </div>
+
+      <!-- RESULT BOX -->
+      <div class="res-box">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);letter-spacing:3px;margin-bottom:6px;">PONTUAÇÃO</div>
+        <div class="res-num" id="t-total">0</div>
+        <div class="res-max">de 25 pontos</div>
+        <div class="rbar-wrap"><div class="rbar" id="t-rbar" style="width:0%"></div></div>
+        <div id="t-badge" class="div-badge div-rep">—</div>
+        <div class="bkdown" id="t-bkdown"></div>
+        <div class="print-box" id="t-print"></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;">
+          <button class="btn btn-b btn-sm" onclick="tryGenReport()">GERAR RELATÓRIO</button>
+          <button class="btn btn-gh btn-sm" onclick="tryCopyReport()">📋 COPIAR</button>
+          <button class="btn btn-g btn-sm" onclick="trySubmit()">✓ SALVAR CANDIDATO</button>
+          <button class="btn btn-r btn-sm" onclick="tryReset()">LIMPAR</button>
+        </div>
+        <div id="try-save-msg" style="font-family:var(--mono);font-size:11px;margin-top:10px;display:none;"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function setScore(crit,val,el){
+  tryScores[crit]=val;
+  const key=crit.replace(/[^a-z]/gi,'');
+  document.querySelectorAll(`#opts-${key} .sopt`).forEach((b,i)=>{
+    b.className=`sopt s${i+1}${i+1<=val?' sel':''}`;
+  });
+  const descs=CRIT_SCORES[crit]||[];
+  const desc=document.getElementById('desc-'+key);
+  if(desc) desc.textContent=descs[val-1]||'';
+  updateTryResult();
+}
+
+function updateTryResult(){
+  const total=Object.values(tryScores).reduce((s,v)=>s+v,0);
+  const pct=(total/25)*100;
+  document.getElementById('t-total').textContent=total;
+  document.getElementById('t-rbar').style.width=pct+'%';
+  const res=getResult(total);
+  const badge=document.getElementById('t-badge');
+  badge.className='div-badge '+res.cls.replace('div-badge ','');
+  badge.textContent=res.label;
+  const bkdown=document.getElementById('t-bkdown');
+  bkdown.innerHTML=`<div class="slbl" style="font-size:10px;margin-top:4px;">Breakdown</div>
+    ${CRIT_KEYS.map(k=>`<div class="bkrow">
+      <div class="bklbl">${k}</div>
+      <div class="bkval" style="color:${tryScores[k]>=4?'var(--g)':tryScores[k]>=3?'var(--b)':tryScores[k]>=2?'var(--y)':'var(--r);'}">${tryScores[k]||0}</div>
+    </div>`).join('')}`;
+}
+
+function tryGenReport(){
+  const nick=document.getElementById('t-nick')?.value.trim()||'—';
+  const elo=document.getElementById('t-elo')?.value||'—';
+  const role=document.getElementById('t-role')?.value||'—';
+  const eval_=document.getElementById('t-eval')?.value||'—';
+  const date=document.getElementById('t-date')?.value||'—';
+  const obs=document.getElementById('t-obs')?.value.trim()||'—';
+  const verdict=document.getElementById('t-verdict')?.value||'—';
+  const total=Object.values(tryScores).reduce((s,v)=>s+v,0);
+  const res=getResult(total);
+  const lines=CRIT_KEYS.map(k=>`${k}: ${tryScores[k]||0}/5`).join('\n');
+  const txt=`🦊 SAFEZONE — FICHA DE TRYOUT\n\nCandidato: ${nick}\nElo: ${elo} | Função: ${role}\nAvaliado por: ${eval_} | Data: ${date}\n\n━━━━━━━━━━\nCRITÉRIOS\n${lines}\n\nPONTUAÇÃO TOTAL: ${total}/25\nRESULTADO: ${res.label}\nVEREDITO: ${verdict||'Não definido'}\n━━━━━━━━━━\n\nOBSERVAÇÕES:\n${obs}`;
+  const el=document.getElementById('t-print');
+  el.textContent=txt;el.style.display='block';
+}
+
+function tryCopyReport(){
+  const el=document.getElementById('t-print');
+  if(!el.textContent){tryGenReport();}
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    const msg=document.getElementById('try-save-msg');
+    msg.style.display='block';msg.style.color='var(--g)';msg.textContent='✓ Relatório copiado!';
+    setTimeout(()=>msg.style.display='none',2000);
+  });
+}
+
+async function trySubmit(){
+  const nick=document.getElementById('t-nick')?.value.trim();
+  if(!nick){alert('Preencha o nick do candidato.');return;}
+  const t={
+    id:'t_'+Date.now(), ts:Date.now(),
+    nick, elo:document.getElementById('t-elo')?.value||'',
+    role:document.getElementById('t-role')?.value||'',
+    eval:document.getElementById('t-eval')?.value||'',
+    date:document.getElementById('t-date')?.value||'',
+    avail:document.getElementById('t-avail')?.value||'',
+    obs:document.getElementById('t-obs')?.value.trim()||'',
+    verdict:document.getElementById('t-verdict')?.value||'',
+  };
+  CRIT_KEYS.forEach(k=>{ t['s_'+k.replace(/[^a-z]/gi,'')]=tryScores[k]||0; });
+  const total=Object.values(tryScores).reduce((s,v)=>s+v,0);
+  const res=getResult(total);
+
+  const tryouts=getTryouts();
+  tryouts.unshift(t);
+  LS.set('tryouts',tryouts);
+  await fbPush('tryouts', t);
+
+  addLog('🎯',`<strong>${currentUser.name}</strong> avaliou <strong>${nick}</strong> — ${res.label}`);
+  addAlert('info','🎯',`Novo tryout: ${nick} — ${res.label} (${total}/25)`);
+
+  const mLines=CRIT_KEYS.map(k=>`${k}: ${tryScores[k]||0}`).join('\n');
+  sendDiscord(LS.cfg('wh-tryouts'),
+    `🎯 **TRYOUT SAFEZONE**\n\n👤 ${nick} | ${t.elo} | ${t.role}\n👨‍🏫 Avaliado por: ${t.eval}\n\n${mLines}\n\n📊 ${total}/25 — ${res.label}\n\n📝 ${t.obs||'—'}`);
+
+  const msg=document.getElementById('try-save-msg');
+  msg.style.display='block';msg.style.color='var(--g)';msg.textContent='✓ Candidato salvo com sucesso!';
+  setTimeout(()=>msg.style.display='none',3000);
+  if(!useFirebase)renderTryList();
+}
+
+function tryReset(){
+  CRIT_KEYS.forEach(k=>{tryScores[k]=0;});
+  buildTryFicha();
+}
+
+function openTryoutView(id){
+  const tryouts=getTryouts();
+  const t=tryouts.find(x=>(x.id||String(x.ts))===String(id));
+  if(!t)return;
+  const total=CRIT_KEYS.reduce((s,k)=>s+(t['s_'+k.replace(/[^a-z]/gi,'')]||0),0);
+  const res=getResult(total);
+  document.getElementById('ov-tvb').innerHTML=`
+    <div class="mt">${t.nick}</div>
+    <div class="ms">${t.role||'—'} · ${t.elo||'—'} · ${t.date||'—'} · ${t.eval||'—'}</div>
+    <div style="text-align:center;margin:16px 0;">
+      <div class="res-num" style="font-size:42px;">${total}</div>
+      <div class="res-max">de 25 pontos</div>
+      <div class="${'div-badge '+res.cls.replace('div-badge ','')}">${res.label}</div>
+    </div>
+    <div class="slbl" style="font-size:10px;">Critérios</div>
+    ${CRIT_KEYS.map(k=>{
+      const val=t['s_'+k.replace(/[^a-z]/gi,'')]||0;
+      const pct=(val/5)*100;
+      return `<div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--dim2);margin-bottom:5px;">
+          <span>${k}</span><span style="color:${val>=4?'var(--g)':val>=3?'var(--b)':val>=2?'var(--y)':'var(--r)'};">${val}/5</span></div>
+        <div class="sbar"><div class="sfil ${val>=4?'g':val>=3?'':val>=2?'y':'r'}" style="width:${pct}%;"></div></div>
+      </div>`;
+    }).join('')}
+    ${t.obs?`<div class="panel" style="margin-top:14px;"><div class="flbl">Observações</div><div style="font-size:13px;">${t.obs}</div></div>`:''}
+    ${t.avail?`<div style="font-family:var(--mono);font-size:10px;color:var(--dim2);margin-top:10px;">Disponibilidade: ${t.avail}</div>`:''}
+    <div style="margin-top:20px;font-family:var(--mono);font-size:10px;color:var(--dim2);">Veredicto: ${t.verdict||'Não definido'}</div>`;
+  document.getElementById('ov-tryout-view').classList.add('open');
+}
+
+// ── CONVERSA FINAL ──
+function buildTryConversa(){
+  const div=document.getElementById('trytab-conversa');
+  if(!div)return;
+  const blocos=[
+    {
+      title:'PERFIL E MOTIVAÇÃO', color:'yl', label:'Bloco 1',
+      qs:[
+        {q:'"Por que você quer entrar na SafeZone especificamente?"',tip:'Resposta fraca: "quero evoluir", "achei legal". <strong>Resposta forte:</strong> menciona estrutura, coach, desenvolvimento — mostra que pesquisou.'},
+        {q:'"O que te fez escolher essa função principal?"',tip:'Revela maturidade. Quem escolheu por impacto coletivo é diferente de quem escolheu porque não sabia jogar de duelista.'},
+        {q:'"Qual foi o maior erro que você cometeu num jogo recentemente?"',tip:'Pergunta que elimina ego. <strong>Red flag:</strong> não consegue responder ou culpa o time. <strong>Positivo:</strong> responde com clareza e já sabe o que deveria ter feito.'},
+      ]
+    },
+    {
+      title:'CONHECIMENTO TÉCNICO', color:'', label:'Bloco 2',
+      qs:[
+        {q:'"Você joga de qual agente? Por que esse e não outro?"',tip:'Quem conhece a função de verdade sabe explicar a filosofia do agente. Resposta vaga indica que só jogou o que estava na meta.'},
+        {q:'"Me explica como você pensa num round de ataque. Do início até a execução."',tip:'<strong>A pergunta mais importante do bloco.</strong> Você quer ouvir: leitura de informação, timing de util, coordenação. "Rushamos" = nível baixo de leitura.'},
+        {q:'"Em qual mapa você se sente mais confortável e por quê?"',tip:'Resposta específica com linhas de smoke, setups defensivos ou geometria indica domínio técnico real.'},
+      ]
+    },
+    {
+      title:'COMPROMETIMENTO E FIT', color:'cy', label:'Bloco 3',
+      qs:[
+        {q:'"O que você acha que precisa melhorar agora pra subir de elo?"',tip:'Autoconsciência é tudo. <strong>Red flag imediata:</strong> "nada, só preciso de time bom." Quem responde com clareza já tem mentalidade de atleta.'},
+        {q:'"Como você reage quando o coach aponta um erro seu?"',tip:'Você quer ouvir: "aceito bem, prefiro saber do que repetir o erro". Qualquer sinal de defensividade é red flag.'},
+        {q:'"Você consegue manter presença nos treinos semanais e nas aulas com coach?"',tip:'Pergunta direta sobre comprometimento. A resposta define se ele entra na Academy ou fica como observação.'},
+      ]
+    },
+  ];
+  div.innerHTML=`
+    ${blocos.map(b=>`
+      <div class="panel p${b.color||'blue'} mb24">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);letter-spacing:2px;margin-bottom:4px;">${b.label}</div>
+        <div class="slbl ${b.color}" style="margin-bottom:16px;">${b.title}</div>
+        ${b.qs.map(q=>`<div class="qblock ${b.color} mb24">
+          <div class="qtxt">${q.q}</div>
+          <div class="qtip">${q.tip}</div>
+        </div>`).join('')}
+      </div>`).join('')}
+    <div class="panel pred">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);letter-spacing:2px;margin-bottom:8px;">FRASE DE FECHAMENTO</div>
+      <div style="background:rgba(255,61,61,0.06);border:1px solid rgba(255,61,61,0.2);border-left:3px solid var(--r);padding:16px 18px;font-family:var(--disp);font-size:16px;color:#fff;letter-spacing:.5px;line-height:1.6;">
+        "A SafeZone não é só um time pra jogar ranked. É uma estrutura séria com coach, treinos e cobrança real. Você tá pronto pra isso?"
+      </div>
+      <p style="font-size:12px;color:var(--dim2);margin-top:12px;">A reação a essa frase diz mais do que qualquer resposta técnica.</p>
+    </div>`;
+}
+
+// ── GUIA DE CRITÉRIOS ──
+function buildTryGuia(){
+  const div=document.getElementById('trytab-guia');
+  if(!div)return;
+  div.innerHTML=`
+    <div class="panel mb24">
+      <div class="slbl">Formato do Teste</div>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        ${[
+          ['1','1–2 Partidas Ranked Juntos','O formato mais real de avaliação. Você observa mecânica, visão de jogo, comunicação e domínio da função ao mesmo tempo, em situação de pressão real.'],
+          ['2','1v1 Custom (se necessário)','Complemento opcional pra isolar a mecânica pura se ficou na dúvida após a ranked. 10 duelos no Range ou em Bind. Não substitui a ranked.'],
+        ].map(([n,t,d])=>`<div style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--bor);">
+          <div style="width:28px;height:28px;border:1px solid var(--b);display:flex;align-items:center;justify-content:center;
+            font-family:var(--disp);font-size:13px;font-weight:700;color:var(--b);flex-shrink:0;">${n}</div>
+          <div><div style="font-family:var(--disp);font-size:15px;font-weight:700;color:#fff;letter-spacing:.5px;margin-bottom:4px;">${t}</div>
+            <div style="font-size:12px;color:var(--dim2);line-height:1.6;">${d}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="crit-grid" style="margin-bottom:20px;">
+      ${CRIT_KEYS.map(k=>`
+        <div class="crit-card" ${k==='Atitude & Comprometimento'?'style="grid-column:1/-1;"':''}>
+          <div class="crit-name">${k}</div>
+          ${(CRIT_SCORES[k]||[]).map((desc,i)=>`
+            <div style="display:flex;gap:8px;margin-bottom:6px;font-size:12px;color:var(--dim2);align-items:flex-start;">
+              <span style="font-family:var(--disp);font-size:14px;font-weight:700;min-width:16px;
+                color:${i===0?'var(--r)':i===1?'var(--o)':i===2?'var(--y)':i===3?'var(--b)':'var(--g)'};">${i+1}</span>
+              <span>${desc}</span>
+            </div>`).join('')}
+        </div>`).join('')}
+    </div>
+    <div class="panel pred">
+      <div class="slbl rd">Red Flags — Eliminar Imediatamente</div>
+      ${[
+        'Usa toda a util no eco round sem necessidade',
+        'Smokeia pra si mesmo, não pro time',
+        'Morre sozinho em posição avançada sem razão',
+        'Silêncio total na call durante o teste',
+        'Chat tóxico ou demora a voltar ao foco após erros',
+        'Não aceita feedback ou culpa o time por tudo',
+        'Faz perguntas que mostram que não pesquisou nada sobre a SafeZone',
+      ].map(f=>`<div class="rflag">${f}</div>`).join('')}
+    </div>`;
+}
+
+// ════════════════════════════════════
+//  RANKINGS
+// ════════════════════════════════════
+function buildRanking(){
+  const players=getPlayers(), reports=getReports();
+  return players.map(p=>{
+    const pr=reports.filter(r=>r.playerId===p.id);
+    const avg=pr.length?(pr.reduce((s,r)=>s+parseFloat(r.nota),0)/pr.length):0;
+    return{...p,avg,count:pr.length};
+  }).filter(p=>p.count>0).sort((a,b)=>b.avg-a.avg);
+}
+
+function renderRankings(){
+  const ranking=buildRanking();
+  const rl=document.getElementById('rank-list');
+  if(!rl)return;
+  rl.innerHTML=ranking.map((r,i)=>`
+    <div class="rrow">
+      <div class="rpos ${i===0?'p1':i===1?'p2':i===2?'p3':''}">${i+1}</div>
+      <div style="flex:1;">
+        <div class="rnam">${r.nick}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--dim2);">${r.line} · ${r.count} rel.</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="rscr" style="font-size:22px;">${r.avg.toFixed(1)}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--y);">${'★'.repeat(Math.round(r.avg/2))}${'☆'.repeat(5-Math.round(r.avg/2))}</div>
+      </div>
+    </div>`).join('')||emptyMsg('SEM DADOS SUFICIENTES');
+
+  const rc=document.getElementById('rank-chart');
+  if(!rc)return;
+  const reports=getReports();
+  const players=getPlayers();
+  rc.innerHTML=players.map(p=>{
+    const pr=reports.filter(r=>r.playerId===p.id).slice(0,7).reverse();
+    if(!pr.length)return '';
+    const avg=(pr.reduce((s,r)=>s+parseFloat(r.nota),0)/pr.length).toFixed(1);
+    return `<div class="panel mb24" style="display:flex;align-items:center;gap:14px;">
+      <div style="font-family:var(--disp);font-size:14px;font-weight:700;color:#fff;width:80px;">${p.nick}</div>
+      <div class="spark" style="flex:1;height:38px;">
+        ${pr.map(r=>`<div class="spk" style="height:${Math.max(6,Math.round((r.nota/10)*100))}%;"></div>`).join('')}
+      </div>
+      <div style="font-family:var(--disp);font-size:20px;font-weight:700;color:var(--b);min-width:36px;text-align:right;">${avg}</div>
+    </div>`;
+  }).join('')||emptyMsg('SEM DADOS');
+}
+
+// ════════════════════════════════════
+//  ALERTS
+// ════════════════════════════════════
+function renderAlerts(){
+  const alerts=getAlerts();
+  const div=document.getElementById('alerts-list');
+  if(!div)return;
+  div.innerHTML=alerts.length?alerts.map(a=>`
+    <div class="ali ${a.type}">
+      <div style="font-size:18px;">${a.icon}</div>
+      <div style="flex:1;"><div class="alit">${a.title}</div><div class="alitm">${a.time}</div></div>
+      <button class="btn btn-sm" style="background:none;color:var(--dim2);border:1px solid var(--bor);"
+        onclick="dismissAlert('${a.id||a._fbkey}')">✕</button>
+    </div>`).join(''):emptyMsg('NENHUM ALERTA ATIVO');
+}
+async function dismissAlert(id){
+  let alerts=getAlerts();
+  const t=alerts.find(a=>String(a.id)===String(id)||a._fbkey===id);
+  if(t?._fbkey) await fbDel('alerts/'+t._fbkey);
+  alerts=alerts.filter(a=>String(a.id)!==String(id)&&a._fbkey!==id);
+  LS.set('alerts',alerts);
+  updateAbadge();
+  renderAlerts();
+}
+function updateAbadge(){
+  const n=getAlerts().length;
+  document.getElementById('abadge').textContent=n;
+  document.getElementById('st-a').textContent=n;
+}
+
+// ════════════════════════════════════
+//  LOGS
+// ════════════════════════════════════
+function renderLogs(){
+  const logs=getLogs();
+  const div=document.getElementById('logs-list');
+  if(!div)return;
+  div.innerHTML=logs.map(l=>`
+    <div class="logi">
+      <div class="logt">${l.date} ${l.time}</div>
+      <div class="logi-ico">${l.icon}</div>
+      <div class="logx">${l.text}</div>
+    </div>`).join('')||emptyMsg('NENHUMA ATIVIDADE');
+}
+
+// ════════════════════════════════════
+//  SETTINGS
+// ════════════════════════════════════
+function loadSettings(){
+  ['login','reports','tryouts','alerts'].forEach(k=>{
+    const el=document.getElementById('wh-'+k);
+    if(el)el.value=LS.cfg('wh-'+k)||'';
+  });
+  const saved=LS.cfg('fb-cfg');
+  if(saved){
+    const el2=document.getElementById('fb-json-settings');
+    if(el2)el2.value=saved;
+    document.getElementById('fb-st2').textContent='Firebase configurado anteriormente.';
+  }
+}
+function saveSettings(){
+  ['login','reports','tryouts','alerts'].forEach(k=>{
+    const el=document.getElementById('wh-'+k);
+    if(el)LS.cfg('wh-'+k,el.value.trim());
+  });
+  const ok=document.getElementById('cfg-ok');
+  ok.style.display='inline';
+  setTimeout(()=>ok.style.display='none',2500);
+}
+function clearLocal(){
+  ['reports','tryouts','logs','alerts'].forEach(k=>localStorage.removeItem('sz_'+k));
+  renderAll();
+}
+
+// ════════════════════════════════════
+//  SCRIMS SYSTEM
+// ════════════════════════════════════
+let scrimsOffset = 0;
+let scrimsActive = null; // active day key
+let scrimsRows   = [];   // [{map,result}]
+let scrimsEnergia = null;
+
+const SCRIM_MAPS = ['Ascent','Bind','Breeze','Fracture','Haven','Icebox','Lotus','Pearl','Split','Sunset','Abyss'];
+const SCRIM_ENERGIA = ['🔥 Ótima','✅ Boa','😐 Neutra','😤 Tensa','💀 Crítica'];
+const SCRIM_CLIMA   = ['Muito positivo','Positivo','Neutro','Tenso','Crítico'];
+const SCRIM_DOW     = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+
+function scrimsGetWeek(off){
+  const now=new Date(), day=now.getDay();
+  const diff=day===0?-6:1-day;
+  const mon=new Date(now); mon.setDate(now.getDate()+diff+off*7);
+  return Array.from({length:7},(_,i)=>{ const d=new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+function scrimsFmt(d){return d.toISOString().slice(0,10);}
+function scrimsFmtPT(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
+function scrimsFmtFull(d){return d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
+function scrimsIsToday(d){return scrimsFmt(d)===scrimsFmt(new Date());}
+function scrimsIsFuture(d){const t=new Date();t.setHours(0,0,0,0);return d>t;}
+
+function scrimsGetAll(){return LS.get('scrim_reports',[]);}
+function scrimsGetDay(key){return scrimsGetAll().find(r=>r.key===key)||null;}
+
+function scrimsInit(){
+  const days=scrimsGetWeek(scrimsOffset);
+  const mon=days[0],sun=days[6];
+  document.getElementById('scrims-week-label').textContent=
+    `Semana ${scrimsFmtPT(mon)} – ${scrimsFmtPT(sun)} · ${mon.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}).toUpperCase()}`;
+  const grid=document.getElementById('scrims-cal-grid');
+  if(!grid)return;
+  grid.innerHTML='';
+  days.forEach((d,i)=>{
+    const key=scrimsFmt(d);
+    const rep=scrimsGetDay(key);
+    const today=scrimsIsToday(d), future=scrimsIsFuture(d)&&!today, sun=i===6;
+    const wl=rep?.scrims||[];
+    const w=wl.filter(s=>s.result==='W').length, l=wl.filter(s=>s.result==='L').length;
+
+    let statusTxt='', statusCls='';
+    if(rep){statusTxt=sun?'SEMANAL':'OK';statusCls=sun?'bcy':'bg';}
+    else if(today){statusTxt='HOJE';statusCls='bb';}
+    else if(future){statusTxt='—';statusCls='bd';}
+    else{statusTxt='PEND.';statusCls='by';}
+
+    const card=document.createElement('div');
+    card.style.cssText='background:var(--pan);border:1px solid var(--bor);padding:14px;cursor:pointer;transition:all .2s;position:relative;min-height:110px;display:flex;flex-direction:column;';
+    if(today) card.style.borderColor='rgba(30,144,255,0.4)';
+    if(scrimsActive===key) card.style.borderColor='var(--b)';
+    card.innerHTML=`
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+        <div>
+          <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--dim2);">${SCRIM_DOW[i]}</div>
+          <div style="font-family:var(--disp);font-size:24px;font-weight:700;color:#fff;line-height:1;">${d.getDate()}</div>
+        </div>
+        <span class="badge ${statusCls}" style="font-size:8px;">${statusTxt}</span>
+      </div>
+      <div style="margin-top:auto;">
+        ${rep&&rep.scrims?.length?`<div style="font-family:var(--mono);font-size:10px;color:var(--dim2);">${w}W <span style="color:var(--r);">${l}L</span> · ${wl.length} scrim(s)</div>`:''}
+        ${rep?.energia?`<div style="font-family:var(--mono);font-size:9px;color:var(--dim2);margin-top:3px;">${SCRIM_ENERGIA[rep.energia-1]}</div>`:''}
+        ${(rep?.players||[]).filter(p=>p.risco).length?`<div style="font-family:var(--mono);font-size:9px;color:var(--r);margin-top:3px;">⚑ Risco</div>`:''}
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:${rep?(sun?'var(--cy)':'var(--g)'):today?'var(--b)':future?'var(--bor)':'rgba(255,214,0,0.4)'};"></div>`;
+    if(!future||(future&&rep)){
+      card.onclick=()=>{
+        scrimsActive=key;
+        scrimsRows=[];scrimsEnergia=null;
+        scrimsInit();
+        if(rep) scrimsRenderView(rep,key,sun);
+        else scrimsRenderForm(key,sun);
+        setTimeout(()=>document.getElementById('scrims-form-area').scrollIntoView({behavior:'smooth',block:'start'}),80);
+      };
+    }
+    grid.appendChild(card);
+  });
+}
+
+function scrimsShiftWeek(d){scrimsOffset+=d;scrimsActive=null;scrimsInit();document.getElementById('scrims-form-area').innerHTML='';}
+function scrimsGoToday(){scrimsOffset=0;scrimsActive=null;scrimsInit();document.getElementById('scrims-form-area').innerHTML='';}
+
+function scrimsPlayerBlock(p, pfx){
+  return `<div style="background:rgba(30,144,255,0.03);border:1px solid var(--bor);padding:14px;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div>
+        <div style="font-family:var(--disp);font-size:15px;font-weight:700;color:#fff;letter-spacing:1px;">${p.nick}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--dim2);">${p.role} · ${p.line}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;gap:3px;" id="${pfx}stars-${p.id}">
+          ${[1,2,3,4,5].map(n=>`<button style="width:22px;height:22px;border:1px solid var(--bor);background:none;font-family:var(--mono);font-size:11px;color:var(--dim2);cursor:pointer;transition:all .15s;" onclick="scrimsSetStar('${p.id}',${n},this,'${pfx}')">${n}</button>`).join('')}
+        </div>
+        <div id="${pfx}rbox-${p.id}" style="width:16px;height:16px;border:1px solid var(--bor);display:flex;align-items:center;justify-content:center;font-size:9px;cursor:pointer;transition:all .2s;" onclick="scrimsToggleRisk('${p.id}','${pfx}')">⚑</div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--dim2);">RISCO</span>
+      </div>
+    </div>
+    <div class="g3">
+      <div><label class="flbl">Status</label>
+        <select id="${pfx}status-${p.id}"><option value="">—</option>${['Ótimo','Bom','Regular','Alerta','Crítico'].map(s=>`<option>${s}</option>`).join('')}</select>
+      </div>
+      <div style="grid-column:span 2;"><label class="flbl">Obs rápida</label>
+        <input type="text" id="${pfx}obs-${p.id}" placeholder="Breve observação...">
+      </div>
+    </div>
+  </div>`;
+}
+
+function scrimsRenderForm(key,isSun){
+  const d = new Date(key+'T12:00:00');
+  scrimsRows = [{map:'',result:'W'}];
+  const fa = document.getElementById('scrims-form-area');
+  const players = getPlayers();
+  const pfx = 'scp-';
+
+  // Weekly: compile previous days
+  let compiledHtml = '';
+  if(isSun){
+    const days = scrimsGetWeek(scrimsOffset);
+    const compiled = days.slice(0,6).map(dd=>{
+      const r = scrimsGetDay(scrimsFmt(dd));
+      return r&&r.type==='daily'?r:null;
+    }).filter(Boolean);
+    if(compiled.length){
+      const totalW = compiled.reduce((s,r)=>(r.scrims||[]).filter(x=>x.result==='W').length+s,0);
+      const totalL = compiled.reduce((s,r)=>(r.scrims||[]).filter(x=>x.result==='L').length+s,0);
+      compiledHtml = `<div style="background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.2);padding:16px;margin-bottom:24px;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--cy);letter-spacing:2px;margin-bottom:10px;">COMPILADO AUTOMÁTICO — ${compiled.length} DIA(S) COM RELATÓRIO</div>
+        <div style="font-family:var(--disp);font-size:15px;font-weight:700;color:#fff;margin-bottom:10px;">Total da semana: ${totalW}W / ${totalL}L · ${totalW+totalL} scrim(s)</div>
+        ${compiled.map(r=>{
+          const w=(r.scrims||[]).filter(x=>x.result==='W').length;
+          const l=(r.scrims||[]).filter(x=>x.result==='L').length;
+          return `<div style="font-family:var(--mono);font-size:10px;color:var(--dim2);padding:6px 10px;border-left:2px solid var(--cy);margin-bottom:5px;">
+            <span style="color:var(--tx);">${r.dateLabel||r.key}</span> — ${w}W/${l}L — ${r.energia?SCRIM_ENERGIA[r.energia-1]:'—'}
+            ${r.foco?` — ${r.foco.slice(0,50)}...`:''}
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+  }
+
+  const weeklyExtra = isSun ? `
+    <div class="slbl" style="font-size:10px;${isSun?'color:var(--cy);':''}">Resumo da Semana</div>
+    <div class="g2 mb24">
+      <div><label class="flbl">Resumo geral</label><textarea id="sc-resumo" placeholder="Como foi a semana? Evolução, clima, resultados..."></textarea></div>
+      <div>
+        <label class="flbl">Metas cumpridas</label><textarea id="sc-metas-cump" placeholder="O que foi atingido..."></textarea>
+      </div>
+    </div>
+    <div class="g2 mb24">
+      <div><label class="flbl">Metas da próxima semana</label><textarea id="sc-metas-prox" placeholder="Objetivos mensuráveis para a próxima semana..."></textarea></div>
+      <div><label class="flbl">Recomendação para a direção</label><textarea id="sc-dir" placeholder="Algo que a direção precisa saber ou decidir..."></textarea></div>
+    </div>` : '';
+
+  fa.innerHTML = `
+  <div style="background:var(--ink3);border:1px solid var(--bhi);padding:32px;position:relative;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${isSun?'var(--cy),var(--b)':'var(--b),var(--cy)'}); background-size:200%;animation:shimmer 3s infinite;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <div>
+        <div style="font-family:var(--disp);font-size:20px;font-weight:700;letter-spacing:3px;color:${isSun?'var(--cy)':'#fff'};">
+          ${isSun?'RELATÓRIO SEMANAL':'RELATÓRIO DIÁRIO'}
+        </div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);margin-top:3px;">${scrimsFmtFull(d).toUpperCase()}</div>
+      </div>
+      <button style="font-family:var(--mono);font-size:18px;color:var(--dim2);background:none;border:none;cursor:pointer;" onclick="document.getElementById('scrims-form-area').innerHTML='';scrimsActive=null;scrimsInit();">✕</button>
+    </div>
+
+    ${compiledHtml}
+    ${weeklyExtra}
+
+    <div class="slbl" style="font-size:10px;">Scrims do ${isSun?'Domingo':'Dia'}</div>
+    <div id="scrim-rows-wrap"></div>
+    <button class="btn btn-gh btn-sm" style="width:100%;margin-bottom:20px;" onclick="scrimsAddRow()">+ ADICIONAR SCRIM</button>
+
+    <div class="slbl" style="font-size:10px;">Foco do Treino</div>
+    <div class="g2 mb24">
+      <div><label class="flbl">${isSun?'Ponto principal da semana':'O que foi treinado'}</label>
+        <textarea id="sc-foco" placeholder="${isSun?'Tema central da semana...':'Tema central, estratégias, exercícios...'}"></textarea></div>
+      <div><label class="flbl">${isSun?'O que mudar na próxima semana':'A corrigir amanhã'}</label>
+        <textarea id="sc-corr" placeholder="${isSun?'Ajustes prioritários...':'Erros recorrentes, ajustes prioritários...'}"></textarea></div>
+    </div>
+
+    <div class="slbl" style="font-size:10px;">Clima & Energia</div>
+    <div class="g2 mb24">
+      <div><label class="flbl">Energia do treino</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="sc-energia-opts">
+          ${SCRIM_ENERGIA.map((e,i)=>`<button style="font-family:var(--mono);font-size:10px;padding:6px 12px;border:1px solid var(--bor);background:none;color:var(--dim2);cursor:pointer;transition:all .15s;letter-spacing:1px;" onclick="scrimsSelEnergia(${i+1},this)">${e}</button>`).join('')}
+        </div>
+      </div>
+      <div><label class="flbl">Clima do grupo</label>
+        <select id="sc-clima"><option value="">— Selecionar —</option>${SCRIM_CLIMA.map(c=>`<option>${c}</option>`).join('')}</select>
+      </div>
+    </div>
+
+    <div class="slbl" style="font-size:10px;">${isSun?'Avaliação Individual Completa (Semana)':'Avaliação Rápida dos Players'}</div>
+    <div id="scrim-players-wrap">
+      ${players.map(p=>scrimsPlayerBlock(p, pfx)).join('')}
+    </div>
+
+    ${isSun?`
+    <div class="slbl" style="font-size:10px;color:var(--cy);">Ranking da Semana</div>
+    <div style="background:rgba(30,144,255,0.03);border:1px solid var(--bor);padding:14px;margin-bottom:20px;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);margin-bottom:10px;">As notas que você der aqui serão usadas no ranking e na média de cada player.</div>
+    </div>`:''}
+
+    <div class="slbl" style="font-size:10px;">Destaques</div>
+    <div class="g2 mb24">
+      <div><label class="flbl">Positivos ${isSun?'da semana':'do dia'}</label><textarea id="sc-pos" placeholder="O que funcionou bem..."></textarea></div>
+      <div><label class="flbl">Negativos ${isSun?'da semana':'do dia'}</label><textarea id="sc-neg" placeholder="O que precisa melhorar..."></textarea></div>
+    </div>
+
+    <div style="background:rgba(30,144,255,0.03);border:1px solid var(--bor);padding:16px;margin-bottom:20px;">
+      <label class="flbl">Webhook Discord (opcional)</label>
+      <input type="text" id="sc-wh" placeholder="https://discord.com/api/webhooks/...">
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="btn btn-b" style="${isSun?'background:var(--cy);color:var(--ink);':''}" onclick="scrimsSubmit('${key}',${isSun})">
+        ${isSun?'ENVIAR RELATÓRIO SEMANAL':'ENVIAR RELATÓRIO DIÁRIO'}
+      </button>
+      <span id="sc-msg" style="font-family:var(--mono);font-size:11px;display:none;"></span>
+    </div>
+  </div>`;
+  scrimsRenderRows();
+}
+
+const scrimsStarVals={}, scrimsRiskVals={};
+
+function scrimsSetStar(pid,val,el,pfx){
+  pfx=pfx||'scp-';
+  scrimsStarVals[pid]=val;
+  document.querySelectorAll(`#${pfx}stars-${pid} button`).forEach((b,i)=>{
+    b.style.background=i<val?'var(--b)':'none';
+    b.style.borderColor=i<val?'var(--b)':'var(--bor)';
+    b.style.color=i<val?'#fff':'var(--dim2)';
+  });
+}
+function scrimsToggleRisk(pid,pfx){
+  pfx=pfx||'scp-';
+  scrimsRiskVals[pid]=!scrimsRiskVals[pid];
+  const box=document.getElementById(pfx+'rbox-'+pid);
+  if(box){
+    box.style.background=scrimsRiskVals[pid]?'var(--r)':'none';
+    box.style.borderColor=scrimsRiskVals[pid]?'var(--r)':'var(--bor)';
+    box.style.color=scrimsRiskVals[pid]?'#fff':'var(--dim2)';
+    box.style.boxShadow=scrimsRiskVals[pid]?'0 0 8px rgba(255,61,61,0.4)':'none';
+  }
+}
+function scrimsSelEnergia(val,el){
+  scrimsEnergia=val;
+  document.querySelectorAll('#sc-energia-opts button').forEach((b,i)=>{
+    const colors=['var(--g)','#69f0ae','var(--y)','var(--o)','var(--r)'];
+    b.style.borderColor=i+1===val?colors[i]:'var(--bor)';
+    b.style.color=i+1===val?colors[i]:'var(--dim2)';
+    b.style.background=i+1===val?`rgba(${i===0?'0,230,118':i===1?'105,240,174':i===2?'255,214,0':i===3?'255,152,0':'255,61,61'},0.08)`:'none';
+  });
+}
+function scrimsRenderRows(){
+  const w=document.getElementById('scrim-rows-wrap');
+  if(!w)return;
+  w.innerHTML=scrimsRows.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px;background:rgba(30,144,255,0.03);border:1px solid var(--bor);">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--dim2);width:22px;">#${i+1}</span>
+      <select style="flex:1;margin-bottom:0;" onchange="scrimsRows[${i}].map=this.value">
+        <option value="">Mapa</option>
+        ${SCRIM_MAPS.map(m=>`<option ${s.map===m?'selected':''}>${m}</option>`).join('')}
+      </select>
+      <select style="width:110px;margin-bottom:0;" onchange="scrimsRows[${i}].result=this.value">
+        <option value="W" ${s.result==='W'?'selected':''}>✅ WIN</option>
+        <option value="L" ${s.result==='L'?'selected':''}>❌ LOSS</option>
+      </select>
+      <button style="font-family:var(--mono);color:var(--dim2);background:none;border:none;cursor:pointer;font-size:14px;" onclick="scrimsRows.splice(${i},1);scrimsRenderRows()">✕</button>
+    </div>`).join('');
+}
+function scrimsAddRow(){scrimsRows.push({map:'',result:'W'});scrimsRenderRows();}
+
+async function scrimsSubmit(key,isSun){
+  const pfx='scp-';
+  const players=getPlayers().map(p=>({
+    id:p.id, name:p.nick, role:p.role,
+    nota:scrimsStarVals[p.id]||null,
+    status:document.getElementById(`${pfx}status-${p.id}`)?.value||'',
+    obs:document.getElementById(`${pfx}obs-${p.id}`)?.value.trim()||'',
+    risco:scrimsRiskVals[p.id]||false,
+  }));
+  const rep={
+    key, type:isSun?'weekly':'daily',
+    dateLabel:scrimsFmtFull(new Date(key+'T12:00:00')),
+    timestamp:new Date().toLocaleString('pt-BR'),
+    author:currentUser.name,
+    scrims:[...scrimsRows],
+    energia:scrimsEnergia,
+    clima:document.getElementById('sc-clima')?.value||'',
+    foco:document.getElementById('sc-foco')?.value.trim()||'',
+    corr:document.getElementById('sc-corr')?.value.trim()||'',
+    pos:document.getElementById('sc-pos')?.value.trim()||'',
+    neg:document.getElementById('sc-neg')?.value.trim()||'',
+    players,
+  };
+  // Weekly extra fields
+  if(isSun){
+    rep.resumo=document.getElementById('sc-resumo')?.value.trim()||'';
+    rep.metasCump=document.getElementById('sc-metas-cump')?.value.trim()||'';
+    rep.metasProx=document.getElementById('sc-metas-prox')?.value.trim()||'';
+    rep.dir=document.getElementById('sc-dir')?.value.trim()||'';
+  }
+
+  // Save scrim report
+  const all=scrimsGetAll();
+  const idx=all.findIndex(r=>r.key===key);
+  if(idx>=0)all[idx]=rep; else all.unshift(rep);
+  LS.set('scrim_reports',all);
+  await fbPush('scrim_reports', rep);
+
+  // Push individual player notes into 'reports' so player avg/evolution updates
+  const allReports=getReports();
+  const date=new Date(key+'T12:00:00').toLocaleDateString('pt-BR');
+  players.forEach(p=>{
+    if(!p.nota)return; // only save if note was given
+    const entry={
+      id:'sr_'+key+'_'+p.id,
+      playerId:p.id, player:p.name, coach:currentUser.name,
+      date, nota:p.nota*2, // convert 1-5 to 2-10 scale
+      metrics:{}, pos:p.obs||'', neg:'',
+      fromScrim:true, ts:Date.now()
+    };
+    // replace existing entry for same day+player
+    const ei=allReports.findIndex(r=>r.id===entry.id);
+    if(ei>=0)allReports[ei]=entry; else allReports.unshift(entry);
+  });
+  LS.set('reports',allReports);
+
+  addLog('◉',`<strong>${currentUser.name}</strong> enviou relatório de scrim — <strong>${key}</strong>`);
+
+  const wl=scrimsRows;
+  const w=wl.filter(s=>s.result==='W').length, l=wl.filter(s=>s.result==='L').length;
+  const risks=players.filter(p=>p.risco).map(p=>p.name);
+  const wh=document.getElementById('sc-wh')?.value.trim()||LS.cfg('wh-reports');
+
+  let discordMsg = [
+    `◉ **RELATÓRIO ${isSun?'SEMANAL':'DIÁRIO'} — SAFEZONE**`,
+    `📅 ${rep.dateLabel} | 👨‍🏫 ${rep.author}`,
+    ``,
+    `⚔️ **SCRIMS — ${w}W / ${l}L**`,
+    ...wl.map((s,i)=>`#${i+1} ${s.map||'—'} → ${s.result==='W'?'WIN':'LOSS'}`),
+    ``,
+    `Energia: ${rep.energia?SCRIM_ENERGIA[rep.energia-1]:'—'} | Clima: ${rep.clima||'—'}`,
+    `Foco: ${rep.foco||'—'}`,
+    isSun ? `A mudar: ${rep.corr||'—'}` : `A corrigir: ${rep.corr||'—'}`,
+    ``,
+    `✅ ${rep.pos||'—'}`,
+    `⚠️ ${rep.neg||'—'}`,
+  ].join('\n');
+  if(isSun && rep.resumo) discordMsg+=`
+
+📊 Resumo: ${rep.resumo}`;
+  if(isSun && rep.dir)    discordMsg+=`
+
+📋 Para direção: ${rep.dir}`;
+
+  const playerLines=players.filter(p=>p.nota).map(p=>`${p.name}: ${'★'.repeat(p.nota)}${'☆'.repeat(5-p.nota)}${p.risco?' ⚑':''}`).join('\n');
+  if(playerLines) discordMsg+=`
+
+👤 Players:
+${playerLines}`;
+  if(risks.length) discordMsg+=`
+
+⚑ ALERTA: ${risks.join(', ')}`;
+
+  sendDiscord(wh, discordMsg);
+
+  const el=document.getElementById('sc-msg');
+  el.style.display='block';el.style.color='var(--g)';el.textContent='✓ Relatório salvo com sucesso.';
+  setTimeout(()=>{
+    scrimsActive=null;
+    Object.keys(scrimsStarVals).forEach(k=>delete scrimsStarVals[k]);
+    Object.keys(scrimsRiskVals).forEach(k=>delete scrimsRiskVals[k]);
+    scrimsInit();
+    document.getElementById('scrims-form-area').innerHTML='';
+    renderPlayers();
+    renderDashboard();
+  },1500);
+}
+
+function scrimsRenderView(rep, key, isSun){
+  const fa=document.getElementById('scrims-form-area');
+  const wl=rep.scrims||[];
+  const w=wl.filter(s=>s.result==='W').length, l=wl.filter(s=>s.result==='L').length;
+  const risks=(rep.players||[]).filter(p=>p.risco).map(p=>p.name);
+  // sort players by nota desc for ranking view
+  const sortedPlayers=[...(rep.players||[])].filter(p=>p.nota).sort((a,b)=>b.nota-a.nota);
+
+  const weeklyFields = isSun ? `
+    <div class="slbl" style="font-size:10px;color:var(--cy);margin-top:16px;">Resumo Semanal</div>
+    <div class="g2 mb24">
+      ${[['Resumo',rep.resumo],['Metas cumpridas',rep.metasCump],['Metas próximas',rep.metasProx],['Para a direção',rep.dir]].filter(([,v])=>v).map(([k,v])=>`
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--dim2);letter-spacing:2px;margin-bottom:5px;">${k}</div>
+        <div style="font-size:13px;color:var(--tx);">${v}</div></div>`).join('')}
+    </div>` : '';
+
+  const rankHtml = isSun && sortedPlayers.length ? `
+    <div class="slbl" style="font-size:10px;color:var(--cy);">Ranking da Semana</div>
+    <div style="margin-bottom:20px;">
+      ${sortedPlayers.map((p,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--bor);margin-bottom:6px;">
+        <div style="font-family:var(--disp);font-size:22px;font-weight:700;color:${i===0?'var(--y)':i===1?'#aaa':i===2?'#cd7f32':'var(--dim)'};width:28px;">${i+1}</div>
+        <div style="flex:1;font-family:var(--disp);font-size:15px;font-weight:700;color:#fff;">${p.name}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--y);">${'★'.repeat(p.nota)}${'☆'.repeat(5-p.nota)}</div>
+        ${p.risco?'<span style="font-family:var(--mono);font-size:9px;color:var(--r);">⚑</span>':''}
+      </div>`).join('')}
+    </div>` : '';
+
+  fa.innerHTML=`
+  <div style="background:var(--ink3);border:1px solid var(--bhi);padding:32px;position:relative;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${isSun?'var(--cy),var(--b)':'var(--b),var(--cy)'});background-size:200%;animation:shimmer 3s infinite;"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-family:var(--disp);font-size:20px;font-weight:700;letter-spacing:3px;color:${isSun?'var(--cy)':'#fff'};">${rep.dateLabel?.toUpperCase()||key} ${isSun?'— SEMANAL':''}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);margin-top:3px;">${rep.timestamp} · ${rep.author}</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        ${currentUser.role==='Admin'||currentUser.role==='Coach'?`<button class="btn btn-gh btn-sm" onclick="scrimsDeleteAndEdit('${key}',${isSun})">EDITAR</button>`:''}
+        <button style="font-family:var(--mono);font-size:18px;color:var(--dim2);background:none;border:none;cursor:pointer;" onclick="document.getElementById('scrims-form-area').innerHTML='';scrimsActive=null;scrimsInit();">✕</button>
+      </div>
+    </div>
+
+    ${weeklyFields}
+
+    <div class="slbl" style="font-size:10px;">Scrims — ${w}W / ${l}L</div>
+    <div style="margin-bottom:20px;">
+      ${wl.length?wl.map(s=>`<div style="display:flex;gap:12px;align-items:center;padding:8px 12px;border:1px solid var(--bor);margin-bottom:6px;font-family:var(--mono);font-size:11px;">
+        <span style="color:var(--dim2);">MAPA</span><span style="color:#fff;">${s.map||'—'}</span>
+        <span style="margin-left:auto;color:${s.result==='W'?'var(--g)':'var(--r)'};">${s.result==='W'?'WIN':'LOSS'}</span>
+      </div>`).join(''):'<div style="font-family:var(--mono);font-size:11px;color:var(--dim2);">Nenhum scrim registrado</div>'}
+    </div>
+    <div class="g2 mb24">
+      ${[['Energia',rep.energia?SCRIM_ENERGIA[rep.energia-1]:'—'],['Clima',rep.clima||'—'],
+         [isSun?'Ponto principal':'Foco',rep.foco||'—'],[isSun?'O que mudar':'A corrigir',rep.corr||'—'],
+         ['Positivos',rep.pos||'—'],['Negativos',rep.neg||'—']].map(([k,v])=>`
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--dim2);letter-spacing:2px;margin-bottom:5px;">${k}</div>
+        <div style="font-size:13px;color:var(--tx);">${v}</div></div>`).join('')}
+    </div>
+    ${risks.length?`<div style="font-family:var(--mono);font-size:11px;color:var(--r);margin-bottom:16px;padding:10px;border:1px solid rgba(255,61,61,0.2);background:rgba(255,61,61,0.05);">⚑ ALERTA DE RISCO: ${risks.join(', ')}</div>`:''}
+
+    ${rankHtml}
+
+    <div class="slbl" style="font-size:10px;">${isSun?'Avaliação Individual':'Players'}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
+      ${(rep.players||[]).map(p=>`
+        <div style="background:rgba(30,144,255,0.03);border:1px solid ${p.risco?'rgba(255,61,61,0.3)':'var(--bor)'};padding:12px;">
+          <div style="font-family:var(--disp);font-size:14px;font-weight:700;color:${p.risco?'var(--r)':'#fff'};letter-spacing:1px;margin-bottom:4px;">${p.name}${p.risco?' ⚑':''}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--y);">${p.nota?'★'.repeat(p.nota)+'☆'.repeat(5-p.nota):'—'}</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--dim2);margin-top:3px;">${p.status||'—'}</div>
+          ${p.obs?`<div style="font-size:11px;color:var(--tx);margin-top:5px;">${p.obs}</div>`:''}
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function scrimsDeleteAndEdit(key,isSun){
+  const all=LS.get('scrim_reports',[]).filter(r=>r.key!==key);
+  LS.set('scrim_reports',all);
+  scrimsRenderForm(key,isSun);
+}
+
+// ════════════════════════════════════
+//  TRYOUT AGENDA
+// ════════════════════════════════════
+function getAgenda(){return LS.get('tryout_agenda',[]);}
+async function saveAgenda(a){
+  LS.set('tryout_agenda',a);
+  await fbPush('tryout_agenda', a);
+}
+
+function renderTryAgenda(){
+  const div=document.getElementById('trytab-agenda');
+  if(!div)return;
+  const agenda=getAgenda();
+  const now=new Date();
+  const upcoming=agenda.filter(t=>new Date(t.datetime)>=now).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+  const past=agenda.filter(t=>new Date(t.datetime)<now).sort((a,b)=>new Date(b.datetime)-new Date(a.datetime));
+
+  div.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div class="slbl" style="margin:0;flex:1;">Testes Agendados</div>
+      <button class="btn btn-b btn-sm" onclick="openAddAgenda()">+ AGENDAR TESTE</button>
+    </div>
+    ${upcoming.length?upcoming.map(t=>agendaCard(t,false)).join(''):
+      `<div style="text-align:center;padding:40px;font-family:var(--mono);font-size:11px;color:var(--dim2);">NENHUM TESTE AGENDADO</div>`}
+    ${past.length?`
+      <div class="slbl" style="margin-top:24px;">Histórico</div>
+      ${past.slice(0,10).map(t=>agendaCard(t,true)).join('')}`:''}
+  `;
+}
+
+function agendaCard(t,isPast){
+  const dt=new Date(t.datetime);
+  const statusCls=t.status==='Confirmado'?'bg':t.status==='Cancelado'?'br':t.status==='Realizado'?'bb':'by';
+  return `<div style="background:var(--pan);border:1px solid var(--bor);padding:18px;margin-bottom:10px;${isPast?'opacity:.6;':''}display:flex;align-items:center;gap:16px;">
+    <div style="text-align:center;background:rgba(30,144,255,0.06);border:1px solid var(--bor);padding:10px 14px;flex-shrink:0;">
+      <div style="font-family:var(--disp);font-size:22px;font-weight:700;color:#fff;">${dt.getDate()}</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--dim2);">${dt.toLocaleDateString('pt-BR',{month:'short'}).toUpperCase()}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--b);">${dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+    </div>
+    <div style="flex:1;">
+      <div style="font-family:var(--disp);font-size:17px;font-weight:700;color:#fff;letter-spacing:1px;">${t.nick}</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim2);margin-top:2px;">${t.elo||'—'} · ${t.role||'—'} · ${t.avaliador||'—'}</div>
+      ${t.obs?`<div style="font-size:12px;color:var(--tx);margin-top:6px;">${t.obs}</div>`:''}
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+      <span class="badge ${statusCls}">${t.status||'Pendente'}</span>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-gh btn-sm" onclick="agendaSetStatus('${t.id}','Confirmado')">✓</button>
+        <button class="btn btn-gh btn-sm" onclick="agendaSetStatus('${t.id}','Realizado')">✔</button>
+        <button class="btn btn-r btn-sm" onclick="agendaSetStatus('${t.id}','Cancelado')">✕</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openAddAgenda(){
+  const div=document.getElementById('trytab-agenda');
+  const form=document.createElement('div');
+  form.id='agenda-form';
+  form.style.cssText='background:var(--ink3);border:1px solid var(--bhi);padding:24px;margin-bottom:20px;';
+  form.innerHTML=`
+    <div class="slbl" style="font-size:10px;">Novo Teste Agendado</div>
+    <div class="g2 mb24">
+      <div><label class="flbl">Nick do candidato</label><input type="text" id="ag-nick" placeholder="Ex: Kaiser#BR1"></div>
+      <div><label class="flbl">Elo</label><select id="ag-elo"><option value="">—</option>${['Ferro','Bronze','Prata','Ouro','Platina','Diamante','Ascendente','Imortal','Radiante'].map(e=>`<option>${e}</option>`).join('')}</select></div>
+      <div><label class="flbl">Função</label><select id="ag-role"><option value="">—</option>${['Duelista','Controlador','Iniciador','Sentinela','Flex'].map(r=>`<option>${r}</option>`).join('')}</select></div>
+      <div><label class="flbl">Data e Horário</label><input type="datetime-local" id="ag-dt"></div>
+      <div><label class="flbl">Avaliador</label><input type="text" id="ag-eval" value="${currentUser?.name||''}"></div>
+      <div><label class="flbl">Discord do candidato</label><input type="text" id="ag-discord" placeholder="user#0000"></div>
+    </div>
+    <div class="mb"><label class="flbl">Observações</label><textarea id="ag-obs" placeholder="Informações relevantes, contexto do candidato..."></textarea></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-b btn-sm" onclick="agendaAdd()">SALVAR</button>
+      <button class="btn btn-gh btn-sm" onclick="this.closest('#agenda-form').remove()">CANCELAR</button>
+    </div>`;
+  div.prepend(form);
+  div.scrollIntoView({behavior:'smooth'});
+}
+
+async function agendaAdd(){
+  const nick=document.getElementById('ag-nick')?.value.trim();
+  if(!nick)return;
+  const entry={
+    id:'ag_'+Date.now(),
+    nick, elo:document.getElementById('ag-elo')?.value||'',
+    role:document.getElementById('ag-role')?.value||'',
+    datetime:document.getElementById('ag-dt')?.value||'',
+    avaliador:document.getElementById('ag-eval')?.value||'',
+    discord:document.getElementById('ag-discord')?.value||'',
+    obs:document.getElementById('ag-obs')?.value.trim()||'',
+    status:'Pendente',
+    ts:Date.now(),
+  };
+  const agenda=getAgenda();
+  agenda.unshift(entry);
+  LS.set('tryout_agenda',agenda);
+  await fbPush('tryout_agenda_log', entry);
+  addLog('◎',`<strong>${currentUser.name}</strong> agendou teste de <strong>${nick}</strong> — ${entry.datetime?new Date(entry.datetime).toLocaleString('pt-BR'):''}`);
+  document.getElementById('agenda-form')?.remove();
+  renderTryAgenda();
+}
+
+function agendaSetStatus(id,status){
+  const agenda=getAgenda();
+  const t=agenda.find(x=>x.id===id);
+  if(!t)return;
+  t.status=status;
+  LS.set('tryout_agenda',agenda);
+  addLog('◎',`Teste de <strong>${t.nick}</strong> marcado como <strong>${status}</strong>`);
+  renderTryAgenda();
+}
+
+// ════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════
+function closeOv(id,e){if(e.target===document.getElementById(id))closeOvD(id);}
+function closeOvD(id){document.getElementById(id).classList.remove('open');}
+</script>
+</body>
+</html>
