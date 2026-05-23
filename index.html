@@ -17,6 +17,17 @@
   window._db = null;
   window._auth = null;
 
+  // Auto-initialize with SafeZone config
+  const _AUTO_CFG = {
+    apiKey: "AIzaSyAMKOBK8CeBDDPq6sCC3lMJJJalJTY1QFg",
+    authDomain: "safezonecoach-af19f.firebaseapp.com",
+    databaseURL: "https://safezonecoach-af19f-default-rtdb.firebaseio.com",
+    projectId: "safezonecoach-af19f",
+    storageBucket: "safezonecoach-af19f.firebasestorage.app",
+    messagingSenderId: "60247867896",
+    appId: "1:60247867896:web:3a73dd4fe3cac2b7f8d60d"
+  };
+
   window.initFirebase = function(cfg) {
     try {
       const app = initializeApp(cfg);
@@ -36,6 +47,9 @@
       if (window._onFirebaseReady) window._onFirebaseReady();
     } catch(e) { console.error('Firebase init error:', e); }
   };
+
+  // Auto-connect on load
+  window.initFirebase(_AUTO_CFG);
 </script>
 <style>
 :root{
@@ -401,15 +415,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <div class="ls">COMMAND HUB v2.0 // ACESSO RESTRITO</div>
     </div>
 
-    <!-- Firebase config -->
-    <details class="fb-cfg" id="fb-cfg-details">
-      <summary>⚙ Configurar Firebase</summary>
-      <div class="fb-hint">Cole o JSON de configuração do seu projeto Firebase (Realtime Database).</div>
-      <textarea id="fb-json" style="min-height:80px;margin-top:10px;font-size:10px;"
-        placeholder='{"apiKey":"...","authDomain":"...","databaseURL":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
-      <button class="btn btn-b btn-sm" style="margin-top:8px;width:100%;" onclick="applyFirebase()">CONECTAR FIREBASE</button>
-      <div id="fb-status" style="font-family:var(--mono);font-size:10px;margin-top:8px;color:var(--dim2);">Sem Firebase configurado — dados salvos localmente.</div>
-    </details>
+
 
     <div class="lf">
       <label>Usuário</label>
@@ -587,13 +593,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
             <button class="btn btn-b" onclick="saveSettings()">SALVAR</button>
             <span id="cfg-ok" style="font-family:var(--mono);font-size:11px;color:var(--g);margin-left:14px;display:none;">✓ Salvo</span>
           </div>
-          <div class="slbl">Firebase</div>
-          <div class="panel mb24">
-            <div class="mb"><label class="flbl">Config JSON</label>
-              <textarea id="fb-json-settings" style="font-size:11px;min-height:100px;" placeholder='{"apiKey":"...","databaseURL":"...",...}'></textarea></div>
-            <button class="btn btn-b btn-sm" onclick="applyFirebaseFromSettings()">CONECTAR / RECONECTAR</button>
-            <div id="fb-st2" style="font-family:var(--mono);font-size:10px;margin-top:8px;color:var(--dim2);"></div>
-          </div>
+
           <div class="slbl">Dados</div>
           <div class="panel">
             <button class="btn btn-r btn-sm" onclick="if(confirm('Limpar dados locais?'))clearLocal()">LIMPAR DADOS LOCAIS</button>
@@ -687,33 +687,7 @@ let useFirebase = false;
 // ════════════════════════════════════
 //  FIREBASE
 // ════════════════════════════════════
-function applyFirebase(){
-  const raw = document.getElementById('fb-json').value.trim();
-  _tryConnectFirebase(raw, 'fb-status');
-}
-function applyFirebaseFromSettings(){
-  const raw = document.getElementById('fb-json-settings').value.trim();
-  _tryConnectFirebase(raw, 'fb-st2');
-}
-function _tryConnectFirebase(raw, statusId){
-  try {
-    const cfg = JSON.parse(raw);
-    if(!cfg.databaseURL){throw new Error('databaseURL ausente no JSON');}
-    window._onFirebaseReady = ()=>{
-      useFirebase = true;
-      LS.set('fb-cfg', raw);
-      document.getElementById(statusId).textContent='✓ Firebase conectado!';
-      document.getElementById(statusId).style.color='var(--g)';
-      document.getElementById('sync-indicator').className='sync-badge sync-ok';
-      document.getElementById('sync-indicator').innerHTML='<div class="sync-dot"></div>FIREBASE';
-      if(currentUser) bindFirebase();
-    };
-    window.initFirebase(cfg);
-  } catch(e) {
-    document.getElementById(statusId).textContent='Erro: ' + e.message;
-    document.getElementById(statusId).style.color='var(--r)';
-  }
-}
+
 
 function bindFirebase(){
   if(!window._fbReady||!window._db) return;
@@ -841,18 +815,19 @@ function doLogin(){
   document.getElementById('sb-av').textContent=currentUser.initials;
   document.getElementById('sb-name').textContent=currentUser.name;
   document.getElementById('sb-role').textContent=currentUser.role;
-  // try restore firebase
-  const savedCfg=LS.cfg('fb-cfg');
-  if(savedCfg && window.initFirebase){
-    try{
-      window._onFirebaseReady=()=>{
-        useFirebase=true;
-        document.getElementById('sync-indicator').className='sync-badge sync-ok';
-        document.getElementById('sync-indicator').innerHTML='<div class="sync-dot"></div>FIREBASE';
-        bindFirebase();
-      };
-      window.initFirebase(JSON.parse(savedCfg));
-    }catch(e){}
+  // Firebase auto-connects — just bind if already ready
+  if(window._fbReady){
+    useFirebase=true;
+    document.getElementById('sync-indicator').className='sync-badge sync-ok';
+    document.getElementById('sync-indicator').innerHTML='<div class="sync-dot"></div>FIREBASE';
+    bindFirebase();
+  } else {
+    window._onFirebaseReady=()=>{
+      useFirebase=true;
+      document.getElementById('sync-indicator').className='sync-badge sync-ok';
+      document.getElementById('sync-indicator').innerHTML='<div class="sync-dot"></div>FIREBASE';
+      bindFirebase();
+    };
   }
   addLog('🟢',`<strong>${currentUser.name}</strong> entrou no portal [${currentUser.role}]`);
   sendDiscord(LS.cfg('wh-login'),
@@ -1764,12 +1739,7 @@ function loadSettings(){
     const el=document.getElementById('wh-'+k);
     if(el)el.value=LS.cfg('wh-'+k)||'';
   });
-  const saved=LS.cfg('fb-cfg');
-  if(saved){
-    const el2=document.getElementById('fb-json-settings');
-    if(el2)el2.value=saved;
-    document.getElementById('fb-st2').textContent='Firebase configurado anteriormente.';
-  }
+
 }
 function saveSettings(){
   ['login','reports','tryouts','alerts'].forEach(k=>{
