@@ -684,7 +684,14 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
 
 <script>
 // ═══════════════ CONFIG ═══════════════
-const WEBHOOK = 'https://discord.com/api/webhooks/1508210873884344511/KweDzcbVU13JtD-aSU7m3B38JSE-810EqD3XH4c346-h2GON9vZPsinZdhaiHhL0mMg5';
+const WEBHOOKS = {
+  login:    'https://discord.com/api/webhooks/1508210873884344511/KweDzcbVU13JtD-aSU7m3B38JSE-810EqD3XH4c346-h2GON9vZPsinZdhaiHhL0mMg5',
+  relatorio:'https://discord.com/api/webhooks/1508285186796949525/8lP-DKqScRKD5xh67v_hsTiIjFqhE6G888wy6SRGUCBwUg3o1frNHtS3GBNg0mVVQROU',
+  plano:    'https://discord.com/api/webhooks/1508285304224874597/hBh250oZvyPYvWW4Z6F2vpwCb7vo6fmYAobFk01aYTPDEqdb53ZbCXmCYrwWEc6fYmtw',
+  presenca: 'https://discord.com/api/webhooks/1508285373673898126/NxfQrmsK6Cr7Q-eKIXBXN8DYkw2msP05F18_kwP4TlEGD1hy4TZ7EHO_VlzgN_oEuGIP',
+  ranking:  'https://discord.com/api/webhooks/1508285555895435424/KRDbpqkKXqPk_dYcmfRVIzpyPGDkkfQMBUKw769XuWDeSwcO1j1IiBQEOJ-zqrQgArSE',
+  risco:    ''
+};
 const PASSWORDS = { coach: 'safezone2026', staff: 'szstaff2026' };
 const PLAYERS = [
   { id: 'nemo',      name: 'Nemo',      role: 'Duelista',    line: 'Principal' },
@@ -900,9 +907,10 @@ function onWeekChange(){
     }
   }
 }
-async function sendDiscord(content){
+async function sendDiscord(content, canal){
+  var url = (canal && WEBHOOKS[canal]) ? WEBHOOKS[canal] : WEBHOOKS.relatorio;
   try{
-    var res=await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:content,username:'SafeZone Portal'})});
+    var res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:content,username:'SafeZone Portal'})});
     return res.ok;
   }catch(e){return false;}
 }
@@ -929,7 +937,7 @@ function doLogin(){
   else window._onFbReady=bindFirebase;
   initPortal();
   var now=new Date();
-  sendDiscord('LOGIN: '+label+' | '+now.toLocaleString('pt-BR')+' | Semana: '+getWeekKey());
+  sendDiscord('LOGIN: '+label+' | '+now.toLocaleString('pt-BR')+' | Semana: '+getWeekKey(), 'login');
 }
 function showErr(msg){var el=document.getElementById('login-error');el.textContent=msg;el.style.display='block';}
 function doLogout(){
@@ -1208,11 +1216,11 @@ async function submitReport(){
   localStorage.setItem('sz_reports', JSON.stringify(history));
   // Discord
   var msg=buildReportMsg(data);
-  var ok=await sendDiscord(msg);
+  var ok=await sendDiscord(msg, 'relatorio');
   var riskPs=data.players.filter(function(p){return p.risco;});
   if(riskPs.length){
     var riskNames=riskPs.map(function(p){return '! '+p.name+' ('+p.role+')';}).join('\n');
-    await sendDiscord('ALERTA DE RISCO - SAFEZONE\n\n'+riskNames+'\n\nSemana: '+data.weekKey+' - '+data.timestamp);
+    await sendDiscord('ALERTA DE RISCO - SAFEZONE\n\n'+riskNames+'\n\nSemana: '+data.weekKey+' - '+data.timestamp, 'risco');
   }
   status.textContent=ok?'Relatorio enviado ao Discord e salvo no Firebase!':'Salvo no Firebase (verificar Discord).';
   status.className='submit-status ok'; btn.disabled=false;
@@ -1269,7 +1277,7 @@ async function submitPlano(){
   var lines=['# PLANO DE ENSINO - SAFEZONE','**Semana:** '+wk,'**Mapa Premier:** '+(mapa||'-'),''];
   dates.forEach(function(date,i){var isSun=isSunday(date);var p=plano[i];lines.push('## '+DAYS[i]+' ('+formatDate(date)+')');if(isSun){lines.push('**Analise:** '+(p.analise||'-'));lines.push('**Foco:** '+(p.foco||'-'));}else{lines.push('**Horario:** '+(p.hora||'-')+' | **Foco:** '+(p.foco||'-'));lines.push('**Objetivo:** '+(p.obj||'-'));if(p.vod)lines.push('**VOD:** '+p.vod);}lines.push('');});
   lines.push('---');
-  var ok=await sendDiscord(lines.join('\n'));
+  var ok=await sendDiscord(lines.join('\n'), 'plano');
   status.textContent=ok?'Plano salvo no Firebase e enviado ao Discord!':'Salvo no Firebase.';
   status.className='submit-status ok'; btn.disabled=false;
 }
@@ -1286,7 +1294,7 @@ async function submitPresenca(){
     lines.push('');
   });
   lines.push('---');
-  var ok=await sendDiscord(lines.join('\n'));
+  var ok=await sendDiscord(lines.join('\n'), 'presenca');
   status.textContent=ok?'Presenca enviada ao Discord!':'Dados salvos no Firebase.';
   status.className='submit-status ok';
 }
@@ -1301,7 +1309,7 @@ async function sendRankingDiscord(){
   var lines=['# RANKING SAFEZONE - '+getWeekKey(),''];
   sorted.forEach(function(p,i){lines.push((i+1)+'. **'+p.name+'** ('+p.role+') - '+(p.nota>0?p.nota+'/5':'sem nota'));});
   lines.push('','---');
-  var ok=await sendDiscord(lines.join('\n'));
+  var ok=await sendDiscord(lines.join('\n'), 'ranking');
   alert(ok?'Ranking enviado ao Discord!':'Erro ao enviar.');
 }
 
@@ -1664,7 +1672,7 @@ window.sendRankingDiscord = async function(){
     lines.push((medals[i]||( i+1)+'.') +' **'+p.name+'** ('+p.role+') — Score: **'+p.score+'** | Nota: '+(p.nota||'—')+'/5 | Presença: '+presPct);
   });
   lines.push('','---');
-  var ok=await sendDiscord(lines.join('\n'));
+  var ok=await sendDiscord(lines.join('\n'), 'ranking');
   alert(ok?'Ranking enviado ao Discord!':'Erro ao enviar.');
 };
 </script>
