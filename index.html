@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SafeZone — Portal Interno</title>
+<title>SafeZone Performance System</title>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getDatabase,ref,set,push,onValue}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -411,6 +411,71 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
   .login-wrap{width:95%;}
   .login-box{padding:36px 28px;}
 }
+
+/* ═══ DAILY REPORT CALENDAR ═══ */
+.rdc { background:var(--panel);border:1px solid var(--border);padding:10px 6px;cursor:pointer;transition:all .15s;position:relative;text-align:center; }
+.rdc:hover { border-color:rgba(30,144,255,0.5); }
+.rdc.sel { border-color:var(--blue);background:rgba(30,144,255,0.08); }
+.rdc.done::after { content:'';position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green); }
+.rdc.sunday { border-color:rgba(0,229,255,0.2); }
+.rdc.sunday.sel { border-color:var(--cyan);background:rgba(0,229,255,0.06); }
+.rdc.sunday.done::after { background:var(--cyan);box-shadow:0 0 6px var(--cyan); }
+.rdc.tod { box-shadow:0 0 0 1px var(--blue) inset; }
+.rdc-dow { font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--text-dim);margin-bottom:4px; }
+.rdc-num { font-family:var(--display);font-size:20px;font-weight:700;color:#fff;line-height:1; }
+.rdc-lbl { font-family:var(--mono);font-size:7px;letter-spacing:1px;margin-top:5px;height:12px; }
+.rdc-bar { position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--blue);opacity:0;transition:opacity .15s; }
+.rdc.sel .rdc-bar,.rdc:hover .rdc-bar { opacity:1; }
+.rdc.sunday .rdc-bar { background:var(--cyan); }
+
+/* ═══ METAS INDIVIDUAIS ═══ */
+.metas-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px; }
+.meta-player-card { background:rgba(30,144,255,0.03);border:1px solid var(--border);padding:14px; }
+.meta-player-name { font-family:var(--display);font-size:13px;font-weight:700;color:var(--blue);letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:8px; }
+.meta-player-role { font-family:var(--mono);font-size:8px;color:var(--text-dim);letter-spacing:1px; }
+.meta-field label { font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px;display:block; }
+.meta-field textarea { min-height:54px;font-size:12px; }
+
+
+
+/* ═══ DELETE REPORT ═══ */
+.history-entry { position: relative; }
+
+/* ═══ METAS SEMANAIS ═══ */
+.meta-card {
+  background: var(--panel); border: 1px solid var(--border);
+  padding: 18px; margin-bottom: 10px; transition: border-color .15s;
+}
+.meta-card:hover { border-color: rgba(30,144,255,0.3); }
+.meta-card-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.meta-player-tag {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 2px;
+  color: var(--text-dim); background: rgba(30,144,255,0.06);
+  border: 1px solid var(--border); padding: 3px 8px;
+}
+.meta-resultado-wrap {
+  display: flex; gap: 6px; margin-top: 10px;
+}
+.meta-res-btn {
+  flex: 1; padding: 8px 4px; border: 1px solid var(--border);
+  background: none; font-family: var(--mono); font-size: 9px;
+  letter-spacing: 1px; cursor: pointer; transition: all .15s; color: var(--text-dim);
+}
+.meta-res-btn:hover { border-color: rgba(30,144,255,0.4); color: var(--text); }
+.meta-res-btn.sel-sim { background: rgba(0,230,118,0.12); border-color: var(--green); color: var(--green); }
+.meta-res-btn.sel-parc { background: rgba(255,214,0,0.1); border-color: var(--yellow); color: var(--yellow); }
+.meta-res-btn.sel-nao { background: rgba(255,61,61,0.1); border-color: var(--red); color: var(--red); }
+.meta-status-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--border);
+  flex-shrink: 0; margin-left: auto;
+}
+.meta-status-dot.sim { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.meta-status-dot.parc { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+.meta-status-dot.nao { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
 </style>
 </head>
 <body>
@@ -450,7 +515,7 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
   <div class="header">
     <div class="header-brand">
       SAFE<span>ZONE</span>
-      <small>// PORTAL INTERNO</small>
+      <small>// PERFORMANCE SYSTEM</small>
     </div>
     <!-- SELETOR DE SEMANA CENTRALIZADO -->
     <div id="week-selector-wrap" style="position:absolute;left:50%;transform:translateX(-50%);"></div>
@@ -465,9 +530,10 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('dashboard',this)">Dashboard</button>
-    <button class="tab" id="tab-btn-report" onclick="switchTab('report',this)">Relatório Semanal</button>
+    <button class="tab" id="tab-btn-report" onclick="switchTab('report',this)">Relatório Diário</button>
     <button class="tab" id="tab-btn-plano" onclick="switchTab('plano',this)">Plano de Ensino</button>
     <button class="tab" id="tab-btn-presenca" onclick="switchTab('presenca',this)">Presença</button>
+    <button class="tab" id="tab-btn-metas" onclick="switchTab('metas',this)">Metas</button>
     <button class="tab" onclick="switchTab('ranking',this)">Ranking</button>
     <button class="tab" onclick="switchTab('history',this)">Histórico</button>
   </div>
@@ -498,103 +564,16 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
     </div>
   </div>
 
-  <!-- ══ RELATÓRIO ══ -->
+  <!-- ══ RELATÓRIO DIÁRIO ══ -->
   <div id="tab-report" class="main" style="display:none;">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
-      <div class="section-title" style="margin-bottom:0;"><span class="num">◆</span> Relatório Semanal</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div class="section-title" style="margin-bottom:0;"><span class="num">◆</span> Relatório Diário</div>
       <div class="week-badge">📅 <span id="report-week-label">—</span></div>
     </div>
-
-    <!-- VISÃO GERAL -->
-    <div class="section-title"><span class="num">01</span> Visão Geral</div>
-    <div class="panel">
-      <div class="grid-2" style="margin-bottom:16px;">
-        <div>
-          <label class="field-label">Resumo da semana</label>
-          <textarea id="g-resumo" placeholder="Como foi a semana de forma geral? Scrims, comportamento, clima do grupo..."></textarea>
-        </div>
-        <div>
-          <label class="field-label">Prioridade para próxima semana</label>
-          <textarea id="g-prox" placeholder="O que precisa ser trabalhado com foco na semana seguinte?"></textarea>
-        </div>
-      </div>
-      <div class="grid-3">
-        <div>
-          <label class="field-label">Scrims realizados</label>
-          <input type="number" id="g-scrims" min="0" max="30" placeholder="Ex: 6">
-        </div>
-        <div>
-          <label class="field-label">Win rate estimado (%)</label>
-          <input type="number" id="g-wr" min="0" max="100" placeholder="Ex: 55">
-        </div>
-        <div>
-          <label class="field-label">Clima do elenco</label>
-          <select id="g-clima">
-            <option value="">— Selecionar —</option>
-            <option>Muito positivo</option><option>Positivo</option>
-            <option>Neutro</option><option>Tenso</option><option>Crítico</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- TREINOS -->
-    <div class="section-title"><span class="num">02</span> Relatório de Treinos</div>
-    <div class="panel">
-      <div class="grid-2" style="margin-bottom:16px;">
-        <div>
-          <label class="field-label">O que foi treinado</label>
-          <textarea id="t-conteudo" placeholder="Temas, exercícios, foco dos treinos..."></textarea>
-        </div>
-        <div>
-          <label class="field-label">Pontos de evolução identificados</label>
-          <textarea id="t-evolucao" placeholder="Onde o time demonstrou melhora..."></textarea>
-        </div>
-      </div>
-      <div>
-        <label class="field-label">Pontos a corrigir</label>
-        <textarea id="t-correcao" placeholder="Erros recorrentes, padrões negativos..."></textarea>
-      </div>
-    </div>
-
-    <!-- PLAYERS -->
-    <div class="section-title"><span class="num">03</span> Avaliação Individual</div>
-    <div id="players-container"></div>
-
-    <!-- METAS -->
-    <div class="section-title"><span class="num">04</span> Metas</div>
-    <div class="panel">
-      <div class="grid-2">
-        <div>
-          <label class="field-label">Metas cumpridas esta semana</label>
-          <textarea id="m-cumpridas" placeholder="Liste as metas atingidas..."></textarea>
-        </div>
-        <div>
-          <label class="field-label">Metas para a próxima semana</label>
-          <textarea id="m-proximas" placeholder="Objetivos claros para cada player e para o time..."></textarea>
-        </div>
-      </div>
-    </div>
-
-    <!-- OBS -->
-    <div class="section-title"><span class="num">05</span> Observações Finais</div>
-    <div class="panel">
-      <div class="grid-2">
-        <div>
-          <label class="field-label">Observação comportamental</label>
-          <textarea id="obs-comp" placeholder="Disciplina, atitude, comunicação..."></textarea>
-        </div>
-        <div>
-          <label class="field-label">Recomendação para a direção</label>
-          <textarea id="obs-dir" placeholder="Algo que a direção precisa saber..."></textarea>
-        </div>
-      </div>
-    </div>
-
-    <div class="submit-row">
-      <button class="btn-primary" id="btn-enviar" onclick="submitReport()">ENVIAR RELATÓRIO → DISCORD</button>
-      <span class="submit-status" id="submit-status"></span>
-    </div>
+    <!-- GRADE DE DIAS -->
+    <div id="rpt-cal" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:22px;"></div>
+    <!-- FORMULÁRIO DO DIA -->
+    <div id="rpt-form"></div>
   </div>
 
   <!-- ══ PLANO DE ENSINO ══ -->
@@ -625,7 +604,7 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
     <div class="calendar-grid" id="calendar-container"></div>
 
     <div class="submit-row">
-      <button class="btn-primary" id="btn-salvar-plano" onclick="submitPlano()">SALVAR PLANO → DISCORD</button>
+      <button class="btn-primary" id="btn-salvar-plano" onclick="submitPlano()">SALVAR</button>
       <button class="btn-secondary" onclick="loadPlano()">CARREGAR SEMANA ATUAL</button>
       <span class="submit-status" id="plano-status"></span>
     </div>
@@ -645,7 +624,7 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
     <div id="presenca-days"></div>
 
     <div class="submit-row">
-      <button class="btn-primary" onclick="submitPresenca()">SALVAR PRESENÇA → DISCORD</button>
+      <button class="btn-primary" onclick="submitPresenca()">SALVAR</button>
       <span class="submit-status" id="presenca-status"></span>
     </div>
   </div>
@@ -654,7 +633,7 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
   <div id="tab-ranking" class="main" style="display:none;">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
       <div class="section-title" style="margin-bottom:0;"><span class="num">◆</span> Ranking SafeZone</div>
-      <button class="btn-primary" onclick="sendRankingDiscord()" style="padding:10px 24px;font-size:11px;">ENVIAR RANKING → DISCORD</button>
+      <button class="btn-primary" onclick="sendRankingDiscord()" style="padding:10px 24px;font-size:11px;">SALVAR</button>
     </div>
 
     <div id="ranking-full" class="ranking-list"></div>
@@ -671,6 +650,28 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
   <div id="tab-history" class="main" style="display:none;">
     <div class="section-title"><span class="num">◆</span> Histórico de Relatórios</div>
     <div id="history-list"></div>
+  </div>
+
+  <!-- ══ METAS INDIVIDUAIS ══ -->
+  <div id="tab-metas" class="main" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div class="section-title" style="margin-bottom:0;"><span class="num">◆</span> Metas Individuais</div>
+      <div class="week-badge">📅 <span id="metas-week-label">—</span></div>
+    </div>
+    <div id="metas-domingo-banner" style="display:none;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.25);padding:14px 18px;margin-bottom:20px;font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:1px;">
+      ◆ DOMINGO — Marque se cada player bateu a meta da semana antes de salvar.
+    </div>
+    <div class="section-title"><span class="num">01</span> Metas dos Players</div>
+    <div id="metas-players-container"></div>
+    <div class="section-title" style="margin-top:20px;"><span class="num">02</span> Observação Geral</div>
+    <div class="panel" style="margin-bottom:20px;">
+      <label class="field-label">Contexto / Foco da semana</label>
+      <textarea id="metas-obs" placeholder="O que o time precisa focar coletivamente essa semana..."></textarea>
+    </div>
+    <div class="submit-row">
+      <button class="btn-primary" onclick="submitMetas()">SALVAR</button>
+      <span class="submit-status" id="metas-status"></span>
+    </div>
   </div>
 </div>
 
@@ -690,7 +691,8 @@ const WEBHOOKS = {
   plano:    'https://discord.com/api/webhooks/1508285304224874597/hBh250oZvyPYvWW4Z6F2vpwCb7vo6fmYAobFk01aYTPDEqdb53ZbCXmCYrwWEc6fYmtw',
   presenca: 'https://discord.com/api/webhooks/1508285373673898126/NxfQrmsK6Cr7Q-eKIXBXN8DYkw2msP05F18_kwP4TlEGD1hy4TZ7EHO_VlzgN_oEuGIP',
   ranking:  'https://discord.com/api/webhooks/1508285555895435424/KRDbpqkKXqPk_dYcmfRVIzpyPGDkkfQMBUKw769XuWDeSwcO1j1IiBQEOJ-zqrQgArSE',
-  risco:    ''
+  risco:    '',
+  metas:    'https://discord.com/api/webhooks/1508548408296870073/mV3SgEr-JnbW-wAUpqja3_K-vMy3bfXwsnw4kmtJs0VcMjuP132QsOgYTwPAnn3DfE7Q'
 };
 const PASSWORDS = { coach: 'safezone2026', staff: 'szstaff2026' };
 const PLAYERS = [
@@ -729,11 +731,11 @@ function bindFirebase(){
   var wk = getWeekKey();
   // Notas
   fbOn('portal/stars/'+wk, function(val){
-    if(!val) return;
-    notaRatings = val;
-    PLAYERS.forEach(function(p){
-      if(notaRatings[p.id]) updateNotaDisplay(p.id);
-    });
+    notaRatings = {};
+    if(val && typeof val === 'object') {
+      Object.keys(val).forEach(function(pid){ var n=parseInt(val[pid]); if(n>=1&&n<=5) notaRatings[pid]=n; });
+    }
+    PLAYERS.forEach(function(p){ var noteEl=document.getElementById('nota-'+p.id); if(noteEl) updateNotaDisplay(p.id); });
     renderDashboardRanking();
   });
   // Relatorios
@@ -879,9 +881,11 @@ function onWeekChange(){
   });
   // Re-bind firebase para nova semana
   var wk=getWeekKey();
+  notaRatings = {}; PLAYERS.forEach(function(p){ var noteEl=document.getElementById('nota-'+p.id); if(noteEl) updateNotaDisplay(p.id); });
   fbOn('portal/stars/'+wk, function(val){
-    if(!val)return; notaRatings=val;
-    PLAYERS.forEach(function(p){if(notaRatings[p.id])updateNotaDisplay(p.id);});
+    notaRatings = {};
+    if(val && typeof val === 'object') { Object.keys(val).forEach(function(pid){ var n=parseInt(val[pid]); if(n>=1&&n<=5) notaRatings[pid]=n; }); }
+    PLAYERS.forEach(function(p){ var noteEl=document.getElementById('nota-'+p.id); if(noteEl) updateNotaDisplay(p.id); });
     renderDashboardRanking();
   });
   fbOn('portal/planos/'+wk, function(val){
@@ -895,6 +899,29 @@ function onWeekChange(){
     if(tab&&tab.style.display!=='none') renderPresenca();
     renderDashPresence();
   });
+  // Daily reports — rebind para nova semana
+  dailyReports = {};
+  selectedDay = null;
+  var formEl = document.getElementById('rpt-form');
+  if (formEl) formEl.innerHTML = '';
+  fbOn('portal/daily/' + wk, function(val) {
+    dailyReports = val || {};
+    var tab = document.getElementById('tab-report');
+    if (tab && tab.style.display !== 'none') renderReportCal();
+  });
+
+  // Metas — rebind para nova semana
+  fbOn('portal/metas/' + wk, function(val) {
+    if (val) metasData[wk] = val;
+    else metasData[wk] = {};
+    var tab = document.getElementById('tab-metas');
+    if (tab && tab.style.display !== 'none') renderMetasTab();
+  });
+
+  // Atualizar label de metas
+  var metasWlEl = document.getElementById('metas-week-label');
+  if (metasWlEl) metasWlEl.textContent = getWeekLabel();
+
   // Recarregar views ativas
   var activeTab=document.querySelector('.tab.active');
   if(activeTab){
@@ -904,13 +931,15 @@ function onWeekChange(){
       if(name[1]==='plano'){renderCalendar();var saved=fbPlanos[wk];if(saved)applyPlanoToCalendar(saved);}
       if(name[1]==='dashboard') renderDashboard();
       if(name[1]==='ranking') renderRankingFull();
+      if(name[1]==='report') renderReportCal();
+      if(name[1]==='metas') renderMetasTab();
     }
   }
 }
 async function sendDiscord(content, canal){
   var url = (canal && WEBHOOKS[canal]) ? WEBHOOKS[canal] : WEBHOOKS.relatorio;
   try{
-    var res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:content,username:'SafeZone Portal'})});
+    var res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:content,username:'SafeZone Performance System'})});
     return res.ok;
   }catch(e){return false;}
 }
@@ -932,6 +961,7 @@ function doLogin(){
     document.getElementById('tab-btn-report').style.display='none';
     document.getElementById('tab-btn-plano').style.display='none';
     document.getElementById('tab-btn-presenca').style.display='none';
+    document.getElementById('tab-btn-metas').style.display='none';
   }
   if(window._fbReady) bindFirebase();
   else window._onFbReady=bindFirebase;
@@ -980,7 +1010,7 @@ function initPortal(){
 
 // ═══════════════ PLAYER BLOCKS ═══════════════
 function buildPlayerBlocks(){
-  var container=document.getElementById('players-container');
+  var container=document.getElementById('players-container'); if(!container)return;
   container.innerHTML='';
   var principal=PLAYERS.filter(function(p){return p.line==='Principal';});
   var academy=PLAYERS.filter(function(p){return p.line==='Academy';});
@@ -1315,14 +1345,34 @@ async function sendRankingDiscord(){
 
 // ═══════════════ HISTORICO ═══════════════
 function renderHistory(){
-  var list=document.getElementById('history-list');
+  var list=document.getElementById('history-list'); if(!list)return;
   var reports=JSON.parse(localStorage.getItem('sz_reports')||'[]');
   if(!reports.length){list.innerHTML='<div class="empty-state"><div class="icon">-</div><p>NENHUM RELATORIO ENCONTRADO</p></div>';return;}
   list.innerHTML=reports.map(function(r,i){
     var riskPs=(r.players||[]).filter(function(p){return p.risco;});
     var tags=(r.players||[]).map(function(p){var opt=STATUS_OPTIONS.find(function(s){return s.val===p.status;});return '<div class="history-player-tag"><div class="status-dot '+(opt?opt.cls:'')+'" style="width:8px;height:8px;"></div>'+p.name+'</div>';}).join('');
-    return '<div class="history-entry" onclick="openModal('+i+')"><div class="history-meta"><div><div class="history-week">Semana '+r.weekKey+'</div><div class="history-author">'+r.author+'</div></div><div class="history-date">'+r.timestamp+'</div></div><div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:10px;">'+(r.geral&&r.geral.resumo?r.geral.resumo.slice(0,120)+'...':'-')+'</div><div class="history-players">'+tags+'</div>'+(riskPs.length?'<div style="font-family:var(--mono);font-size:9px;color:var(--red);margin-top:10px;">! Risco: '+riskPs.map(function(p){return p.name;}).join(', ')+'</div>':'')+'</div>';
+    return '<div class="history-entry" style="position:relative;">'
+      +'<button data-wk="'+r.weekKey+'" onclick="event.stopPropagation();deleteReport(this.dataset.wk)" title="Excluir" style="position:absolute;top:14px;right:14px;background:none;border:1px solid rgba(255,61,61,0.25);color:var(--red);font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:3px 8px;cursor:pointer;z-index:1;">✕ EXCLUIR</button>'
+      +'<div onclick="openModal('+i+')" style="cursor:pointer;">'
+      +'<div class="history-meta"><div><div class="history-week">Semana '+r.weekKey+'</div><div class="history-author">'+r.author+'</div></div><div class="history-date">'+r.timestamp+'</div></div>'
+      +'<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:10px;">'+(r.geral&&r.geral.resumo?r.geral.resumo.slice(0,120)+'...':'-')+'</div>'
+      +'<div class="history-players">'+tags+'</div>'
+      +(riskPs.length?'<div style="font-family:var(--mono);font-size:9px;color:var(--red);margin-top:10px;">! Risco: '+riskPs.map(function(p){return p.name;}).join(', ')+'</div>':'')
+      +'</div></div>';
   }).join('');
+}
+
+function deleteReport(weekKey){
+  if(!confirm('Excluir o relatório da semana ' + weekKey + '?')) return;
+  // Firebase
+  if(window._fbReady && window._db){
+    try{ window._fbDel(window._fbRef(window._db,'portal/reports/'+weekKey)); }catch(e){}
+  }
+  // localStorage
+  var reports=JSON.parse(localStorage.getItem('sz_reports')||'[]');
+  reports=reports.filter(function(r){return r.weekKey!==weekKey;});
+  localStorage.setItem('sz_reports',JSON.stringify(reports));
+  renderHistory();
 }
 
 function openModal(idx){
@@ -1340,7 +1390,7 @@ function openModal(idx){
       '<div class="detail-row"><div class="detail-key">Mental</div><div class="detail-val">'+(p.mental||'-')+'</div></div>'+
     '</div>';
   }).join('');
-  document.getElementById('modal-body').innerHTML=
+  var mb=document.getElementById('modal-body'); if(!mb)return; mb.innerHTML=
     '<div class="modal-title">Semana '+r.weekKey+'</div>'+
     '<div class="modal-sub">'+r.timestamp+' - '+r.author+'</div>'+
     '<div style="margin-bottom:20px;"><div class="section-title" style="font-size:10px;">Visao Geral</div>'+
@@ -1352,327 +1402,559 @@ function openModal(idx){
     '<div class="section-title" style="font-size:10px;">Metas</div>'+
     '<div class="detail-row"><div class="detail-key">Cumpridas</div><div class="detail-val">'+(r.metas&&r.metas.cumpridas||'-')+'</div></div>'+
     '<div class="detail-row"><div class="detail-key">Proximas</div><div class="detail-val">'+(r.metas&&r.metas.proximas||'-')+'</div></div></div>';
-  document.getElementById('modal-overlay').classList.add('open');
+  var mo=document.getElementById('modal-overlay'); if(mo)mo.classList.add('open');
 }
 
-function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModal(){ var mo=document.getElementById('modal-overlay'); if(mo)mo.classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════
+// RELATÓRIO DIÁRIO
+// ═══════════════════════════════════════════════════════
+var selectedDay = null;  // 'YYYY-MM-DD'
+var dailyReports = {};   // {dateKey: reportObj}  — espelhado do Firebase
+
+// Bind Firebase para relatórios diários
+function bindDailyReports() {
+  var wk = getWeekKey();
+  fbOn('portal/daily/' + wk, function(val) {
+    dailyReports = val || {};
+    renderReportCal();
+    // Atualizar form aberto se ainda visível
+    if (selectedDay && dailyReports[selectedDay]) {
+      // não re-renderiza o form para não perder edição
+    }
+  });
+}
+
+function renderReportCal() {
+  var grid = document.getElementById('rpt-cal'); if (!grid) return;
+  var dates = getWeekDates();
+  var DOW = ['SEG','TER','QUA','QUI','SEX','SAB','DOM'];
+  grid.innerHTML = dates.map(function(d, i) {
+    var key = fmtKey(d);
+    var isSun = d.getDay() === 0;
+    var isToday = fmtKey(d) === fmtKey(new Date());
+    var hasDone = !!dailyReports[key];
+    var isSel = selectedDay === key;
+    var cls = ['rdc'];
+    if (isSun) cls.push('sunday');
+    if (isToday) cls.push('tod');
+    if (hasDone) cls.push('done');
+    if (isSel) cls.push('sel');
+    var lbl = hasDone ? (isSun ? 'SEMANAL ✓' : 'PREENCH. ✓') : (isToday ? 'HOJE' : '');
+    var lblCor = hasDone ? 'var(--green)' : isToday ? 'var(--cyan)' : 'transparent';
+    if (isSun && hasDone) lblCor = 'var(--cyan)';
+    return '<div class="' + cls.join(' ') + '" data-k="' + key + '" data-s="' + (isSun?1:0) + '" data-i="' + i + '" onclick="openDayForm(this.dataset.k,this.dataset.s==\'1\',parseInt(this.dataset.i))">'
+      + '<div class="rdc-dow">' + DOW[i] + '</div>'
+      + '<div class="rdc-num">' + d.getDate() + '</div>'
+      + '<div class="rdc-lbl" style="color:' + lblCor + ';">' + lbl + '</div>'
+      + '<div class="rdc-bar"></div>'
+      + '</div>';
+  }).join('');
+}
+
+function fmtKey(d) {
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).padStart(2,'0');
+  var dd = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + dd;
+}
+
+function openDayForm(key, isSun, dayIdx) {
+  selectedDay = key;
+  renderReportCal();
+  var saved = dailyReports[key] || {};
+  var d = new Date(key + 'T12:00:00');
+  var dLabel = d.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  var form = document.getElementById('rpt-form'); if (!form) return;
+  var borderColor = isSun ? 'rgba(0,229,255,0.3)' : 'rgba(30,144,255,0.3)';
+  var accentColor = isSun ? 'var(--cyan)' : 'var(--blue)';
+
+  // Players container (igual ao relatório semanal mas com IDs prefixados por dia)
+  var playerBlocks = PLAYERS.map(function(p) {
+    var s = (saved.players && saved.players[p.id]) || {};
+    var statusOpts = STATUS_OPTIONS.map(function(o) {
+      return '<option value="' + o.val + '"' + (s.status === o.val ? ' selected' : '') + '>' + o.label + '</option>';
+    }).join('');
+    var notaBtns = [1,2,3,4,5].map(function(n) {
+      return '<button class="nota-btn' + (s.nota >= n ? ' active' : '') + '" data-k="' + key + '" data-p="' + p.id + '" data-n="' + n + '" onclick="setDayNota(this.dataset.k,this.dataset.p,parseInt(this.dataset.n),this)">' + n + '</button>';
+    }).join('');
+    return '<div class="player-block" style="margin-bottom:10px;">'
+      + '<div class="player-block-header">'
+      +   '<div style="display:flex;align-items:center;gap:10px;">'
+      +     '<div class="player-name-display">' + p.name + '</div>'
+      +     '<div class="player-role-badge">' + p.role + '</div>'
+      +   '</div>'
+      +   '<div class="player-controls">'
+      +     '<div class="stars-row"><span class="stars-label">NOTA</span>'
+      +       '<div class="nota-wrap" id="daynota-' + key + '-' + p.id + '">' + notaBtns + '</div>'
+      +       '<span class="nota-val" id="daynota-val-' + key + '-' + p.id + '">' + (s.nota ? s.nota + '/5' : '-') + '</span>'
+      +     '</div>'
+      +     '<label class="risk-toggle"><input type="checkbox" id="dayrisk-' + key + '-' + p.id + '"' + (s.risco ? ' checked' : '') + '><div class="risk-box">!</div><span>Risco</span></label>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="grid-2" style="margin-bottom:10px;">'
+      +   '<div><label class="field-label">Status / Forma</label>'
+      +     '<div class="status-select-wrap"><div class="status-dot" id="daysdot-' + key + '-' + p.id + '"></div>'
+      +     '<select id="daystatus-' + key + '-' + p.id + '" data-k="' + key + '" data-p="' + p.id + '" onchange="updateDayDot(this.dataset.k,this.dataset.p)">' + statusOpts + '</select></div></div>'
+      +   '<div><label class="field-label">Desempenho técnico</label>'
+      +     '<select id="daytecnico-' + key + '-' + p.id + '">'
+      +     '<option value="">- Selecionar -</option>'
+      +     ['Excelente','Acima da média','Na média','Abaixo da média','Fraco'].map(function(o){return '<option'+(s.tecnico===o?' selected':'')+'>'+o+'</option>';}).join('')
+      +     '</select></div>'
+      + '</div>'
+      + '<div class="grid-3">'
+      +   '<div><label class="field-label">Positivos</label><textarea id="daypos-' + key + '-' + p.id + '" placeholder="O que se destacou...">' + (s.pos||'') + '</textarea></div>'
+      +   '<div><label class="field-label">A melhorar</label><textarea id="dayneg-' + key + '-' + p.id + '" placeholder="O que corrigir...">' + (s.neg||'') + '</textarea></div>'
+      +   '<div><label class="field-label">Mental</label><textarea id="daymental-' + key + '-' + p.id + '" placeholder="Atitude, foco...">' + (s.mental||'') + '</textarea></div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  // Metas individuais por player
+  var metasGrid = '<div class="metas-grid">'
+    + PLAYERS.map(function(p) {
+      var sm = (saved.metas && saved.metas[p.id]) || {};
+      return '<div class="meta-player-card">'
+        + '<div class="meta-player-name">' + p.name + ' <span class="meta-player-role">' + p.role + '</span></div>'
+        + '<div class="meta-field" style="margin-bottom:8px;"><label>Meta desta sessão</label>'
+        +   '<textarea id="daymeta-sess-' + key + '-' + p.id + '" placeholder="O que esse player deve focar hoje...">' + (sm.sessao||'') + '</textarea></div>'
+        + '<div class="meta-field"><label>Status da meta anterior</label>'
+        +   '<select id="daymeta-st-' + key + '-' + p.id + '">'
+        +   '<option value="">—</option>'
+        +   ['Cumprida','Parcial','Não cumprida','Sem meta anterior'].map(function(o){return '<option'+(sm.status===o?' selected':'')+'>'+o+'</option>';}).join('')
+        +   '</select></div>'
+        + '</div>';
+    }).join('') + '</div>';
+
+  var sundayExtra = isSun ? (
+    '<div class="section-title" style="font-size:11px;color:var(--cyan);margin-bottom:12px;">RESUMO SEMANAL</div>'
+    + '<div class="panel" style="border-color:rgba(0,229,255,0.2);margin-bottom:18px;">'
+    +   '<div class="grid-2" style="margin-bottom:14px;">'
+    +     '<div><label class="field-label">Resumo da semana</label><textarea id="daygeral-resumo" placeholder="Balanço geral da semana...">' + (saved.geral && saved.geral.resumo || '') + '</textarea></div>'
+    +     '<div><label class="field-label">Prioridade para próxima semana</label><textarea id="daygeral-prox" placeholder="O que focar na próxima semana...">' + (saved.geral && saved.geral.prox || '') + '</textarea></div>'
+    +   '</div>'
+    +   '<div class="grid-3">'
+    +     '<div><label class="field-label">Total de scrims</label><input type="number" id="daygeral-scrims" min="0" max="50" placeholder="Ex: 8" value="' + (saved.geral && saved.geral.scrims || '') + '"></div>'
+    +     '<div><label class="field-label">Win Rate (%)</label><input type="number" id="daygeral-wr" min="0" max="100" placeholder="Ex: 60" value="' + (saved.geral && saved.geral.wr || '') + '"></div>'
+    +     '<div><label class="field-label">Clima do elenco</label>'
+    +       '<select id="daygeral-clima">'
+    +       ['','Muito positivo','Positivo','Neutro','Tenso','Crítico'].map(function(o){return '<option'+(saved.geral&&saved.geral.clima===o?' selected':'')+'>'+o+'</option>';}).join('')
+    +       '</select></div>'
+    +   '</div>'
+    + '</div>'
+  ) : '';
+
+  form.innerHTML = '<div style="border:1px solid ' + borderColor + ';background:rgba(30,144,255,0.02);">'
+    + '<div style="padding:16px 20px;border-bottom:1px solid ' + borderColor + ';display:flex;align-items:center;justify-content:space-between;">'
+    +   '<div>'
+    +     '<div style="font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:2px;color:#fff;text-transform:capitalize;">' + dLabel + '</div>'
+    +     '<div style="font-family:var(--mono);font-size:9px;color:' + accentColor + ';letter-spacing:2px;margin-top:2px;">' + (isSun ? 'RELATÓRIO SEMANAL' : 'RELATÓRIO DIÁRIO') + '</div>'
+    +   '</div>'
+    +   '<button onclick="closeDayForm()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:1px;">FECHAR ✕</button>'
+    + '</div>'
+    + '<div style="padding:20px;">'
+    + sundayExtra
+    + '<div class="section-title" style="font-size:11px;margin-bottom:12px;">TREINO DO DIA</div>'
+    + '<div class="panel" style="margin-bottom:18px;">'
+    +   '<div class="grid-2" style="margin-bottom:12px;">'
+    +     '<div><label class="field-label">Foco do treino</label><textarea id="dayt-foco" placeholder="Tema central da sessão...">' + (saved.treino && saved.treino.foco || '') + '</textarea></div>'
+    +     '<div><label class="field-label">O que foi trabalhado</label><textarea id="dayt-conteudo" placeholder="Exercícios, situações, VODs...">' + (saved.treino && saved.treino.conteudo || '') + '</textarea></div>'
+    +   '</div>'
+    +   '<div class="grid-2">'
+    +     '<div><label class="field-label">Pontos positivos do time</label><textarea id="dayt-pos" placeholder="O que funcionou bem...">' + (saved.treino && saved.treino.pos || '') + '</textarea></div>'
+    +     '<div><label class="field-label">A corrigir amanhã</label><textarea id="dayt-corr" placeholder="O que precisa melhorar...">' + (saved.treino && saved.treino.corr || '') + '</textarea></div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="section-title" style="font-size:11px;margin-bottom:12px;">AVALIAÇÃO INDIVIDUAL</div>'
+    + playerBlocks
+    + '<div class="section-title" style="font-size:11px;margin-top:18px;margin-bottom:12px;">METAS INDIVIDUAIS</div>'
+    + metasGrid
+    + '<div class="section-title" style="font-size:11px;margin-top:18px;margin-bottom:12px;">OBSERVAÇÕES</div>'
+    + '<div class="panel" style="margin-bottom:18px;">'
+    +   '<div class="grid-2">'
+    +     '<div><label class="field-label">Observação comportamental</label><textarea id="dayobs-comp" placeholder="Disciplina, atitude, comunicação...">' + (saved.obs && saved.obs.comp || '') + '</textarea></div>'
+    +     '<div><label class="field-label">Para a direção</label><textarea id="dayobs-dir" placeholder="Algo que a direção precisa saber...">' + (saved.obs && saved.obs.dir || '') + '</textarea></div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="submit-row">'
+    +   '<button class="btn-primary" id="btn-day-enviar" data-k="' + key + '" data-s="' + (isSun?1:0) + '" onclick="submitDayReport(this.dataset.k,this.dataset.s==\'1\')">SALVAR</button>'
+    +   '<span class="submit-status" id="day-submit-status"></span>'
+    + '</div>'
+    + '</div></div>';
+
+  // Aplicar status dots
+  PLAYERS.forEach(function(p) {
+    var s = (saved.players && saved.players[p.id]) || {};
+    if (s.status) {
+      var dot = document.getElementById('daysdot-' + key + '-' + p.id);
+      if (dot) {
+        dot.className = 'status-dot';
+        var opt = STATUS_OPTIONS.find(function(o){return o.val===s.status;});
+        if (opt) dot.classList.add(opt.cls);
+      }
+    }
+  });
+
+  form.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function setDayNota(key, pid, val, btn) {
+  var wrap = document.getElementById('daynota-' + key + '-' + pid);
+  if (wrap) wrap.querySelectorAll('.nota-btn').forEach(function(b,i){b.classList.toggle('active',i<val);});
+  var el = document.getElementById('daynota-val-' + key + '-' + pid);
+  if (el) el.textContent = val + '/5';
+}
+
+function updateDayDot(key, pid) {
+  var val = (document.getElementById('daystatus-' + key + '-' + pid)||{}).value || '';
+  var dot = document.getElementById('daysdot-' + key + '-' + pid);
+  if (dot) {
+    dot.className = 'status-dot';
+    var opt = STATUS_OPTIONS.find(function(o){return o.val===val;});
+    if (opt) dot.classList.add(opt.cls);
+  }
+}
+
+function collectDayReport(key, isSun) {
+  var g = function(id) { var el=document.getElementById(id); return el?el.value.trim():''; };
+  var gv = function(id) { var el=document.getElementById(id); return el?el.value:''; };
+
+  var players = {};
+  PLAYERS.forEach(function(p) {
+    var notaEl = document.getElementById('daynota-' + key + '-' + p.id);
+    var nota = 0;
+    if (notaEl) notaEl.querySelectorAll('.nota-btn.active').forEach(function(b,i){nota=i+1;});
+    players[p.id] = {
+      name: p.name, role: p.role, nota: nota || null,
+      status:  gv('daystatus-'  + key + '-' + p.id),
+      tecnico: gv('daytecnico-' + key + '-' + p.id),
+      pos:     g('daypos-'    + key + '-' + p.id),
+      neg:     g('dayneg-'    + key + '-' + p.id),
+      mental:  g('daymental-' + key + '-' + p.id),
+      risco:   (document.getElementById('dayrisk-' + key + '-' + p.id)||{}).checked || false,
+    };
+  });
+
+  var metas = {};
+  PLAYERS.forEach(function(p) {
+    metas[p.id] = {
+      sessao: g('daymeta-sess-' + key + '-' + p.id),
+      status: gv('daymeta-st-'  + key + '-' + p.id),
+    };
+  });
+
+  var data = {
+    dateKey: key, weekKey: getWeekKey(),
+    isSunday: isSun,
+    timestamp: new Date().toLocaleString('pt-BR'),
+    author: currentUser === 'coach' ? 'Coach - Lucas' : 'Staff',
+    treino: { foco: g('dayt-foco'), conteudo: g('dayt-conteudo'), pos: g('dayt-pos'), corr: g('dayt-corr') },
+    players: players,
+    metas: metas,
+    obs: { comp: g('dayobs-comp'), dir: g('dayobs-dir') },
+  };
+
+  if (isSun) {
+    data.geral = {
+      resumo: g('daygeral-resumo'), prox: g('daygeral-prox'),
+      scrims: gv('daygeral-scrims'), wr: gv('daygeral-wr'), clima: gv('daygeral-clima'),
+    };
+  }
+  return data;
+}
+
+async function submitDayReport(key, isSun) {
+  var data = collectDayReport(key, isSun);
+  var btn = document.getElementById('btn-day-enviar');
+  var status = document.getElementById('day-submit-status');
+  btn.disabled = true; status.textContent = 'Salvando...'; status.className = 'submit-status';
+
+  // Firebase
+  fbSet('portal/daily/' + getWeekKey() + '/' + key, data);
+  dailyReports[key] = data;
+
+  // Discord
+  var msg = buildDayMsg(data, isSun);
+  var ok = await sendDiscord(msg, 'relatorio');
+
+  // Alertas de risco
+  var riskPs = Object.values(data.players).filter(function(p){return p.risco;});
+  if (riskPs.length) {
+    var riskNames = riskPs.map(function(p){return '! ' + p.name + ' (' + p.role + ')';}).join('\n');
+    await sendDiscord('ALERTA DE RISCO - ' + key + '\n\n' + riskNames, 'risco');
+  }
+
+  status.textContent = ok ? 'Salvo no Firebase e enviado ao Discord!' : 'Salvo no Firebase.';
+  status.className = 'submit-status ok'; btn.disabled = false;
+  renderReportCal();
+}
+
+function buildDayMsg(d, isSun) {
+  var playerLines = Object.values(d.players).filter(function(p){return p.nota||p.pos||p.neg||p.mental;}).map(function(p){
+    return '**' + p.name + (p.risco?' [RISCO]':'') + '** | ' + p.role + '\nNota: ' + (p.nota?p.nota+'/5':'-') + ' | Forma: ' + (p.status||'-') + ' | Tecnico: ' + (p.tecnico||'-') + '\nPos: ' + (p.pos||'-') + ' | Melhorar: ' + (p.neg||'-') + ' | Mental: ' + (p.mental||'-');
+  }).join('\n\n');
+
+  var metaLines = Object.keys(d.metas).filter(function(pid){ var pl=PLAYERS.find(function(x){return x.id===pid;}); return pl&&pl.line==='Principal'&&d.metas[pid].sessao; }).map(function(pid){
+    var m = d.metas[pid]; var p = PLAYERS.find(function(x){return x.id===pid;});
+    return '**' + (p?p.name:pid) + ':** ' + m.sessao + (m.status?' [' + m.status + ']':'');
+  }).join('\n');
+
+  var lines = [
+    isSun ? '# RELATORIO SEMANAL - SAFEZONE' : '# RELATORIO DIARIO - SAFEZONE',
+    '**Data:** ' + d.dateKey + ' | **Por:** ' + d.author + ' | ' + d.timestamp,
+    '',
+  ];
+  if (isSun && d.geral) {
+    lines.push('## RESUMO DA SEMANA');
+    lines.push('**Resumo:** ' + (d.geral.resumo||'-'));
+    lines.push('**Scrims:** ' + (d.geral.scrims||'-') + ' | **WR:** ' + (d.geral.wr||'-') + '% | **Clima:** ' + (d.geral.clima||'-'));
+    lines.push('**Proxima semana:** ' + (d.geral.prox||'-'));
+    lines.push('');
+  }
+  lines.push('## TREINO');
+  lines.push('**Foco:** ' + (d.treino.foco||'-'));
+  lines.push('**Conteudo:** ' + (d.treino.conteudo||'-'));
+  lines.push('**Pos:** ' + (d.treino.pos||'-') + ' | **Corrigir:** ' + (d.treino.corr||'-'));
+  lines.push('');
+  if (playerLines) { lines.push('## PLAYERS'); lines.push(playerLines); lines.push(''); }
+  if (metaLines)   { lines.push('## METAS INDIVIDUAIS'); lines.push(metaLines); lines.push(''); }
+  lines.push('## OBS');
+  lines.push('**Comportamental:** ' + (d.obs.comp||'-'));
+  lines.push('**Direcao:** ' + (d.obs.dir||'-'));
+  lines.push('\n---');
+  return lines.join('\n');
+}
+
+// Hook: quando carrega a aba de relatório, renderiza o cal e bind firebase
+var _origSwitchTab = switchTab;
+switchTab = function(name, btn) {
+  _origSwitchTab(name, btn);
+  if (name === 'report') {
+    bindDailyReports();
+    renderReportCal();
+  }
+  if (name === 'metas') {
+    bindMetas();
+    renderMetasTab();
+  }
+};
+
+// Hook initPortal para também fazer bind quando já logado
+var _origInitPortal = initPortal;
+initPortal = function() {
+  _origInitPortal();
+};
+
+function closeDayForm(){var f=document.getElementById('rpt-form');if(f)f.innerHTML='';selectedDay=null;renderReportCal();}
+
+// ═══════════════════════════════════════════════════════
+// METAS INDIVIDUAIS SEMANAIS
+// ═══════════════════════════════════════════════════════
+var metasData = {};     // {wk: {mapa, obs, players: {pid: {meta, tipo, resultado}}}}
+var metasResultados = {}; // tracking de resultado selecionado por pid
+
+function isTodaySunday() {
+  return new Date().getDay() === 0;
+}
+
+function bindMetas() {
+  var wk = getWeekKey();
+  fbOn('portal/metas/' + wk, function(val) {
+    if (val) metasData[wk] = val;
+    var tab = document.getElementById('tab-metas');
+    if (tab && tab.style.display !== 'none') renderMetasTab();
+  });
+}
+
+function renderMetasTab() {
+  var wk = getWeekKey();
+  var saved = metasData[wk] || {};
+  var isSun = isTodaySunday();
+  metasResultados = {};
+
+  // Week label
+  var wlEl = document.getElementById('metas-week-label');
+  if (wlEl) wlEl.textContent = getWeekLabel();
+
+  // Domingo banner
+  var banner = document.getElementById('metas-domingo-banner');
+  if (banner) banner.style.display = isSun ? 'block' : 'none';
+
+  // Obs
+  var obsEl = document.getElementById('metas-obs');
+  if (obsEl) obsEl.value = saved.obs || '';
+
+  // Players
+  var container = document.getElementById('metas-players-container');
+  if (!container) return;
+
+  var principal = PLAYERS.filter(function(p){return p.line==='Principal';});
+
+  container.innerHTML = principal.map(function(p){ return buildMetaCard(p, saved, isSun); }).join('');
+
+  // Aplicar resultados salvos nos botões
+  PLAYERS.forEach(function(p) {
+    var ps = saved.players && saved.players[p.id];
+    if (ps && ps.resultado) {
+      metasResultados[p.id] = ps.resultado;
+      applyMetaResultadoUI(p.id, ps.resultado);
+    }
+  });
+}
+
+function buildMetaCard(p, saved, isSun) {
+  var ps = (saved.players && saved.players[p.id]) || {};
+  var tipoOpts = [
+    {val:'', lbl:'— Tipo de meta —'},
+    {val:'mecanica', lbl:'Mecânica (mira, movimentação)'},
+    {val:'hs',       lbl:'Headshot % (HS%)'},
+    {val:'elo',      lbl:'Subir elo / rank'},
+    {val:'agente',   lbl:'Dominar agente'},
+    {val:'comunicacao', lbl:'Comunicação'},
+    {val:'mental',   lbl:'Mental / consistência'},
+    {val:'fisico',   lbl:'Físico / rotina de treino'},
+    {val:'outro',    lbl:'Outro'},
+  ];
+  var tipoSel = ps.tipo || '';
+  var tipoHtml = tipoOpts.map(function(o){
+    return '<option value="' + o.val + '"' + (tipoSel===o.val?' selected':'') + '>' + o.lbl + '</option>';
+  }).join('');
+
+  var resultadoHtml = isSun ? (
+    '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">'
+    + '<label class="field-label">Resultado da meta</label>'
+    + '<div class="meta-resultado-wrap">'
+    + '<button class="meta-res-btn" data-pid="' + p.id + '" data-r="sim" onclick="selectMetaResultado(this.dataset.pid,this.dataset.r)">SIM</button>'
+    + '<button class="meta-res-btn" data-pid="' + p.id + '" data-r="parc" onclick="selectMetaResultado(this.dataset.pid,this.dataset.r)">PARCIAL</button>'
+    + '<button class="meta-res-btn" data-pid="' + p.id + '" data-r="nao" onclick="selectMetaResultado(this.dataset.pid,this.dataset.r)">NAO</button>'
+    + '</div>'
+    + '<div class="meta-field" style="margin-top:10px;">'
+    + '<label class="field-label">Observação sobre o resultado</label>'
+    + '<textarea id="meta-resobs-' + p.id + '" placeholder="Como foi o desempenho em relação à meta...">' + (ps.resobs||'') + '</textarea>'
+    + '</div>'
+    + '</div>'
+  ) : '';
+
+  return '<div class="meta-card" id="meta-card-' + p.id + '">'
+    + '<div class="meta-card-header">'
+    +   '<div class="player-name-display">' + p.name + '</div>'
+    +   '<div class="player-role-badge">' + p.role + '</div>'
+    +   '<span class="meta-player-tag">' + p.line + '</span>'
+    +   '<div class="meta-status-dot" id="meta-dot-' + p.id + '"></div>'
+    + '</div>'
+    + '<div class="grid-2" style="margin-bottom:10px;">'
+    +   '<div>'
+    +     '<label class="field-label">Meta da semana</label>'
+    +     '<textarea id="meta-txt-' + p.id + '" placeholder="Ex: Aumentar HS% para 25%, subir para Imortal 1...">'
+    +     (ps.meta||'') + '</textarea>'
+    +   '</div>'
+    +   '<div>'
+    +     '<label class="field-label">Tipo de meta</label>'
+    +     '<select id="meta-tipo-' + p.id + '">' + tipoHtml + '</select>'
+    +     '<label class="field-label" style="margin-top:10px;">Prazo / referência</label>'
+    +     '<input type="text" id="meta-prazo-' + p.id + '" placeholder="Ex: até sexta, essa semana..." value="' + (ps.prazo||'') + '">'
+    +   '</div>'
+    + '</div>'
+    + resultadoHtml
+    + '</div>';
+}
+
+function selectMetaResultado(pid, resultado) {
+  metasResultados[pid] = resultado;
+  applyMetaResultadoUI(pid, resultado);
+}
+
+function applyMetaResultadoUI(pid, resultado) {
+  var dot = document.getElementById('meta-dot-' + pid);
+  if (dot) { dot.className = 'meta-status-dot ' + resultado; }
+  // highlight selected button
+  ['sim','parc','nao'].forEach(function(r) {
+    var btn = document.querySelector('[data-pid="' + pid + '"][data-r="' + r + '"]');
+    if (btn) {
+      btn.className = 'meta-res-btn' + (resultado === r ? ' sel-' + r : '');
+    }
+  });
+}
+
+function collectMetas() {
+  var isSun = isTodaySunday();
+  var players = {};
+  PLAYERS.filter(function(p){return p.line==='Principal';}).forEach(function(p) {
+    var m = {
+      meta:  (document.getElementById('meta-txt-'  + p.id)||{}).value || '',
+      tipo:  (document.getElementById('meta-tipo-' + p.id)||{}).value || '',
+      prazo: (document.getElementById('meta-prazo-'+ p.id)||{}).value || '',
+    };
+    if (isSun) {
+      m.resultado = metasResultados[p.id] || '';
+      m.resobs = ((document.getElementById('meta-resobs-'+p.id)||{}).value||'').trim();
+    }
+    players[p.id] = m;
+  });
+  return {
+    weekKey: getWeekKey(),
+    timestamp: new Date().toLocaleString('pt-BR'),
+    author: currentUser === 'coach' ? 'Coach - Lucas' : 'Staff',
+    obs:  (document.getElementById('metas-obs') ||{}).value || '',
+    players: players,
+  };
+}
+
+async function submitMetas() {
+  var data = collectMetas();
+  var status = document.getElementById('metas-status');
+  status.textContent = 'Salvando...'; status.className = 'submit-status';
+
+  // Firebase
+  fbSet('portal/metas/' + data.weekKey, data);
+  metasData[data.weekKey] = data;
+
+  // Discord
+  var isSun = isTodaySunday();
+  var lines = [
+    isSun ? '# REVISAO DE METAS - SAFEZONE' : '# METAS DA SEMANA - SAFEZONE',
+    '**Semana:** ' + data.weekKey + ' | ' + data.author + ' | ' + data.timestamp,
+    '**Mapa Premier:** ' + (data.mapa||'-'),
+    '',
+  ];
+
+  if (data.obs) { lines.push('**Foco coletivo:** ' + data.obs); lines.push(''); }
+
+  if (isSun) {
+    lines.push('## RESULTADOS');
+    var icons = {sim:'SIM', parc:'PARCIAL', nao:'NAO', '':'-'};
+    PLAYERS.forEach(function(p) {
+      var m = data.players[p.id];
+      if (!m || !m.meta) return;
+      var res = icons[m.resultado] || '-';
+      lines.push('**' + p.name + '** | ' + p.role);
+      lines.push('Meta: ' + m.meta);
+      lines.push('Resultado: ' + res + (m.resobs?' | '+m.resobs:''));
+      lines.push('');
+    });
+  } else {
+    lines.push('## METAS');
+    PLAYERS.forEach(function(p) {
+      var m = data.players[p.id];
+      if (!m || !m.meta) return;
+      lines.push('**' + p.name + '** (' + p.role + '): ' + m.meta + (m.tipo?' ['+m.tipo+']':'') + (m.prazo?' | Prazo: '+m.prazo:''));
+    });
+  }
+  lines.push('', '---');
+
+  var ok = await sendDiscord(lines.join('\n'), 'metas');
+  status.textContent = ok ? 'Salvo no Firebase e enviado ao Discord!' : 'Salvo no Firebase.';
+  status.className = 'submit-status ok';
+}
+
+// ── Hook bindFirebase para incluir metas ────────────────────────────────────
+var _origBindFirebase = bindFirebase;
+bindFirebase = function() {
+  _origBindFirebase();
+  bindMetas();
+};
+
 </script>
 </body>
-</html><script>
-// PATCH INJECTION — sobrescreve funções existentes
-
-// ═══ TAGS CONFIG ═══
-var TAGS = [
-  {id:'tilt',       label:'Tilt',        color:'red'},
-  {id:'comunicacao',label:'Comunicação',  color:'red'},
-  {id:'ego',        label:'Ego',          color:'red'},
-  {id:'disciplina', label:'Disciplina',   color:'green'},
-  {id:'lideranca',  label:'Liderança',    color:'green'},
-  {id:'confianca',  label:'Confiança',    color:'green'},
-  {id:'mental',     label:'Mental',       color:'blue'},
-  {id:'horario',    label:'Horário',      color:'blue'},
-  {id:'consistencia',label:'Consistência',color:'blue'},
-];
-
-var playerTags = {};    // {wk: {pid: [tagIds]}}
-var playerClips = {};   // {pid: [{label, url, date}]}
-
-// Carregar do firebase ao bindar
-var origBindFirebase = window.bindFirebase;
-
-// ═══ TAGS NO BLOCK DO PLAYER ═══
-var origBuildPlayerBlock = window.buildPlayerBlock;
-
-window.buildPlayerBlock = function(p) {
-  var base = origBuildPlayerBlock ? origBuildPlayerBlock(p) : '';
-  // injeta bloco de tags antes do fechamento do player-block
-  var tagBtns = TAGS.map(function(t){
-    return '<button class="tag-btn" id="tag-'+p.id+'-'+t.id+'" onclick="toggleTag(\''+p.id+'\',\''+t.id+'\')" title="'+t.label+'">'+t.label+'</button>';
-  }).join('');
-  var tagSection = '<div class="tags-section"><span class="tags-label">Tags da semana</span><div class="tags-grid">'+tagBtns+'</div></div>';
-  // Adicionar clip
-  var clipSection = '<div class="tags-section" style="margin-top:10px;"><span class="tags-label">Clips / VODs</span>'
-    +'<div style="display:flex;gap:8px;margin-bottom:6px;">'
-    +'<input type="text" id="clip-label-'+p.id+'" placeholder="Descrição (ex: Round 14 postplant)" style="flex:1;font-size:11px;padding:6px 10px;">'
-    +'<input type="text" id="clip-url-'+p.id+'" placeholder="https://..." style="flex:1;font-size:11px;padding:6px 10px;">'
-    +'<button onclick="addClip(\''+p.id+'\')" style="background:var(--blue);color:#fff;border:none;padding:6px 14px;font-family:var(--mono);font-size:9px;cursor:pointer;">+</button>'
-    +'</div>'
-    +'<div id="clips-list-'+p.id+'"></div>'
-    +'</div>';
-  return base.replace('</div>', tagSection + clipSection + '</div>');
-};
-
-function toggleTag(pid, tagId) {
-  var wk = getWeekKey();
-  if(!playerTags[wk]) playerTags[wk]={};
-  if(!playerTags[wk][pid]) playerTags[wk][pid]=[];
-  var arr = playerTags[wk][pid];
-  var idx = arr.indexOf(tagId);
-  if(idx>=0) arr.splice(idx,1); else arr.push(tagId);
-  fbSet('portal/tags/'+wk+'/'+pid, arr.length ? arr : null);
-  updateTagDisplay(pid, wk);
-}
-
-function updateTagDisplay(pid, wk) {
-  var wk2 = wk || getWeekKey();
-  var active = (playerTags[wk2] && playerTags[wk2][pid]) || [];
-  TAGS.forEach(function(t){
-    var btn = document.getElementById('tag-'+pid+'-'+t.id);
-    if(!btn) return;
-    btn.className = 'tag-btn';
-    if(active.indexOf(t.id)>=0) btn.classList.add('active-'+t.color);
-  });
-}
-
-function addClip(pid) {
-  var labelEl = document.getElementById('clip-label-'+pid);
-  var urlEl = document.getElementById('clip-url-'+pid);
-  if(!labelEl||!urlEl) return;
-  var label = labelEl.value.trim();
-  var url = urlEl.value.trim();
-  if(!label && !url) return;
-  if(!playerClips[pid]) playerClips[pid]=[];
-  var clip = {label:label||url, url:url, date:new Date().toLocaleDateString('pt-BR')};
-  playerClips[pid].unshift(clip);
-  fbSet('portal/clips/'+pid, playerClips[pid]);
-  labelEl.value=''; urlEl.value='';
-  renderClipsList(pid);
-}
-
-function renderClipsList(pid) {
-  var el = document.getElementById('clips-list-'+pid); if(!el) return;
-  var clips = playerClips[pid] || [];
-  if(!clips.length){el.innerHTML='';return;}
-  el.innerHTML = clips.slice(0,3).map(function(c,i){
-    return '<div class="clip-item">'
-      +'<span class="clip-date">'+c.date+'</span>'
-      +(c.url?'<a class="clip-link" href="'+c.url+'" target="_blank">🎥 '+c.label+'</a>'
-             :'<span class="clip-label">'+c.label+'</span>')
-      +'<button onclick="removeClip(\''+pid+'\','+i+')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:11px;">✕</button>'
-      +'</div>';
-  }).join('');
-  if(clips.length>3) el.innerHTML+='<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);padding:4px 0;">+'+( clips.length-3)+' clips no perfil completo</div>';
-}
-
-function removeClip(pid, idx){
-  if(!playerClips[pid]) return;
-  playerClips[pid].splice(idx,1);
-  fbSet('portal/clips/'+pid, playerClips[pid].length ? playerClips[pid] : null);
-  renderClipsList(pid);
-}
-
-// ═══ RANKING PONDERADO ═══
-function calcPresencaPct(pid) {
-  var total=0, present=0;
-  Object.keys(presencaData).forEach(function(wk){
-    var pd = presencaData[wk][pid] || {};
-    Object.values(pd).forEach(function(state){
-      total++;
-      if(state==='presente'||state==='destaque') present++;
-      if(state==='atrasado') present+=0.5;
-    });
-  });
-  return total>0 ? Math.round((present/total)*100) : null;
-}
-
-function calcEvolucao(pid) {
-  var reports = JSON.parse(localStorage.getItem('sz_reports')||'[]');
-  var notas = reports.map(function(r){
-    var p = (r.players||[]).find(function(x){return x.id===pid||x.name===pid;});
-    return p ? p.nota : null;
-  }).filter(function(n){return n!=null;});
-  if(notas.length<2) return 0;
-  return notas[0] - notas[notas.length-1]; // positivo = melhorou
-}
-
-function calcScore(p) {
-  var notaVal = notaRatings[p.id]||0;
-  var presPct = calcPresencaPct(p.id);
-  // Se não tem nota E não tem presença, score é 0
-  var temDados = notaVal > 0 || presPct != null;
-  if(!temDados) return {total:0, nota:0, pres:0, evolucao:0, comportamento:0, presPct:null};
-  var nota = notaVal / 5 * 40;  // 40%
-  var pres = presPct!=null ? (presPct/100)*25 : 0;   // 25%
-  var evo = calcEvolucao(p.id);
-  var evolucao = Math.min(Math.max((evo+4)/8, 0),1)*20; // 20%
-  var wk = getWeekKey();
-  var activeTags = (playerTags[wk]&&playerTags[wk][p.id])||[];
-  var positivoTags = activeTags.filter(function(t){var found=TAGS.find(function(x){return x.id===t;});return found&&found.color==='green';}).length;
-  var negativoTags = activeTags.filter(function(t){var found=TAGS.find(function(x){return x.id===t;});return found&&found.color==='red';}).length;
-  var comportamento = Math.min(Math.max((positivoTags*0.1) - (negativoTags*0.1),0),1)*10; // 10% — sem base
-  var destaque = activeTags.indexOf('confianca')>=0||activeTags.indexOf('lideranca')>=0 ? 5 : 0; // 5%
-  var total = nota+pres+evolucao+comportamento+destaque;
-  return {total:Math.round(total*10)/10, nota:Math.round(nota*10)/10, pres:Math.round(pres*10)/10, evolucao:Math.round(evolucao*10)/10, comportamento:Math.round(comportamento*10)/10, presPct:presPct};
-}
-
-window.getRankedPlayers = function() {
-  return PLAYERS.map(function(p){
-    var sc = calcScore(p);
-    return Object.assign({},p,{nota:notaRatings[p.id]||0, score:sc.total, scoreDetail:sc});
-  }).sort(function(a,b){return b.score-a.score;});
-};
-
-window.buildRankItem = function(p,i){
-  var posCls=i===0?'gold':i===1?'silver':i===2?'bronze':'';
-  var sc = p.scoreDetail || {total:p.nota,nota:p.nota,pres:0,evolucao:0,comportamento:0,presPct:null};
-  var pres = sc.presPct!=null ? sc.presPct+'%' : '—';
-  var wk=getWeekKey();
-  var activeTags=(playerTags[wk]&&playerTags[wk][p.id])||[];
-  var tagHtml = activeTags.slice(0,3).map(function(tid){
-    var t=TAGS.find(function(x){return x.id===tid;}); if(!t)return'';
-    return '<span class="tag-badge '+t.color+'">'+t.label+'</span>';
-  }).join(' ');
-  return '<div class="ranking-item" onclick="openPlayerProfile(\''+p.id+'\')" style="cursor:pointer;">'
-    +'<div class="rank-pos '+posCls+'">'+(i+1)+'</div>'
-    +'<div class="rank-info">'
-      +'<div class="rank-name">'+p.name+'</div>'
-      +'<div class="rank-role">'+p.role+' · '+p.line+'</div>'
-      +(tagHtml?'<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">'+tagHtml+'</div>':'')
-    +'</div>'
-    +'<div style="text-align:right;">'
-      +'<div class="rank-score">'+(sc.total>0?sc.total:'—')+'</div>'
-      +'<div style="font-family:var(--mono);font-size:8px;color:var(--text-dim);">N:'+(p.nota||'—')+' P:'+pres+' E:'+(p.nota>0?sc.evolucao.toFixed(1):'—')+'</div>'
-    +'</div>'
-  +'</div>';
-};
-
-// ═══ PLAYER PROFILE ═══
-function openPlayerProfile(pid) {
-  var p = PLAYERS.find(function(x){return x.id===pid;}); if(!p) return;
-  var reports = JSON.parse(localStorage.getItem('sz_reports')||'[]');
-  var sc = calcScore(p);
-  var presPct = sc.presPct!=null ? sc.presPct+'%' : '—';
-  var avgNota = (function(){
-    var ns=reports.map(function(r){var pl=(r.players||[]).find(function(x){return x.name===p.name;});return pl?pl.nota:null;}).filter(function(n){return n;});
-    return ns.length?( ns.reduce(function(a,b){return a+b;},0)/ns.length).toFixed(1):'—';
-  })();
-
-  // Histórico de tags por semana
-  var tagHistory = '';
-  Object.keys(playerTags).sort().reverse().forEach(function(wk){
-    var tags = playerTags[wk][pid] || [];
-    if(!tags.length) return;
-    tagHistory += '<div class="week-history-item">'
-      +'<div class="week-history-key">'+wk+'</div>'
-      +'<div style="display:flex;gap:4px;flex-wrap:wrap;">'
-      +tags.map(function(tid){var t=TAGS.find(function(x){return x.id===tid;});return t?'<span class="tag-badge '+t.color+'">'+t.label+'</span>':'';}).join('')
-      +'</div></div>';
-  });
-
-  // Histórico de notas
-  var notaHistory = '';
-  reports.slice(0,8).reverse().forEach(function(r){
-    var pl=(r.players||[]).find(function(x){return x.name===p.name;}); if(!pl) return;
-    var bars=[1,2,3,4,5].map(function(n){return '<div class="spark-bar" style="height:'+(n<=pl.nota?pl.nota*4:2)+'px;background:'+(n<=pl.nota?'var(--blue)':'var(--border)')+';"></div>';}).join('');
-    notaHistory+='<div class="week-history-item">'
-      +'<div class="week-history-key">'+r.weekKey+'</div>'
-      +'<div style="display:flex;align-items:center;gap:10px;">'
-        +'<div class="week-history-nota">'+(pl.nota?pl.nota+'/5':'—')+'</div>'
-        +'<div class="sparkline">'+bars+'</div>'
-        +(pl.pos?'<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);max-width:200px;">'+pl.pos.slice(0,80)+'</div>':'')
-      +'</div></div>';
-  });
-
-  // Clips
-  var clips = playerClips[pid] || [];
-  var clipsHtml = clips.length
-    ? clips.map(function(c){return '<div class="clip-item"><span class="clip-date">'+c.date+'</span>'+(c.url?'<a class="clip-link" href="'+c.url+'" target="_blank">🎥 '+c.label+'</a>':'<span class="clip-label">'+c.label+'</span>')+'</div>';}).join('')
-    : '<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:12px;">Nenhum clip adicionado ainda.</div>';
-
-  // Tag patterns — detectar recorrência
-  var tagCount = {};
-  Object.values(playerTags).forEach(function(wkData){
-    var tags = wkData[pid]||[];
-    tags.forEach(function(tid){ tagCount[tid]=(tagCount[tid]||0)+1; });
-  });
-  var patterns = Object.keys(tagCount).filter(function(tid){return tagCount[tid]>=2;}).map(function(tid){
-    var t=TAGS.find(function(x){return x.id===tid;}); if(!t)return'';
-    return '<span class="tag-badge '+t.color+'" style="font-size:9px;">'+t.label+' ×'+tagCount[tid]+'</span>';
-  }).join(' ');
-
-  var html = '<div class="profile-header">'
-    +'<div class="profile-avatar">'+p.name.charAt(0)+'</div>'
-    +'<div><div class="profile-name">'+p.name+'</div><div class="profile-role">'+p.role+' · '+p.line+'</div></div>'
-    +'</div>'
-    +'<div class="profile-stats">'
-      +'<div class="profile-stat"><div class="profile-stat-val">'+(avgNota)+'</div><div class="profile-stat-lbl">MÉDIA NOTAS</div></div>'
-      +'<div class="profile-stat"><div class="profile-stat-val '+(sc.presPct!=null&&sc.presPct<70?'low':sc.presPct!=null&&sc.presPct<85?'mid':'')+'">'+presPct+'</div><div class="profile-stat-lbl">PRESENÇA</div></div>'
-      +'<div class="profile-stat"><div class="profile-stat-val">'+sc.total+'</div><div class="profile-stat-lbl">SCORE GERAL</div></div>'
-      +'<div class="profile-stat"><div class="profile-stat-val">'+reports.length+'</div><div class="profile-stat-lbl">SEMANAS</div></div>'
-    +'</div>'
-    +(patterns?'<div style="margin-bottom:20px;"><div class="section-title" style="font-size:10px;">⚠ Padrões recorrentes</div><div style="display:flex;gap:6px;flex-wrap:wrap;">'+patterns+'</div></div>':'')
-    +'<div class="profile-tabs">'
-      +'<button class="profile-tab active" onclick="showProfileTab(this,\'notas\')">Evolução</button>'
-      +'<button class="profile-tab" onclick="showProfileTab(this,\'tags\')">Tags</button>'
-      +'<button class="profile-tab" onclick="showProfileTab(this,\'clips\')">🎥 Clips</button>'
-    +'</div>'
-    +'<div id="ptab-notas">'+(notaHistory||'<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:20px;">Sem histórico ainda.</div>')+'</div>'
-    +'<div id="ptab-tags" style="display:none;">'+(tagHistory||'<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:20px;">Nenhuma tag registrada ainda.</div>')+'</div>'
-    +'<div id="ptab-clips" style="display:none;">'+clipsHtml+'</div>';
-
-  document.getElementById('modal-body').innerHTML = html;
-  document.getElementById('modal-overlay').classList.add('open');
-}
-
-function showProfileTab(btn, name) {
-  document.querySelectorAll('.profile-tab').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  ['notas','tags','clips'].forEach(function(n){
-    var el=document.getElementById('ptab-'+n); if(el) el.style.display=n===name?'block':'none';
-  });
-}
-
-// ═══ BIND FIREBASE TAGS E CLIPS ═══
-var origBind = window.bindFirebase;
-window.bindFirebase = function(){
-  if(origBind) origBind();
-  var wk=getWeekKey();
-  // Tags
-  fbOn('portal/tags/'+wk, function(val){
-    if(!val) return;
-    playerTags[wk]=val;
-    PLAYERS.forEach(function(p){ updateTagDisplay(p.id, wk); });
-  });
-  // Clips
-  fbOn('portal/clips', function(val){
-    if(!val) return;
-    playerClips=val;
-    PLAYERS.forEach(function(p){ renderClipsList(p.id); });
-  });
-};
-
-// ═══ PLAYER DA SEMANA no Dashboard ═══
-var origRenderDash = window.renderDashboard;
-window.renderDashboard = function(){
-  if(origRenderDash) origRenderDash();
-  renderPlayerOfWeek();
-};
-
-function renderPlayerOfWeek(){
-  var el=document.getElementById('dash-pow'); if(!el)return;
-  var ranked=getRankedPlayers();
-  if(!ranked.length||!ranked[0].score){el.innerHTML='';return;}
-  var p=ranked[0];
-  el.innerHTML='<div class="player-of-week">'
-    +'<div class="pow-crown">👑</div>'
-    +'<div><div class="pow-label">PLAYER DA SEMANA</div><div class="pow-name">'+p.name+'</div><div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);">'+p.role+'</div></div>'
-    +'<div class="pow-score">'+p.score+'</div>'
-    +'</div>';
-}
-
-// Ranking envia Discord com score ponderado
-var origSendRanking = window.sendRankingDiscord;
-window.sendRankingDiscord = async function(){
-  var sorted=getRankedPlayers();
-  var medals=['🥇','🥈','🥉'];
-  var lines=['# 🏆 RANKING SAFEZONE — '+getWeekKey(),'*(Score: 40% nota · 25% presença · 20% evolução · 10% comportamento · 5% destaque)*',''];
-  sorted.forEach(function(p,i){
-    var sc=p.scoreDetail||{};
-    var presPct=sc.presPct!=null?sc.presPct+'%':'—';
-    lines.push((medals[i]||( i+1)+'.') +' **'+p.name+'** ('+p.role+') — Score: **'+p.score+'** | Nota: '+(p.nota||'—')+'/5 | Presença: '+presPct);
-  });
-  lines.push('','---');
-  var ok=await sendDiscord(lines.join('\n'), 'ranking');
-  alert(ok?'Ranking enviado ao Discord!':'Erro ao enviar.');
-};
-</script>
+</html>
