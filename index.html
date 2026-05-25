@@ -1441,14 +1441,16 @@ function renderReportCal() {
     if (isToday) cls.push('tod');
     if (hasDone) cls.push('done');
     if (isSel) cls.push('sel');
-    var lbl = hasDone ? (isSun ? 'SEMANAL ✓' : 'PREENCH. ✓') : (isToday ? 'HOJE' : '');
-    var lblCor = hasDone ? 'var(--green)' : isToday ? 'var(--cyan)' : 'transparent';
+    var isSat = d.getDay() === 6;
+    var lbl = hasDone ? (isSun ? 'SEMANAL ✓' : isSat ? 'PREMIER ✓' : 'PREENCH. ✓') : (isToday ? 'HOJE' : '');
+    var lblCor = hasDone ? (isSat ? 'var(--yellow)' : 'var(--green)') : isToday ? 'var(--cyan)' : 'transparent';
     if (isSun && hasDone) lblCor = 'var(--cyan)';
+    var barColor = isSun ? 'var(--cyan)' : isSat ? 'var(--yellow)' : 'var(--blue)';
     return '<div class="' + cls.join(' ') + '" data-k="' + key + '" data-s="' + (isSun?1:0) + '" data-i="' + i + '" onclick="openDayForm(this.dataset.k,this.dataset.s==\'1\',parseInt(this.dataset.i))">'
       + '<div class="rdc-dow">' + DOW[i] + '</div>'
       + '<div class="rdc-num">' + d.getDate() + '</div>'
       + '<div class="rdc-lbl" style="color:' + lblCor + ';">' + lbl + '</div>'
-      + '<div class="rdc-bar"></div>'
+      + '<div class="rdc-bar" style="background:' + barColor + ';"></div>'
       + '</div>';
   }).join('');
 }
@@ -1467,9 +1469,9 @@ function openDayForm(key, isSun, dayIdx) {
   var d = new Date(key + 'T12:00:00');
   var dLabel = d.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
   var form = document.getElementById('rpt-form'); if (!form) return;
-  var borderColor = isSun ? 'rgba(0,229,255,0.3)' : 'rgba(30,144,255,0.3)';
-  var accentColor = isSun ? 'var(--cyan)' : 'var(--blue)';
-
+  var isSat = d.getDay() === 6;  // Sábado = partida Premier
+  var borderColor = isSun ? 'rgba(0,229,255,0.3)' : isSat ? 'rgba(255,214,0,0.3)' : 'rgba(30,144,255,0.3)';
+  var accentColor = isSun ? 'var(--cyan)' : isSat ? 'var(--yellow)' : 'var(--blue)';
   // Players container (igual ao relatório semanal mas com IDs prefixados por dia)
   var playerBlocks = PLAYERS.map(function(p) {
     var s = (saved.players && saved.players[p.id]) || {};
@@ -1545,7 +1547,8 @@ function openDayForm(key, isSun, dayIdx) {
     + '</div>'
   ) : '';
 
-  form.innerHTML = '<div style="border:1px solid ' + borderColor + ';background:rgba(30,144,255,0.02);">'
+  // Header do formulário
+  var header = '<div style="border:1px solid ' + borderColor + ';background:rgba(30,144,255,0.02);">'
     + '<div style="padding:16px 20px;border-bottom:1px solid ' + borderColor + ';display:flex;align-items:center;justify-content:space-between;">'
     +   '<div>'
     +     '<div style="font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:2px;color:#fff;text-transform:capitalize;">' + dLabel + '</div>'
@@ -1553,49 +1556,146 @@ function openDayForm(key, isSun, dayIdx) {
     +   '</div>'
     +   '<button onclick="closeDayForm()" style="background:none;border:1px solid var(--border);color:var(--text-dim);padding:5px 12px;cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:1px;">FECHAR ✕</button>'
     + '</div>'
-    + '<div style="padding:20px;">'
-    + sundayExtra
-    + '<div class="section-title" style="font-size:11px;margin-bottom:12px;">TREINO DO DIA</div>'
-    + '<div class="panel" style="margin-bottom:18px;">'
-    +   '<div class="grid-2" style="margin-bottom:12px;">'
-    +     '<div><label class="field-label">Foco do treino</label><textarea id="dayt-foco" placeholder="Tema central da sessão...">' + (saved.treino && saved.treino.foco || '') + '</textarea></div>'
-    +     '<div><label class="field-label">O que foi trabalhado</label><textarea id="dayt-conteudo" placeholder="Exercícios, situações, VODs...">' + (saved.treino && saved.treino.conteudo || '') + '</textarea></div>'
-    +   '</div>'
-    +   '<div class="grid-2">'
-    +     '<div><label class="field-label">Pontos positivos do time</label><textarea id="dayt-pos" placeholder="O que funcionou bem...">' + (saved.treino && saved.treino.pos || '') + '</textarea></div>'
-    +     '<div><label class="field-label">A corrigir amanhã</label><textarea id="dayt-corr" placeholder="O que precisa melhorar...">' + (saved.treino && saved.treino.corr || '') + '</textarea></div>'
-    +   '</div>'
-    + '</div>'
-    + '<div class="section-title" style="font-size:11px;margin-bottom:12px;">AVALIAÇÃO INDIVIDUAL</div>'
-    + playerBlocks
-    + '<div class="section-title" style="font-size:11px;margin-top:18px;margin-bottom:12px;">METAS INDIVIDUAIS</div>'
-    + metasGrid
-    + '<div class="section-title" style="font-size:11px;margin-top:18px;margin-bottom:12px;">OBSERVAÇÕES</div>'
-    + '<div class="panel" style="margin-bottom:18px;">'
-    +   '<div class="grid-2">'
-    +     '<div><label class="field-label">Observação comportamental</label><textarea id="dayobs-comp" placeholder="Disciplina, atitude, comunicação...">' + (saved.obs && saved.obs.comp || '') + '</textarea></div>'
-    +     '<div><label class="field-label">Para a direção</label><textarea id="dayobs-dir" placeholder="Algo que a direção precisa saber...">' + (saved.obs && saved.obs.dir || '') + '</textarea></div>'
-    +   '</div>'
-    + '</div>'
-    + '<div class="submit-row">'
+    + '<div style="padding:20px;">';
+
+  var footer = '<div class="submit-row">'
     +   '<button class="btn-primary" id="btn-day-enviar" data-k="' + key + '" data-s="' + (isSun?1:0) + '" onclick="submitDayReport(this.dataset.k,this.dataset.s==\'1\')">SALVAR</button>'
     +   '<span class="submit-status" id="day-submit-status"></span>'
     + '</div>'
     + '</div></div>';
 
-  // Aplicar status dots
-  PLAYERS.forEach(function(p) {
-    var s = (saved.players && saved.players[p.id]) || {};
-    if (s.status) {
-      var dot = document.getElementById('daysdot-' + key + '-' + p.id);
-      if (dot) {
-        dot.className = 'status-dot';
-        var opt = STATUS_OPTIONS.find(function(o){return o.val===s.status;});
-        if (opt) dot.classList.add(opt.cls);
-      }
-    }
-  });
+  var bodyContent;
+  if (isSun) {
+    // DOMINGO: só resumo semanal + resumo individual (sem seção de treino)
+    var sunPlayers = PLAYERS.map(function(p) {
+      var s = (saved.players && saved.players[p.id]) || {};
+      var notaBtns = [1,2,3,4,5].map(function(n) {
+        return '<button class="nota-btn' + (s.nota >= n ? ' active' : '') + '" data-k="' + key + '" data-p="' + p.id + '" data-n="' + n + '" onclick="setDayNota(this.dataset.k,this.dataset.p,parseInt(this.dataset.n),this)">' + n + '</button>';
+      }).join('');
+      return '<div class="player-block" style="margin-bottom:10px;">'
+        + '<div class="player-block-header">'
+        +   '<div style="display:flex;align-items:center;gap:10px;"><div class="player-name-display">' + p.name + '</div><div class="player-role-badge">' + p.role + '</div></div>'
+        +   '<div class="player-controls"><div class="stars-row"><span class="stars-label">NOTA</span>'
+        +     '<div class="nota-wrap" id="daynota-' + key + '-' + p.id + '">' + notaBtns + '</div>'
+        +     '<span class="nota-val" id="daynota-val-' + key + '-' + p.id + '">' + (s.nota ? s.nota + '/5' : '-') + '</span>'
+        +   '</div>'
+        +   '<label class="risk-toggle"><input type="checkbox" id="dayrisk-' + key + '-' + p.id + '"' + (s.risco ? ' checked' : '') + '><div class="risk-box">!</div><span>Risco</span></label>'
+        +   '</div>'
+        + '</div>'
+        + '<div class="grid-2">'
+        +   '<div><label class="field-label">Evolução na semana</label><textarea id="daypos-' + key + '-' + p.id + '" placeholder="Destaque positivo, o que evoluiu...">' + (s.pos||'') + '</textarea></div>'
+        +   '<div><label class="field-label">Foco na próxima semana</label><textarea id="dayneg-' + key + '-' + p.id + '" placeholder="O que precisa trabalhar...">' + (s.neg||'') + '</textarea></div>'
+        + '</div>'
+        + '<div class="grid-2" style="margin-top:8px;">'
+        +   '<div><label class="field-label">Mental / Comportamento</label><textarea id="daymental-' + key + '-' + p.id + '" placeholder="Atitude, comprometimento...">' + (s.mental||'') + '</textarea></div>'
+        +   '<div><label class="field-label">Para a direção</label><textarea id="dayobsdir-' + key + '-' + p.id + '" placeholder="Algo específico deste player...">' + (s.dirStaff||'') + '</textarea></div>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+    bodyContent = sundayExtra
+      + '<div class="section-title" style="font-size:11px;margin-bottom:12px;">RESUMO INDIVIDUAL</div>'
+      + sunPlayers
+      + '<div class="section-title" style="font-size:11px;margin-top:18px;margin-bottom:12px;">OBSERVAÇÕES GERAIS</div>'
+      + '<div class="panel" style="margin-bottom:18px;">'
+      +   '<div class="grid-2">'
+      +     '<div><label class="field-label">Comportamento coletivo</label><textarea id="dayobs-comp" placeholder="Disciplina, atitude geral do grupo...">' + (saved.obs && saved.obs.comp || '') + '</textarea></div>'
+      +     '<div><label class="field-label">Para a direção</label><textarea id="dayobs-dir" placeholder="Algo que a direção precisa saber...">' + (saved.obs && saved.obs.dir || '') + '</textarea></div>'
+      +   '</div>'
+      + '</div>';
+  } else if (isSat) {
+    // SÁBADO: partida Premier — sem treino, avaliação da partida
+    var satPlayers = PLAYERS.map(function(p) {
+      var s = (saved.players && saved.players[p.id]) || {};
+      var notaBtns = [1,2,3,4,5].map(function(n) {
+        return '<button class="nota-btn' + (s.nota >= n ? ' active' : '') + '" data-k="' + key + '" data-p="' + p.id + '" data-n="' + n + '" onclick="setDayNota(this.dataset.k,this.dataset.p,parseInt(this.dataset.n),this)">' + n + '</button>';
+      }).join('');
+      return '<div class="player-block" style="margin-bottom:10px;">'
+        + '<div class="player-block-header">'
+        +   '<div style="display:flex;align-items:center;gap:10px;"><div class="player-name-display">' + p.name + '</div><div class="player-role-badge">' + p.role + '</div></div>'
+        +   '<div class="player-controls"><div class="stars-row"><span class="stars-label">NOTA</span>'
+        +     '<div class="nota-wrap" id="daynota-' + key + '-' + p.id + '">' + notaBtns + '</div>'
+        +     '<span class="nota-val" id="daynota-val-' + key + '-' + p.id + '">' + (s.nota ? s.nota + '/5' : '-') + '</span>'
+        +   '</div>'
+        +   '<label class="risk-toggle"><input type="checkbox" id="dayrisk-' + key + '-' + p.id + '"' + (s.risco ? ' checked' : '') + '><div class="risk-box">!</div><span>Risco</span></label>'
+        +   '</div>'
+        + '</div>'
+        + '<div class="grid-2" style="margin-bottom:10px;">'
+        +   '<div><label class="field-label">Desempenho na partida</label><textarea id="daypos-' + key + '-' + p.id + '" placeholder="Como jogou, decisões, clutches...">' + (s.pos||'') + '</textarea></div>'
+        +   '<div><label class="field-label">O que faltou / a melhorar</label><textarea id="dayneg-' + key + '-' + p.id + '" placeholder="Erros, posicionamento, comunicação...">' + (s.neg||'') + '</textarea></div>'
+        + '</div>'
+        + '<div class="grid-2">'
+        +   '<div><label class="field-label">Mental na competição</label><textarea id="daymental-' + key + '-' + p.id + '" placeholder="Pressão, tomada de decisão, foco...">' + (s.mental||'') + '</textarea></div>'
+        +   '<div><label class="field-label">Status / Forma</label>'
+        +     '<div class="status-select-wrap"><div class="status-dot" id="daysdot-' + key + '-' + p.id + '"></div>'
+        +     '<select id="daystatus-' + key + '-' + p.id + '" onchange="updateDayDot(\'" + key + "\',\'" + p.id + "\')">'
+        +     STATUS_OPTIONS.map(function(o){return '<option value="' + o.val + '"' + (s.status===o.val?' selected':'') + '>' + o.label + '</option>';}).join('')
+        +     '</select></div>'
+        +   '</div>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+    bodyContent = '<div class="section-title" style="font-size:11px;color:var(--yellow);margin-bottom:12px;">PARTIDA PREMIER</div>'
+      + '<div class="panel" style="border-color:rgba(255,214,0,0.2);margin-bottom:18px;">'
+      +   '<div><label class="field-label">Mapa da semana</label><input type="text" id="satmapa" placeholder="Ex: Haven" value="' + (saved.partida && saved.partida.mapa || '') + '"></div>'
+      +   '<div class="grid-2" style="margin-top:14px;margin-bottom:14px;">'
+      +     '<div style="background:rgba(30,144,255,0.04);border:1px solid var(--border);padding:14px;">'
+      +       '<div style="font-family:var(--mono);font-size:9px;color:var(--yellow);letter-spacing:2px;margin-bottom:10px;">PARTIDA 1</div>'
+      +       '<div><label class="field-label">Adversário</label><input type="text" id="satadv1" placeholder="Nome do time" value="' + (saved.partida && saved.partida.adv1 || '') + '"></div>'
+      +       '<div style="margin-top:8px;"><label class="field-label">Resultado</label><input type="text" id="satres1" placeholder="Ex: 13-5" value="' + (saved.partida && saved.partida.res1 || '') + '"></div>'
+      +       '<div style="margin-top:8px;"><label class="field-label">Clima</label>'
+      +         '<select id="satclima1">'
+      +         ['','Dominamos','Equilibrado','Perdemos mas entregamos','Derrota difícil'].map(function(o){return '<option'+(saved.partida&&saved.partida.clima1===o?' selected':'')+'>'+o+'</option>';}).join('')
+      +         '</select></div>'
+      +       '<div style="margin-top:8px;"><label class="field-label">Observação</label><textarea id="satobs1" placeholder="Como foi a partida 1..." style="min-height:54px;">' + (saved.partida && saved.partida.obs1 || '') + '</textarea></div>'
+      +     '</div>'
+      +     '<div style="background:rgba(30,144,255,0.04);border:1px solid var(--border);padding:14px;">'
+      +       '<div style="font-family:var(--mono);font-size:9px;color:var(--yellow);letter-spacing:2px;margin-bottom:10px;">PARTIDA 2</div>'
+      +       '<div><label class="field-label">Adversário</label><input type="text" id="satadv2" placeholder="Nome do time" value="' + (saved.partida && saved.partida.adv2 || '') + '"></div>'
+      +       '<div style="margin-top:8px;"><label class="field-label">Resultado</label><input type="text" id="satres2" placeholder="Ex: 9-13" value="' + (saved.partida && saved.partida.res2 || '') + '"></div>'
+      +       '<div style="margin-top:8px;"><label class="field-label">Clima</label>'
+      +         '<select id="satclima2">'
+      +         ['','Dominamos','Equilibrado','Perdemos mas entregamos','Derrota difícil'].map(function(o){return '<option'+(saved.partida&&saved.partida.clima2===o?' selected':'')+'>'+o+'</option>';}).join('')
+      +         '</select></div>'
+      +       '<div style="margin-top:8px;"><label class="field-label">Observação</label><textarea id="satobs2" placeholder="Como foi a partida 2..." style="min-height:54px;">' + (saved.partida && saved.partida.obs2 || '') + '</textarea></div>'
+      +     '</div>'
+      +   '</div>'
+      +   '<div><label class="field-label">Análise tática geral</label><textarea id="sattatic" placeholder="O que funcionou, o que faltou, ajustes para a próxima semana...">' + (saved.partida && saved.partida.tatic || '') + '</textarea></div>'
+      + '</div>'
+      + '<div class="section-title" style="font-size:11px;margin-bottom:12px;">AVALIAÇÃO INDIVIDUAL — PREMIER</div>'
+      + satPlayers
+      + '<div class="section-title" style="font-size:11px;margin-top:18px;margin-bottom:12px;">OBSERVAÇÕES</div>'
+      + '<div class="panel" style="margin-bottom:18px;">'
+      +   '<div class="grid-2">'
+      +     '<div><label class="field-label">Observação comportamental</label><textarea id="dayobs-comp" placeholder="Atitude, comunicação, pressão...">' + (saved.obs && saved.obs.comp || '') + '</textarea></div>'
+      +     '<div><label class="field-label">Para a direção</label><textarea id="dayobs-dir" placeholder="Algo que a direção precisa saber...">' + (saved.obs && saved.obs.dir || '') + '</textarea></div>'
+      +   '</div>'
+      + '</div>';
+  } else {
+    // DIA NORMAL (seg-sex): treino + avaliação individual + metas + obs
+    bodyContent = '<div class="section-title" style="font-size:11px;margin-bottom:12px;">TREINO DO DIA</div>'
+      + '<div class="panel" style="margin-bottom:18px;">'
+      +   '<div class="grid-2" style="margin-bottom:12px;">'
+      +     '<div><label class="field-label">Foco do treino</label><textarea id="dayt-foco" placeholder="Tema central da sessão...">' + (saved.treino && saved.treino.foco || '') + '</textarea></div>'
+      +     '<div><label class="field-label">O que foi trabalhado</label><textarea id="dayt-conteudo" placeholder="Exercícios, situações, VODs...">' + (saved.treino && saved.treino.conteudo || '') + '</textarea></div>'
+      +   '</div>'
+      +   '<div class="grid-2">'
+      +     '<div><label class="field-label">Pontos positivos do time</label><textarea id="dayt-pos" placeholder="O que funcionou bem...">' + (saved.treino && saved.treino.pos || '') + '</textarea></div>'
+      +     '<div><label class="field-label">A corrigir amanhã</label><textarea id="dayt-corr" placeholder="O que precisa melhorar...">' + (saved.treino && saved.treino.corr || '') + '</textarea></div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="section-title" style="font-size:11px;margin-bottom:12px;">AVALIAÇÃO INDIVIDUAL</div>'
+      + playerBlocks
 
+      + '<div class="section-title" style="font-size:11px;margin-top:18px;margin-bottom:12px;">OBSERVAÇÕES</div>'
+      + '<div class="panel" style="margin-bottom:18px;">'
+      +   '<div class="grid-2">'
+      +     '<div><label class="field-label">Observação comportamental</label><textarea id="dayobs-comp" placeholder="Disciplina, atitude, comunicação...">' + (saved.obs && saved.obs.comp || '') + '</textarea></div>'
+      +     '<div><label class="field-label">Para a direção</label><textarea id="dayobs-dir" placeholder="Algo que a direção precisa saber...">' + (saved.obs && saved.obs.dir || '') + '</textarea></div>'
+      +   '</div>'
+      + '</div>';
+  }
+
+  form.innerHTML = header + bodyContent + footer;
   form.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
@@ -1619,6 +1719,8 @@ function updateDayDot(key, pid) {
 function collectDayReport(key, isSun) {
   var g = function(id) { var el=document.getElementById(id); return el?el.value.trim():''; };
   var gv = function(id) { var el=document.getElementById(id); return el?el.value:''; };
+  var d = new Date(key + 'T12:00:00');
+  var isSat = d.getDay() === 6;
 
   var players = {};
   PLAYERS.forEach(function(p) {
@@ -1633,6 +1735,7 @@ function collectDayReport(key, isSun) {
       neg:     g('dayneg-'    + key + '-' + p.id),
       mental:  g('daymental-' + key + '-' + p.id),
       risco:   (document.getElementById('dayrisk-' + key + '-' + p.id)||{}).checked || false,
+      dirStaff: g('dayobsdir-' + key + '-' + p.id),
     };
   });
 
@@ -1649,7 +1752,13 @@ function collectDayReport(key, isSun) {
     isSunday: isSun,
     timestamp: new Date().toLocaleString('pt-BR'),
     author: currentUser === 'coach' ? 'Coach - Lucas' : 'Staff',
-    treino: { foco: g('dayt-foco'), conteudo: g('dayt-conteudo'), pos: g('dayt-pos'), corr: g('dayt-corr') },
+    treino: isSun ? {} : (isSat ? {} : { foco: g('dayt-foco'), conteudo: g('dayt-conteudo'), pos: g('dayt-pos'), corr: g('dayt-corr') }),
+    partida: isSat ? {
+      mapa: gv('satmapa'),
+      adv1: gv('satadv1'), res1: gv('satres1'), clima1: gv('satclima1'), obs1: g('satobs1'),
+      adv2: gv('satadv2'), res2: gv('satres2'), clima2: gv('satclima2'), obs2: g('satobs2'),
+      tatic: g('sattatic'),
+    } : {},
     players: players,
     metas: metas,
     obs: { comp: g('dayobs-comp'), dir: g('dayobs-dir') },
@@ -1713,10 +1822,22 @@ function buildDayMsg(d, isSun) {
     lines.push('');
   }
   lines.push('## TREINO');
-  lines.push('**Foco:** ' + (d.treino.foco||'-'));
-  lines.push('**Conteudo:** ' + (d.treino.conteudo||'-'));
-  lines.push('**Pos:** ' + (d.treino.pos||'-') + ' | **Corrigir:** ' + (d.treino.corr||'-'));
-  lines.push('');
+  if (d.partida && d.partida.mapa1) {
+    lines.push('## PARTIDA PREMIER');
+    lines.push('**Mapa:** ' + (d.partida.mapa||'-'));
+    lines.push('**Partida 1 vs ' + (d.partida.adv1||'?') + ':** ' + (d.partida.res1||'-') + ' — ' + (d.partida.clima1||'-'));
+    if (d.partida.obs1) lines.push('  ' + d.partida.obs1);
+    lines.push('**Partida 2 vs ' + (d.partida.adv2||'?') + ':** ' + (d.partida.res2||'-') + ' — ' + (d.partida.clima2||'-'));
+    if (d.partida.obs2) lines.push('  ' + d.partida.obs2);
+    if (d.partida.tatic) lines.push('**Análise:** ' + d.partida.tatic);
+    lines.push('');
+  } else {
+    lines.push('## TREINO');
+    lines.push('**Foco:** ' + (d.treino&&d.treino.foco||'-'));
+    lines.push('**Conteudo:** ' + (d.treino&&d.treino.conteudo||'-'));
+    lines.push('**Pos:** ' + (d.treino&&d.treino.pos||'-') + ' | **Corrigir:** ' + (d.treino&&d.treino.corr||'-'));
+    lines.push('');
+  }
   if (playerLines) { lines.push('## PLAYERS'); lines.push(playerLines); lines.push(''); }
   if (metaLines)   { lines.push('## METAS INDIVIDUAIS'); lines.push(metaLines); lines.push(''); }
   lines.push('## OBS');
