@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SafeZone — Portal Interno</title>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,set,push,onValue}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+const app=initializeApp({apiKey:"AIzaSyAMKOBK8CeBDDPq6sCC3lMJJJalJTY1QFg",authDomain:"safezonecoach-af19f.firebaseapp.com",databaseURL:"https://safezonecoach-af19f-default-rtdb.firebaseio.com",projectId:"safezonecoach-af19f",storageBucket:"safezonecoach-af19f.firebasestorage.app",messagingSenderId:"60247867896",appId:"1:60247867896:web:3a73dd4fe3cac2b7f8d60d"});
+window._db=getDatabase(app);window._ref=ref;window._set=set;window._push=push;window._on=onValue;window._fbReady=true;
+if(window._onFbReady)window._onFbReady();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -40,6 +47,18 @@ body::before{
 }
 
 /* ═══ SCROLLBAR ═══ */
+
+/* ═══ NOTA 1-5 ═══ */
+.nota-wrap { display:flex; align-items:center; gap:4px; }
+.nota-btn {
+  width:28px; height:28px; border:1px solid var(--border);
+  background:rgba(30,144,255,0.06); color:var(--text-dim);
+  font-family:var(--mono); font-size:12px; cursor:pointer; transition:all .15s;
+}
+.nota-btn:hover { border-color:var(--blue); color:var(--blue); }
+.nota-btn.active { background:var(--blue); color:#fff; border-color:var(--blue); font-weight:700; }
+.nota-val { font-family:var(--mono); font-size:12px; color:var(--blue); margin-left:6px; min-width:28px; }
+
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--blue-dark);border-radius:2px;}
@@ -333,6 +352,51 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
 /* STATUS SELECT INLINE */
 .status-select-wrap{display:flex;align-items:center;gap:8px;}
 
+/* TAGS */
+.tags-section{margin-top:14px;}
+.tags-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;display:block;}
+.tags-grid{display:flex;flex-wrap:wrap;gap:6px;}
+.tag-btn{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border:1px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;transition:all 0.15s;}
+.tag-btn:hover{border-color:var(--blue);color:var(--blue);}
+.tag-btn.active-red{background:rgba(255,61,61,0.15);border-color:var(--red);color:var(--red);}
+.tag-btn.active-green{background:rgba(0,230,118,0.15);border-color:var(--green);color:var(--green);}
+.tag-btn.active-blue{background:rgba(30,144,255,0.15);border-color:var(--blue);color:var(--blue);}
+.tag-badge{font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border:1px solid;display:inline-block;}
+.tag-badge.red{border-color:var(--red);color:var(--red);background:rgba(255,61,61,0.1);}
+.tag-badge.green{border-color:var(--green);color:var(--green);background:rgba(0,230,118,0.1);}
+.tag-badge.blue{border-color:var(--blue);color:var(--blue);background:rgba(30,144,255,0.1);}
+.clip-item{display:flex;align-items:center;gap:10px;border:1px solid var(--border);padding:10px 14px;margin-bottom:6px;background:rgba(30,144,255,0.03);}
+.clip-label{font-family:var(--mono);font-size:10px;color:var(--text);flex:1;}
+.clip-link{font-family:var(--mono);font-size:9px;color:var(--blue);text-decoration:none;}
+.clip-date{font-family:var(--mono);font-size:9px;color:var(--text-dim);}
+.profile-header{display:flex;align-items:center;gap:20px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.profile-avatar{width:60px;height:60px;border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:24px;font-weight:700;color:var(--blue);box-shadow:0 0 20px var(--blue-glow);}
+.profile-name{font-family:var(--display);font-size:26px;font-weight:700;color:#fff;letter-spacing:3px;}
+.profile-role{font-family:var(--mono);font-size:10px;color:var(--blue);letter-spacing:2px;}
+.profile-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.profile-stat{background:rgba(30,144,255,0.05);border:1px solid var(--border);padding:14px;text-align:center;}
+.profile-stat-val{font-family:var(--display);font-size:24px;font-weight:700;color:#fff;}
+.profile-stat-lbl{font-family:var(--mono);font-size:8px;color:var(--text-dim);letter-spacing:2px;margin-top:4px;}
+.profile-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.profile-tab{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--text-dim);padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:all 0.2s;position:relative;top:1px;}
+.profile-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.week-history-item{border-left:2px solid var(--border);padding:12px 16px;margin-bottom:12px;position:relative;}
+.week-history-item::before{content:"";position:absolute;top:14px;left:-5px;width:8px;height:8px;border-radius:50%;background:var(--blue);}
+.week-history-key{font-family:var(--mono);font-size:9px;color:var(--blue);letter-spacing:2px;margin-bottom:6px;}
+.week-history-nota{font-family:var(--display);font-size:18px;font-weight:700;color:#fff;}
+.pres-pct{font-family:var(--display);font-size:18px;font-weight:700;color:var(--green);}
+.pres-pct.mid{color:var(--yellow);}
+.pres-pct.low{color:var(--red);}
+.rank-score-detail{font-family:var(--mono);font-size:8px;color:var(--text-dim);margin-top:2px;}
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:24px;}
+.spark-bar{width:6px;background:var(--blue);opacity:0.6;border-radius:1px;}
+.spark-bar:last-child{opacity:1;}
+.player-of-week{background:linear-gradient(135deg,rgba(30,144,255,0.08),rgba(0,229,255,0.04));border:1px solid var(--border-active);padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.pow-crown{font-size:28px;}
+.pow-name{font-family:var(--display);font-size:22px;font-weight:700;color:#fff;letter-spacing:2px;}
+.pow-label{font-family:var(--mono);font-size:9px;color:var(--cyan);letter-spacing:2px;}
+.pow-score{font-family:var(--display);font-size:28px;font-weight:700;color:var(--blue);margin-left:auto;}
+
 /* RESPONSIVE */
 @media(max-width:900px){
   .dash-grid{grid-template-columns:1fr 1fr;}
@@ -388,6 +452,8 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
       SAFE<span>ZONE</span>
       <small>// PORTAL INTERNO</small>
     </div>
+    <!-- SELETOR DE SEMANA CENTRALIZADO -->
+    <div id="week-selector-wrap" style="position:absolute;left:50%;transform:translateX(-50%);"></div>
     <div class="header-right">
       <div class="user-badge">
         <div class="online-dot"></div>
@@ -416,7 +482,7 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
       <div class="week-badge">📅 <span id="dash-week-label">—</span></div>
     </div>
 
-    <div class="dash-grid" id="dash-stats"></div>
+    <div id="dash-pow"></div><div class="dash-grid" id="dash-stats"></div>
 
     <div class="grid-2" style="gap:20px;">
       <div>
@@ -619,752 +685,982 @@ textarea:focus,input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 
 <script>
 // ═══════════════ CONFIG ═══════════════
 const WEBHOOK = 'https://discord.com/api/webhooks/1508210873884344511/KweDzcbVU13JtD-aSU7m3B38JSE-810EqD3XH4c346-h2GON9vZPsinZdhaiHhL0mMg5';
-
 const PASSWORDS = { coach: 'safezone2026', staff: 'szstaff2026' };
-
 const PLAYERS = [
   { id: 'nemo',      name: 'Nemo',      role: 'Duelista',    line: 'Principal' },
   { id: 'nick',      name: 'Nick',      role: 'Iniciador',   line: 'Principal' },
   { id: 'henrique',  name: 'Henrique',  role: 'Controlador', line: 'Principal' },
   { id: 'sarah',     name: 'Sarah',     role: 'Sentinela',   line: 'Principal' },
   { id: 'vitor',     name: 'Vitor',     role: 'Flex',        line: 'Principal' },
-  { id: 'bellatrix', name: 'Bellatrix', role: 'Academy',     line: 'Academy' },
-  { id: 'luiggi',    name: 'Luiggi',    role: 'Academy',     line: 'Academy' },
-  { id: 'derek',     name: 'Derek',     role: 'Academy',     line: 'Academy' },
-  { id: 'girafa',    name: 'Girafa',    role: 'Academy',     line: 'Academy' },
-  { id: 'angel',     name: 'Angel',     role: 'Academy',     line: 'Academy' },
 ];
-
-const DAYS = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+const DAYS = ['Segunda','Terca','Quarta','Quinta','Sexta','Sabado','Domingo'];
 const STATUS_OPTIONS = [
-  {val:'otimo',label:'🟢 Ótimo',cls:'s-otimo'},
-  {val:'bom',label:'🟢 Bom',cls:'s-bom'},
-  {val:'regular',label:'🟡 Regular',cls:'s-regular'},
-  {val:'alerta',label:'🟠 Alerta',cls:'s-alerta'},
-  {val:'critico',label:'🔴 Crítico',cls:'s-critico'},
+  {val:'otimo',label:'Otimo',cls:'s-otimo'},
+  {val:'bom',label:'Bom',cls:'s-bom'},
+  {val:'regular',label:'Regular',cls:'s-regular'},
+  {val:'alerta',label:'Alerta',cls:'s-alerta'},
+  {val:'critico',label:'Critico',cls:'s-critico'},
 ];
-const PRES_STATES = ['—','presente','atrasado','faltou','destaque'];
-const PRES_LABELS = {'—':'—','presente':'✓ PRES','atrasado':'⏰ ATR','faltou':'✗ FALT','destaque':'⭐ DEST'};
+const PRES_STATES  = ['_','presente','atrasado','faltou','destaque'];
+const PRES_LABELS  = {'_':'_','presente':'PRES','atrasado':'ATR','faltou':'FALT','destaque':'DEST'};
 
+// ═══════════════ ESTADO ═══════════════
 let currentUser = null;
-let starRatings = {};
-let presencaData = {}; // {weekKey: {playerId: {dayIndex: state}}}
+let notaRatings = {};   // {pid: 1-5}
+let presencaData = {};  // {wk: {pid: {dayIdx: state}}}
+let fbPlanos = {};
 
-// ═══════════════ UTILS ═══════════════
-function getWeekKey() {
-  const now = new Date();
-  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const wk = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-  return `${now.getFullYear()}-S${String(wk).padStart(2,'0')}`;
+// ═══════════════ FIREBASE ═══════════════
+function fbSafe(cb){ if(window._fbReady){ try{cb();}catch(e){} } }
+function fbSet(path,val){ fbSafe(()=>window._set(window._ref(window._db,path),val)); }
+function fbOn(path,cb){
+  if(!window._fbReady){ window._onFbReady=()=>bindFirebase(); return; }
+  try{ window._on(window._ref(window._db,path),snap=>cb(snap.val())); }catch(e){}
 }
 
-function getWeekDates() {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-  const dates = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    dates.push(d);
+function bindFirebase(){
+  var wk = getWeekKey();
+  // Notas
+  fbOn('portal/stars/'+wk, function(val){
+    if(!val) return;
+    notaRatings = val;
+    PLAYERS.forEach(function(p){
+      if(notaRatings[p.id]) updateNotaDisplay(p.id);
+    });
+    renderDashboardRanking();
+  });
+  // Relatorios
+  fbOn('portal/reports', function(val){
+    if(!val) return;
+    var arr = Object.values(val).reverse();
+    localStorage.setItem('sz_reports', JSON.stringify(arr));
+    renderDashStats();
+    var hist = document.getElementById('tab-history');
+    if(hist && hist.style.display !== 'none') renderHistory();
+  });
+  // Presenca
+  fbOn('portal/presenca', function(val){
+    if(!val) return;
+    presencaData = val;
+    var tab = document.getElementById('tab-presenca');
+    if(tab && tab.style.display !== 'none') renderPresenca();
+    renderDashPresence();
+  });
+  // Plano
+  fbOn('portal/planos/'+wk, function(val){
+    if(!val) return;
+    fbPlanos[wk] = val;
+    var tab = document.getElementById('tab-plano');
+    if(tab && tab.style.display !== 'none') applyPlanoToCalendar(val);
+  });
+}
+
+function applyPlanoToCalendar(saved){
+  var dates = getWeekDates();
+  dates.forEach(function(date,i){
+    var d = saved[i] || {};
+    var isSun = isSunday(date);
+    if(isSun){
+      var a=document.getElementById('cal-'+i+'-analise'); if(a) a.value=d.analise||'';
+      var f=document.getElementById('cal-'+i+'-foco');   if(f) f.value=d.foco||'';
+    } else {
+      var h=document.getElementById('cal-'+i+'-hora'); if(h) h.value=d.hora||'';
+      var f2=document.getElementById('cal-'+i+'-foco');if(f2)f2.value=d.foco||'';
+      var o=document.getElementById('cal-'+i+'-obj'); if(o) o.value=d.obj||'';
+      var v=document.getElementById('cal-'+i+'-vod'); if(v) v.value=d.vod||'';
+    }
+  });
+}
+
+// ═══════════════ UTILS — SEMANAS ═══════════════
+var ATO_END = new Date('2026-06-21T23:59:00'); // fim do ato — Eliminatórias Premier
+var selectedWeekOffset = 0; // 0 = semana atual, 1 = próxima, etc.
+var allWeeks = []; // lista de {key, label, monday}
+
+// Gera semana key a partir de uma data segunda-feira
+function weekKeyFromMonday(monday){
+  var d=new Date(Date.UTC(monday.getFullYear(),monday.getMonth(),monday.getDate()));
+  d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));
+  var yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  var wk=Math.ceil((((d-yearStart)/86400000)+1)/7);
+  return monday.getFullYear()+'-S'+String(wk).padStart(2,'0');
+}
+
+// Monta a lista de todas as semanas de hoje até fim do ato
+function buildWeekList(){
+  allWeeks=[];
+  var now=new Date();
+  var day=now.getDay();
+  var monday=new Date(now);
+  monday.setDate(now.getDate()-(day===0?6:day-1));
+  monday.setHours(0,0,0,0);
+  while(monday<=ATO_END){
+    var sunday=new Date(monday); sunday.setDate(monday.getDate()+6);
+    var key=weekKeyFromMonday(monday);
+    var label=formatDate(monday)+' — '+formatDate(sunday)+' | '+key;
+    allWeeks.push({key:key,label:label,monday:new Date(monday)});
+    monday.setDate(monday.getDate()+7);
   }
+}
+
+function getWeekKey(){
+  if(allWeeks.length && allWeeks[selectedWeekOffset]) return allWeeks[selectedWeekOffset].key;
+  // fallback
+  var now=new Date();
+  var d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
+  d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));
+  var yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  var wk=Math.ceil((((d-yearStart)/86400000)+1)/7);
+  return now.getFullYear()+'-S'+String(wk).padStart(2,'0');
+}
+
+function getWeekDates(){
+  var monday;
+  if(allWeeks.length && allWeeks[selectedWeekOffset]){
+    monday=new Date(allWeeks[selectedWeekOffset].monday);
+  } else {
+    var now=new Date(); var day=now.getDay();
+    monday=new Date(now); monday.setDate(now.getDate()-(day===0?6:day-1));
+  }
+  var dates=[];
+  for(var i=0;i<7;i++){var d=new Date(monday);d.setDate(monday.getDate()+i);dates.push(d);}
   return dates;
 }
 
-function formatDate(d) {
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+function formatDate(d){ return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); }
+function isToday(d){ var n=new Date(); return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear(); }
+function isSunday(d){ return d.getDay()===0; }
+function getWeekLabel(){
+  if(allWeeks.length && allWeeks[selectedWeekOffset]) return allWeeks[selectedWeekOffset].label;
+  var dates=getWeekDates(); return formatDate(dates[0])+' - '+formatDate(dates[6])+' | '+getWeekKey();
 }
 
-function isToday(d) {
-  const now = new Date();
-  return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+// Renderiza o seletor de semanas
+function renderWeekSelector(){
+  var container=document.getElementById('week-selector-wrap'); if(!container)return;
+  var isCurrentWeek = selectedWeekOffset===0;
+  var hasPrev = selectedWeekOffset>0;
+  var hasNext = selectedWeekOffset<allWeeks.length-1;
+  var wk=allWeeks[selectedWeekOffset];
+  var semsLeft=allWeeks.length-1-selectedWeekOffset;
+
+  container.innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+    +'<button onclick="changeWeek(-1)" style="background:none;border:1px solid var(--border);color:'+(hasPrev?'var(--text)':'var(--text-dim)')+';font-family:var(--mono);font-size:12px;padding:6px 12px;cursor:'+(hasPrev?'pointer':'default')+';" '+(hasPrev?'':'disabled')+'>◀</button>'
+    +'<div style="display:flex;flex-direction:column;align-items:center;min-width:220px;">'
+      +'<div style="font-family:var(--mono);font-size:10px;color:var(--blue);letter-spacing:1px;">'+(isCurrentWeek?'● SEMANA ATUAL':'Semana '+(selectedWeekOffset+1)+'/'+(allWeeks.length))+'</div>'
+      +'<div style="font-family:var(--display);font-size:14px;font-weight:700;color:#fff;letter-spacing:1px;">'+(wk?wk.label:'—')+'</div>'
+    +'</div>'
+    +'<button onclick="changeWeek(1)" style="background:none;border:1px solid var(--border);color:'+(hasNext?'var(--text)':'var(--text-dim)')+';font-family:var(--mono);font-size:12px;padding:6px 12px;cursor:'+(hasNext?'pointer':'default')+';" '+(hasNext?'':'disabled')+'>▶</button>'
+    +(semsLeft>0?'<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);padding:4px 10px;border:1px solid var(--border);">'+semsLeft+' sem. restantes</div>':'<div style="font-family:var(--mono);font-size:9px;color:var(--red);padding:4px 10px;border:1px solid rgba(255,61,61,0.3);">ÚLTIMA SEMANA DO ATO</div>')
+    +'</div>';
 }
 
-function isSunday(d) { return d.getDay() === 0; }
-
-function getWeekLabel() {
-  const dates = getWeekDates();
-  return `${formatDate(dates[0])} — ${formatDate(dates[6])} | ${getWeekKey()}`;
+function changeWeek(dir){
+  var next=selectedWeekOffset+dir;
+  if(next<0||next>=allWeeks.length)return;
+  selectedWeekOffset=next;
+  onWeekChange();
 }
 
-async function sendDiscord(content) {
-  try {
-    const res = await fetch(WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, username: 'SafeZone Portal 🦊', avatar_url: '' })
-    });
+function onWeekChange(){
+  renderWeekSelector();
+  // Atualizar todos os labels
+  var wl=getWeekLabel();
+  ['dash-week-label','report-week-label','plano-week-label','presenca-week-label','plan-week-label'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.textContent=wl;
+  });
+  // Re-bind firebase para nova semana
+  var wk=getWeekKey();
+  fbOn('portal/stars/'+wk, function(val){
+    if(!val)return; notaRatings=val;
+    PLAYERS.forEach(function(p){if(notaRatings[p.id])updateNotaDisplay(p.id);});
+    renderDashboardRanking();
+  });
+  fbOn('portal/planos/'+wk, function(val){
+    if(!val)return; fbPlanos[wk]=val;
+    var tab=document.getElementById('tab-plano');
+    if(tab&&tab.style.display!=='none') applyPlanoToCalendar(val);
+  });
+  fbOn('portal/presenca', function(val){
+    if(!val)return; presencaData=val;
+    var tab=document.getElementById('tab-presenca');
+    if(tab&&tab.style.display!=='none') renderPresenca();
+    renderDashPresence();
+  });
+  // Recarregar views ativas
+  var activeTab=document.querySelector('.tab.active');
+  if(activeTab){
+    var name=activeTab.getAttribute('onclick').match(/switchTab\('(\w+)'/);
+    if(name){
+      if(name[1]==='presenca') renderPresenca();
+      if(name[1]==='plano'){renderCalendar();var saved=fbPlanos[wk];if(saved)applyPlanoToCalendar(saved);}
+      if(name[1]==='dashboard') renderDashboard();
+      if(name[1]==='ranking') renderRankingFull();
+    }
+  }
+}
+async function sendDiscord(content){
+  try{
+    var res=await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:content,username:'SafeZone Portal'})});
     return res.ok;
-  } catch(e) { return false; }
+  }catch(e){return false;}
 }
 
 // ═══════════════ LOGIN ═══════════════
-function doLogin() {
-  const role = document.getElementById('login-role').value;
-  const pass = document.getElementById('login-pass').value;
-  const err = document.getElementById('login-error');
-  if (!role || !pass) { showErr('Selecione o perfil e insira a senha.'); return; }
-  if (PASSWORDS[role] !== pass) { showErr('Senha incorreta.'); return; }
-  currentUser = role;
-  err.style.display = 'none';
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('portal').style.display = 'block';
-  const label = role === 'coach' ? 'Coach — Lucas' : 'Staff / Manager';
-  document.getElementById('user-label').textContent = label;
-  if (role === 'staff') {
-    document.getElementById('tab-btn-report').style.display = 'none';
-    document.getElementById('tab-btn-plano').style.display = 'none';
-    document.getElementById('tab-btn-presenca').style.display = 'none';
+function doLogin(){
+  var role=document.getElementById('login-role').value;
+  var pass=document.getElementById('login-pass').value;
+  var err=document.getElementById('login-error');
+  if(!role||!pass){showErr('Selecione o perfil e insira a senha.');return;}
+  if(PASSWORDS[role]!==pass){showErr('Senha incorreta.');return;}
+  currentUser=role;
+  err.style.display='none';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('portal').style.display='block';
+  var label=role==='coach'?'Coach - Lucas':'Staff / Manager';
+  document.getElementById('user-label').textContent=label;
+  if(role==='staff'){
+    document.getElementById('tab-btn-report').style.display='none';
+    document.getElementById('tab-btn-plano').style.display='none';
+    document.getElementById('tab-btn-presenca').style.display='none';
   }
+  if(window._fbReady) bindFirebase();
+  else window._onFbReady=bindFirebase;
   initPortal();
-  // Notificar Discord
-  const now = new Date();
-  sendDiscord(`🟢 **COACH ONLINE**\n\n**Usuário:** ${label}\n**Horário:** ${now.toLocaleString('pt-BR')}\n**Semana:** ${getWeekKey()}`);
+  var now=new Date();
+  sendDiscord('LOGIN: '+label+' | '+now.toLocaleString('pt-BR')+' | Semana: '+getWeekKey());
 }
-
-function showErr(msg) {
-  const el = document.getElementById('login-error');
-  el.textContent = msg; el.style.display = 'block';
-}
-
-function doLogout() {
-  currentUser = null;
-  document.getElementById('portal').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('login-pass').value = '';
-  document.getElementById('login-role').value = '';
+function showErr(msg){var el=document.getElementById('login-error');el.textContent=msg;el.style.display='block';}
+function doLogout(){
+  currentUser=null;
+  document.getElementById('portal').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-role').value='';
 }
 
 // ═══════════════ TABS ═══════════════
-function switchTab(name, btn) {
-  document.querySelectorAll('.main').forEach(el => el.style.display = 'none');
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).style.display = 'block';
+function switchTab(name,btn){
+  document.querySelectorAll('.main').forEach(function(el){el.style.display='none';});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('tab-'+name).style.display='block';
   btn.classList.add('active');
-  if (name === 'dashboard') renderDashboard();
-  if (name === 'ranking') renderRankingFull();
-  if (name === 'history') renderHistory();
-  if (name === 'presenca') renderPresenca();
-  if (name === 'plano') renderCalendar();
+  if(name==='dashboard') renderDashboard();
+  if(name==='ranking')   renderRankingFull();
+  if(name==='history')   renderHistory();
+  if(name==='presenca')  renderPresenca();
+  if(name==='plano')     renderCalendar();
 }
 
 // ═══════════════ INIT ═══════════════
-function initPortal() {
-  // Week labels
-  const wl = getWeekLabel();
-  ['dash-week-label','report-week-label','plano-week-label','presenca-week-label'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.textContent = wl;
+function initPortal(){
+  buildWeekList();
+  renderWeekSelector();
+  var wl=getWeekLabel();
+  ['dash-week-label','report-week-label','plano-week-label','presenca-week-label','plan-week-label'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.textContent=wl;
   });
-  const now = new Date();
-  const el = document.getElementById('dash-semana');
-  if (el) el.textContent = now.toLocaleDateString('pt-BR', {weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-
+  var now=new Date();
+  var el=document.getElementById('dash-semana');
+  if(el) el.textContent=now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   buildPlayerBlocks();
   renderDashboard();
   renderCalendar();
   renderPresenca();
-  loadStarRatings();
 }
 
-// ═══════════════ PLAYER BLOCKS (RELATÓRIO) ═══════════════
-function buildPlayerBlocks() {
-  const container = document.getElementById('players-container');
-  container.innerHTML = '';
-
-  // Agrupado
-  const principal = PLAYERS.filter(p => p.line === 'Principal');
-  const academy = PLAYERS.filter(p => p.line === 'Academy');
-
-  container.innerHTML += `<div style="font-family:var(--mono);font-size:9px;color:var(--blue);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">LINE PRINCIPAL</div>`;
-  principal.forEach(p => container.innerHTML += buildPlayerBlock(p));
-  container.innerHTML += `<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:3px;text-transform:uppercase;margin:20px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);">LINE ACADEMY</div>`;
-  academy.forEach(p => container.innerHTML += buildPlayerBlock(p));
+// ═══════════════ PLAYER BLOCKS ═══════════════
+function buildPlayerBlocks(){
+  var container=document.getElementById('players-container');
+  container.innerHTML='';
+  var principal=PLAYERS.filter(function(p){return p.line==='Principal';});
+  var academy=PLAYERS.filter(function(p){return p.line==='Academy';});
+  container.innerHTML+='<div style="font-family:var(--mono);font-size:9px;color:var(--blue);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">LINE PRINCIPAL</div>';
+  principal.forEach(function(p){container.innerHTML+=buildPlayerBlock(p);});
+  container.innerHTML+='<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:3px;text-transform:uppercase;margin:20px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border);">LINE ACADEMY</div>';
+  academy.forEach(function(p){container.innerHTML+=buildPlayerBlock(p);});
 }
 
-function buildPlayerBlock(p) {
-  const statusOpts = STATUS_OPTIONS.map(s => `<option value="${s.val}">${s.label}</option>`).join('');
-  return `
-  <div class="player-block" id="block-${p.id}">
-    <div class="player-block-header">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div class="player-name-display">${p.name}</div>
-        <div class="player-role-badge">${p.role}</div>
-      </div>
-      <div class="player-controls">
-        <div class="stars-row">
-          <span class="stars-label">NOTA</span>
-          <div class="stars" id="stars-${p.id}">
-            ${[1,2,3,4,5].map(n=>`<button class="star" data-id="${p.id}" data-val="${n}" onclick="setStar('${p.id}',${n})">★</button>`).join('')}
-          </div>
-        </div>
-        <label class="risk-toggle">
-          <input type="checkbox" id="risk-${p.id}">
-          <div class="risk-box">⚑</div>
-          <span>Risco</span>
-        </label>
-      </div>
-    </div>
-    <div class="grid-2" style="margin-bottom:12px;">
-      <div>
-        <label class="field-label">Status / Forma</label>
-        <div class="status-select-wrap">
-          <div class="status-dot" id="sdot-${p.id}"></div>
-          <select id="status-${p.id}" onchange="updateStatusDot('${p.id}')">${statusOpts}</select>
-        </div>
-      </div>
-      <div>
-        <label class="field-label">Desempenho técnico</label>
-        <select id="tecnico-${p.id}">
-          <option value="">— Selecionar —</option>
-          <option>Excelente</option><option>Acima da média</option>
-          <option>Na média</option><option>Abaixo da média</option><option>Fraco</option>
-        </select>
-      </div>
-    </div>
-    <div class="grid-3">
-      <div>
-        <label class="field-label">✅ Pontos positivos</label>
-        <textarea id="pos-${p.id}" placeholder="O que se destacou..."></textarea>
-      </div>
-      <div>
-        <label class="field-label">🔧 A melhorar</label>
-        <textarea id="neg-${p.id}" placeholder="O que precisa corrigir..."></textarea>
-      </div>
-      <div>
-        <label class="field-label">🧠 Mental / Comportamento</label>
-        <textarea id="mental-${p.id}" placeholder="Atitude, comunicação, foco..."></textarea>
-      </div>
-    </div>
-  </div>`;
+function buildPlayerBlock(p){
+  var statusOpts=STATUS_OPTIONS.map(function(s){return '<option value="'+s.val+'">'+s.label+'</option>';}).join('');
+  var notaBtns=[1,2,3,4,5].map(function(n){
+    return '<button class="nota-btn" data-pid="'+p.id+'" data-n="'+n+'" onclick="setNota(\''+p.id+'\','+n+')">'+n+'</button>';
+  }).join('');
+  return '<div class="player-block" id="block-'+p.id+'">'+
+    '<div class="player-block-header">'+
+      '<div style="display:flex;align-items:center;gap:12px;">'+
+        '<div class="player-name-display">'+p.name+'</div>'+
+        '<div class="player-role-badge">'+p.role+'</div>'+
+      '</div>'+
+      '<div class="player-controls">'+
+        '<div class="stars-row">'+
+          '<span class="stars-label">NOTA</span>'+
+          '<div class="nota-wrap" id="nota-'+p.id+'">'+notaBtns+'</div>'+
+          '<span class="nota-val" id="nota-val-'+p.id+'">-</span>'+
+        '</div>'+
+        '<label class="risk-toggle">'+
+          '<input type="checkbox" id="risk-'+p.id+'">'+
+          '<div class="risk-box">!</div>'+
+          '<span>Risco</span>'+
+        '</label>'+
+      '</div>'+
+    '</div>'+
+    '<div class="grid-2" style="margin-bottom:12px;">'+
+      '<div><label class="field-label">Status / Forma</label>'+
+        '<div class="status-select-wrap">'+
+          '<div class="status-dot" id="sdot-'+p.id+'"></div>'+
+          '<select id="status-'+p.id+'" onchange="updateStatusDot(\''+p.id+'\')">'+statusOpts+'</select>'+
+        '</div></div>'+
+      '<div><label class="field-label">Desempenho tecnico</label>'+
+        '<select id="tecnico-'+p.id+'">'+
+          '<option value="">- Selecionar -</option>'+
+          '<option>Excelente</option><option>Acima da media</option>'+
+          '<option>Na media</option><option>Abaixo da media</option><option>Fraco</option>'+
+        '</select></div>'+
+    '</div>'+
+    '<div class="grid-3">'+
+      '<div><label class="field-label">Pontos positivos</label><textarea id="pos-'+p.id+'" placeholder="O que se destacou..."></textarea></div>'+
+      '<div><label class="field-label">A melhorar</label><textarea id="neg-'+p.id+'" placeholder="O que precisa corrigir..."></textarea></div>'+
+      '<div><label class="field-label">Mental / Comportamento</label><textarea id="mental-'+p.id+'" placeholder="Atitude, comunicacao, foco..."></textarea></div>'+
+    '</div>'+
+  '</div>';
 }
 
-function setStar(id, val) {
-  starRatings[id] = val;
-  saveStarRatings();
-  const stars = document.querySelectorAll(`#stars-${id} .star`);
-  stars.forEach((s,i) => s.classList.toggle('active', i < val));
+function setNota(id,val){
+  notaRatings[id]=val;
+  updateNotaDisplay(id);
+  fbSet('portal/stars/'+getWeekKey()+'/'+id, val);
   renderDashboardRanking();
 }
 
-function loadStarRatings() {
-  const saved = localStorage.getItem('sz_stars_' + getWeekKey());
-  if (saved) {
-    starRatings = JSON.parse(saved);
-    PLAYERS.forEach(p => {
-      if (starRatings[p.id]) {
-        const stars = document.querySelectorAll(`#stars-${p.id} .star`);
-        stars.forEach((s,i) => s.classList.toggle('active', i < starRatings[p.id]));
-      }
-    });
-  }
+function updateNotaDisplay(id){
+  var val=notaRatings[id]||0;
+  document.querySelectorAll('#nota-'+id+' .nota-btn').forEach(function(b,i){
+    b.classList.toggle('active', i<val);
+  });
+  var el=document.getElementById('nota-val-'+id);
+  if(el) el.textContent=val>0?val+'/5':'-';
 }
 
-function saveStarRatings() {
-  localStorage.setItem('sz_stars_' + getWeekKey(), JSON.stringify(starRatings));
-}
-
-function updateStatusDot(id) {
-  const val = document.getElementById('status-' + id).value;
-  const dot = document.getElementById('sdot-' + id);
-  if (dot) {
-    dot.className = 'status-dot';
-    const opt = STATUS_OPTIONS.find(s => s.val === val);
-    if (opt) dot.classList.add(opt.cls);
-  }
+function updateStatusDot(id){
+  var val=document.getElementById('status-'+id).value;
+  var dot=document.getElementById('sdot-'+id);
+  if(dot){dot.className='status-dot';var opt=STATUS_OPTIONS.find(function(s){return s.val===val;});if(opt)dot.classList.add(opt.cls);}
 }
 
 // ═══════════════ DASHBOARD ═══════════════
-function renderDashboard() {
-  renderDashStats();
-  renderDashboardRanking();
-  renderDashAlerts();
-  renderDashPresence();
-}
+function renderDashboard(){renderDashStats();renderDashboardRanking();renderDashAlerts();renderDashPresence();}
 
-function renderDashStats() {
-  const reports = JSON.parse(localStorage.getItem('sz_reports') || '[]');
-  const latest = reports[0];
-  const avgNota = calcAvgNota();
-  const riskCount = PLAYERS.filter(p => {
-    const el = document.getElementById('risk-' + p.id);
-    return el && el.checked;
-  }).length;
-
-  const stats = [
-    {label:'Players Ativos',value:PLAYERS.length,sub:'cadastrados',icon:'👥'},
-    {label:'Nota Média',value:avgNota > 0 ? avgNota.toFixed(1) : '—',sub:'esta semana',icon:'⭐'},
-    {label:'Em Risco',value:riskCount,sub:'players',icon:'⚑',red: riskCount > 0},
-    {label:'Relatórios',value:reports.length,sub:'no histórico',icon:'📋'},
+function renderDashStats(){
+  var reports=JSON.parse(localStorage.getItem('sz_reports')||'[]');
+  var latest=reports[0];
+  var avgNota=calcAvgNota();
+  var riskCount=PLAYERS.filter(function(p){var el=document.getElementById('risk-'+p.id);return el&&el.checked;}).length;
+  var stats=[
+    {label:'Players Ativos',value:PLAYERS.length,sub:'cadastrados',icon:'P'},
+    {label:'Nota Media',value:avgNota>0?avgNota.toFixed(1):'-',sub:'esta semana',icon:'N'},
+    {label:'Em Risco',value:riskCount,sub:'players',icon:'!',red:riskCount>0},
+    {label:'Relatorios',value:reports.length,sub:'no historico',icon:'R'},
   ];
-  if (latest) {
-    stats[2] = {label:'Win Rate',value:(latest.geral.wr||'—')+'%',sub:'última semana',icon:'🎯'};
-  }
-
-  const el = document.getElementById('dash-stats');
-  if (!el) return;
-  el.innerHTML = stats.map(s => `
-    <div class="stat-card">
-      <div class="stat-icon">${s.icon}</div>
-      <div class="stat-label">${s.label}</div>
-      <div class="stat-value" style="${s.red?'color:var(--red);':''}">${s.value}</div>
-      <div class="stat-sub">${s.sub}</div>
-    </div>
-  `).join('');
+  if(latest) stats[2]={label:'Win Rate',value:(latest.geral.wr||'-')+'%',sub:'ultima semana',icon:'W'};
+  var el=document.getElementById('dash-stats'); if(!el)return;
+  el.innerHTML=stats.map(function(s){return '<div class="stat-card"><div class="stat-icon">'+s.icon+'</div><div class="stat-label">'+s.label+'</div><div class="stat-value" style="'+(s.red?'color:var(--red);':'')+'">'+s.value+'</div><div class="stat-sub">'+s.sub+'</div></div>';}).join('');
 }
 
-function calcAvgNota() {
-  const vals = Object.values(starRatings).filter(v => v > 0);
-  if (!vals.length) return 0;
-  return vals.reduce((a,b) => a+b, 0) / vals.length;
+function calcAvgNota(){
+  var vals=Object.values(notaRatings).filter(function(v){return v>0;});
+  if(!vals.length)return 0;
+  return vals.reduce(function(a,b){return a+b;},0)/vals.length;
 }
 
-function renderDashboardRanking() {
-  const el = document.getElementById('dash-ranking');
-  if (!el) return;
-  const sorted = getRankedPlayers();
-  el.innerHTML = sorted.slice(0,5).map((p,i) => buildRankItem(p,i)).join('');
+function renderDashboardRanking(){
+  var el=document.getElementById('dash-ranking'); if(!el)return;
+  el.innerHTML=getRankedPlayers().slice(0,5).map(function(p,i){return buildRankItem(p,i);}).join('');
 }
 
-function getRankedPlayers() {
-  return [...PLAYERS].map(p => ({
-    ...p,
-    nota: starRatings[p.id] || 0,
-  })).sort((a,b) => b.nota - a.nota);
+function getRankedPlayers(){
+  return PLAYERS.map(function(p){return Object.assign({},p,{nota:notaRatings[p.id]||0});}).sort(function(a,b){return b.nota-a.nota;});
 }
 
-function buildRankItem(p, i) {
-  const posCls = i===0?'gold':i===1?'silver':i===2?'bronze':'';
-  const stars = [1,2,3,4,5].map(n => `<span class="rank-star ${p.nota>=n?'':'empty'}">${p.nota>=n?'★':'☆'}</span>`).join('');
-  return `
-  <div class="ranking-item">
-    <div class="rank-pos ${posCls}">${i+1}</div>
-    <div class="rank-info">
-      <div class="rank-name">${p.name}</div>
-      <div class="rank-role">${p.role} • ${p.line}</div>
-      <div class="rank-stars">${stars}</div>
-    </div>
-    <div>
-      <div class="rank-score">${p.nota > 0 ? p.nota + '.0' : '—'}</div>
-    </div>
-  </div>`;
+function buildRankItem(p,i){
+  var posCls=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+  var btns=[1,2,3,4,5].map(function(n){return '<div style="width:14px;height:14px;background:'+(n<=p.nota?'var(--blue)':'rgba(30,144,255,0.1)')+';border:1px solid '+(n<=p.nota?'var(--blue)':'var(--border)')+';" title="'+n+'"></div>';}).join('');
+  return '<div class="ranking-item"><div class="rank-pos '+posCls+'">'+( i+1)+'</div><div class="rank-info"><div class="rank-name">'+p.name+'</div><div class="rank-role">'+p.role+' - '+p.line+'</div><div class="rank-stars" style="display:flex;gap:2px;margin-top:4px;">'+btns+'</div></div><div><div class="rank-score">'+(p.nota>0?p.nota+'/5':'-')+'</div></div></div>';
 }
 
-function renderDashAlerts() {
-  const el = document.getElementById('dash-alerts');
-  if (!el) return;
-  const riskPlayers = PLAYERS.filter(p => {
-    const el2 = document.getElementById('risk-' + p.id);
-    return el2 && el2.checked;
-  });
-  if (!riskPlayers.length) {
-    el.innerHTML = `<div style="font-family:var(--mono);font-size:10px;color:var(--green);padding:14px;border:1px solid rgba(0,230,118,0.2);background:rgba(0,230,118,0.04);">✓ Nenhum alerta ativo no momento.</div>`;
-  } else {
-    el.innerHTML = riskPlayers.map(p => `
-      <div class="alert-card">
-        <div class="alert-icon">⚑</div>
-        <div>
-          <div class="alert-name">${p.name}</div>
-          <div class="alert-text">PLAYER EM SITUAÇÃO DE RISCO</div>
-        </div>
-      </div>`).join('');
-  }
+function renderDashAlerts(){
+  var el=document.getElementById('dash-alerts'); if(!el)return;
+  var riskPs=PLAYERS.filter(function(p){var e=document.getElementById('risk-'+p.id);return e&&e.checked;});
+  el.innerHTML=riskPs.length?riskPs.map(function(p){return '<div class="alert-card"><div class="alert-icon">!</div><div><div class="alert-name">'+p.name+'</div><div class="alert-text">PLAYER EM SITUACAO DE RISCO</div></div></div>';}).join('')
+    :'<div style="font-family:var(--mono);font-size:10px;color:var(--green);padding:14px;border:1px solid rgba(0,230,118,0.2);background:rgba(0,230,118,0.04);">Nenhum alerta ativo.</div>';
 }
 
-function renderDashPresence() {
-  const el = document.getElementById('dash-presence');
-  if (!el) return;
-  const wk = getWeekKey();
-  const pData = presencaData[wk] || {};
-  const dates = getWeekDates();
-
-  if (!Object.keys(pData).length) {
-    el.innerHTML = `<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:14px;border:1px solid var(--border);">Nenhuma presença registrada esta semana.</div>`;
-    return;
-  }
-
-  el.innerHTML = PLAYERS.slice(0,5).map(p => {
-    const pres = pData[p.id] || {};
-    const days = dates.slice(0,5).map((d,i) => {
-      const state = pres[i] || '—';
-      const colorMap = {'presente':'var(--green)','atrasado':'var(--yellow)','faltou':'var(--red)','destaque':'var(--blue)','—':'var(--border)'};
-      return `<div style="width:10px;height:10px;border-radius:2px;background:${colorMap[state]||'var(--border)'};title='${DAYS[i]}'"></div>`;
-    }).join('');
-    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-      <div style="font-family:var(--display);font-size:12px;font-weight:600;color:#fff;width:80px;">${p.name}</div>
-      <div style="display:flex;gap:4px;">${days}</div>
-    </div>`;
+function renderDashPresence(){
+  var el=document.getElementById('dash-presence'); if(!el)return;
+  var wk=getWeekKey(); var pData=presencaData[wk]||{}; var dates=getWeekDates();
+  if(!Object.keys(pData).length){el.innerHTML='<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:14px;border:1px solid var(--border);">Nenhuma presenca registrada.</div>';return;}
+  el.innerHTML=PLAYERS.slice(0,5).map(function(p){
+    var pres=pData[p.id]||{};
+    var days=dates.slice(0,5).map(function(d,i){var state=pres[i]||'_';var cm={presente:'var(--green)',atrasado:'var(--yellow)',faltou:'var(--red)',destaque:'var(--blue)','_':'var(--border)'};return '<div style="width:10px;height:10px;border-radius:2px;background:'+(cm[state]||'var(--border)')+';"></div>';}).join('');
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><div style="font-family:var(--display);font-size:12px;font-weight:600;color:#fff;width:80px;">'+p.name+'</div><div style="display:flex;gap:4px;">'+days+'</div></div>';
   }).join('');
 }
 
-// ═══════════════ CALENDÁRIO DE PRESENÇA ═══════════════
-function renderPresenca() {
-  const container = document.getElementById('presenca-days');
-  if (!container) return;
-  const wk = getWeekKey();
-  if (!presencaData[wk]) presencaData[wk] = {};
-  const dates = getWeekDates();
-  container.innerHTML = '';
-
-  dates.forEach((date, dayIdx) => {
-    const dayName = DAYS[dayIdx];
-    const isWeekend = dayIdx >= 5;
-    const div = document.createElement('div');
-    div.style.cssText = 'margin-bottom:24px;';
-    div.innerHTML = `
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <div style="font-family:var(--display);font-size:14px;font-weight:700;letter-spacing:2px;color:${isWeekend?'var(--text-dim)':'#fff'};">${dayName}</div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--blue);">${formatDate(date)}</div>
-        ${isToday(date)?'<div style="font-family:var(--mono);font-size:8px;color:var(--cyan);padding:2px 8px;border:1px solid rgba(0,229,255,0.3);">HOJE</div>':''}
-      </div>
-      <div class="presence-grid">
-        ${PLAYERS.map(p => buildPresCard(p, dayIdx, wk)).join('')}
-      </div>`;
+// ═══════════════ PRESENCA ═══════════════
+function renderPresenca(){
+  var container=document.getElementById('presenca-days'); if(!container)return;
+  var wk=getWeekKey();
+  if(!presencaData[wk])presencaData[wk]={};
+  var dates=getWeekDates();
+  container.innerHTML='';
+  dates.forEach(function(date,dayIdx){
+    var dayName=DAYS[dayIdx]; var isWeekend=dayIdx>=5;
+    var div=document.createElement('div'); div.style.cssText='margin-bottom:24px;';
+    var cards=PLAYERS.map(function(p){return buildPresCard(p,dayIdx,wk);}).join('');
+    div.innerHTML='<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;"><div style="font-family:var(--display);font-size:14px;font-weight:700;letter-spacing:2px;color:'+(isWeekend?'var(--text-dim)':'#fff')+';">'+dayName+'</div><div style="font-family:var(--mono);font-size:9px;color:var(--blue);">'+formatDate(date)+'</div>'+(isToday(date)?'<div style="font-family:var(--mono);font-size:8px;color:var(--cyan);padding:2px 8px;border:1px solid rgba(0,229,255,0.3);">HOJE</div>':'')+'</div><div class="presence-grid">'+cards+'</div>';
     container.appendChild(div);
   });
 }
 
-function buildPresCard(p, dayIdx, wk) {
-  const state = (presencaData[wk]?.[p.id]?.[dayIdx]) || '—';
-  const stateClass = state !== '—' ? state : '';
-  return `
-    <div class="presence-card">
-      <div class="presence-player">${p.name} <span style="font-family:var(--mono);font-size:8px;color:var(--text-dim);">${p.role}</span></div>
-      <button class="pres-btn ${stateClass}" id="pres-${p.id}-${dayIdx}" onclick="cyclePresenca('${p.id}',${dayIdx})">${PRES_LABELS[state]}</button>
-    </div>`;
+function buildPresCard(p,dayIdx,wk){
+  var state=(presencaData[wk]&&presencaData[wk][p.id]&&presencaData[wk][p.id][dayIdx])||'_';
+  return '<div class="presence-card"><div class="presence-player">'+p.name+' <span style="font-family:var(--mono);font-size:8px;color:var(--text-dim);">'+p.role+'</span></div><button class="pres-btn '+(state!=='_'?state:'')+'" id="pres-'+p.id+'-'+dayIdx+'" onclick="cyclePresenca(\''+p.id+'\','+dayIdx+')">'+PRES_LABELS[state]+'</button></div>';
 }
 
-function cyclePresenca(playerId, dayIdx) {
-  const wk = getWeekKey();
-  if (!presencaData[wk]) presencaData[wk] = {};
-  if (!presencaData[wk][playerId]) presencaData[wk][playerId] = {};
-  const cur = presencaData[wk][playerId][dayIdx] || '—';
-  const idx = PRES_STATES.indexOf(cur);
-  const next = PRES_STATES[(idx + 1) % PRES_STATES.length];
-  presencaData[wk][playerId][dayIdx] = next;
-  localStorage.setItem('sz_presenca', JSON.stringify(presencaData));
-  const btn = document.getElementById(`pres-${playerId}-${dayIdx}`);
-  if (btn) {
-    btn.textContent = PRES_LABELS[next];
-    btn.className = 'pres-btn ' + (next !== '—' ? next : '');
-  }
+function cyclePresenca(playerId,dayIdx){
+  var wk=getWeekKey();
+  if(!presencaData[wk])presencaData[wk]={};
+  if(!presencaData[wk][playerId])presencaData[wk][playerId]={};
+  var cur=presencaData[wk][playerId][dayIdx]||'_';
+  var next=PRES_STATES[(PRES_STATES.indexOf(cur)+1)%PRES_STATES.length];
+  presencaData[wk][playerId][dayIdx]=next;
+  fbSet('portal/presenca/'+wk+'/'+playerId+'/'+dayIdx, next);
+  var btn=document.getElementById('pres-'+playerId+'-'+dayIdx);
+  if(btn){btn.textContent=PRES_LABELS[next];btn.className='pres-btn '+(next!=='_'?next:'');}
   renderDashPresence();
 }
 
-// ═══════════════ CALENDÁRIO PLANO ═══════════════
-function renderCalendar() {
-  const container = document.getElementById('calendar-container');
-  if (!container) return;
-  const dates = getWeekDates();
-  const saved = JSON.parse(localStorage.getItem('sz_plano_' + getWeekKey()) || '{}');
-
-  container.innerHTML = dates.map((date, i) => {
-    const isSun = isSunday(date);
-    const tod = isToday(date);
-    const d = saved[i] || {};
-    return `
-    <div class="day-card ${isSun?'sunday':''} ${tod?'today':''}">
-      <div class="day-name">${DAYS[i]}</div>
-      <div class="day-date">${formatDate(date)}${isSun?' ⭐':''}</div>
-      ${isSun ? `
-        <div class="day-field"><label>Análise da semana</label><textarea id="cal-${i}-analise" placeholder="Balanço da semana...">${d.analise||''}</textarea></div>
-        <div class="day-field"><label>Foco próxima semana</label><textarea id="cal-${i}-foco" placeholder="Prioridades...">${d.foco||''}</textarea></div>
-      ` : `
-        <div class="day-field"><label>Horário</label><input type="text" id="cal-${i}-hora" placeholder="Ex: 20:00" value="${d.hora||''}"></div>
-        <div class="day-field"><label>Foco do treino</label><input type="text" id="cal-${i}-foco" placeholder="Ex: Postplant, Execute..." value="${d.foco||''}"></div>
-        <div class="day-field"><label>Objetivo</label><textarea id="cal-${i}-obj" placeholder="O que o time deve aprender...">${d.obj||''}</textarea></div>
-        <div class="day-field"><label>VOD / Referência</label><input type="text" id="cal-${i}-vod" placeholder="Link ou nome..." value="${d.vod||''}"></div>
-      `}
-    </div>`;
+// ═══════════════ CALENDARIO PLANO ═══════════════
+function renderCalendar(){
+  var container=document.getElementById('calendar-container'); if(!container)return;
+  var dates=getWeekDates(); var wk=getWeekKey();
+  var saved=fbPlanos[wk]||JSON.parse(localStorage.getItem('sz_plano_'+wk)||'{}');
+  container.innerHTML=dates.map(function(date,i){
+    var isSun=isSunday(date); var tod=isToday(date); var d=saved[i]||{};
+    var inner=isSun?
+      '<div class="day-field"><label>Analise da semana</label><textarea id="cal-'+i+'-analise" placeholder="Balanco da semana...">'+(d.analise||'')+'</textarea></div><div class="day-field"><label>Foco proxima semana</label><textarea id="cal-'+i+'-foco" placeholder="Prioridades...">'+(d.foco||'')+'</textarea></div>'
+      :'<div class="day-field"><label>Horario</label><input type="text" id="cal-'+i+'-hora" placeholder="Ex: 20:00" value="'+(d.hora||'')+'"></div><div class="day-field"><label>Foco do treino</label><input type="text" id="cal-'+i+'-foco" placeholder="Ex: Postplant..." value="'+(d.foco||'')+'"></div><div class="day-field"><label>Objetivo</label><textarea id="cal-'+i+'-obj" placeholder="O que o time deve aprender...">'+(d.obj||'')+'</textarea></div><div class="day-field"><label>VOD / Referencia</label><input type="text" id="cal-'+i+'-vod" placeholder="Link ou nome..." value="'+(d.vod||'')+'"></div>';
+    return '<div class="day-card '+(isSun?'sunday':'')+' '+(tod?'today':'')+'"><div class="day-name">'+DAYS[i]+'</div><div class="day-date">'+formatDate(date)+(isSun?' *':'')+'</div>'+inner+'</div>';
   }).join('');
 }
 
-function loadPlano() {
-  renderCalendar();
-  document.getElementById('plano-status').textContent = 'Plano da semana carregado.';
-  document.getElementById('plano-status').className = 'submit-status ok';
-}
-
-// ═══════════════ SUBMIT RELATÓRIO ═══════════════
-function collectReport() {
+// ═══════════════ SUBMIT RELATORIO ═══════════════
+function collectReport(){
   return {
     weekKey: getWeekKey(),
     timestamp: new Date().toLocaleString('pt-BR'),
-    author: currentUser === 'coach' ? 'Coach — Lucas' : 'Staff',
-    geral: {
+    author: currentUser==='coach'?'Coach - Lucas':'Staff',
+    geral:{
       resumo: document.getElementById('g-resumo').value.trim(),
-      prox: document.getElementById('g-prox').value.trim(),
+      prox:   document.getElementById('g-prox').value.trim(),
       scrims: document.getElementById('g-scrims').value,
-      wr: document.getElementById('g-wr').value,
-      clima: document.getElementById('g-clima').value,
+      wr:     document.getElementById('g-wr').value,
+      clima:  document.getElementById('g-clima').value,
     },
-    treinos: {
+    treinos:{
       conteudo: document.getElementById('t-conteudo').value.trim(),
       evolucao: document.getElementById('t-evolucao').value.trim(),
       correcao: document.getElementById('t-correcao').value.trim(),
     },
-    players: PLAYERS.map(p => ({
-      name: p.name, role: p.role,
-      nota: starRatings[p.id] || null,
-      status: document.getElementById('status-' + p.id)?.value || '',
-      tecnico: document.getElementById('tecnico-' + p.id)?.value || '',
-      pos: document.getElementById('pos-' + p.id)?.value.trim() || '',
-      neg: document.getElementById('neg-' + p.id)?.value.trim() || '',
-      mental: document.getElementById('mental-' + p.id)?.value.trim() || '',
-      risco: document.getElementById('risk-' + p.id)?.checked || false,
-    })),
-    metas: {
+    players: PLAYERS.map(function(p){return{
+      name:p.name, role:p.role,
+      nota:   notaRatings[p.id]||null,
+      status: (document.getElementById('status-'+p.id)||{}).value||'',
+      tecnico:(document.getElementById('tecnico-'+p.id)||{}).value||'',
+      pos:    ((document.getElementById('pos-'+p.id)||{}).value||'').trim(),
+      neg:    ((document.getElementById('neg-'+p.id)||{}).value||'').trim(),
+      mental: ((document.getElementById('mental-'+p.id)||{}).value||'').trim(),
+      risco:  (document.getElementById('risk-'+p.id)||{}).checked||false,
+    };}),
+    metas:{
       cumpridas: document.getElementById('m-cumpridas').value.trim(),
-      proximas: document.getElementById('m-proximas').value.trim(),
+      proximas:  document.getElementById('m-proximas').value.trim(),
     },
-    obs: {
+    obs:{
       comp: document.getElementById('obs-comp').value.trim(),
-      dir: document.getElementById('obs-dir').value.trim(),
+      dir:  document.getElementById('obs-dir').value.trim(),
     },
   };
 }
 
-async function submitReport() {
-  const data = collectReport();
-  const status = document.getElementById('submit-status');
-  const btn = document.getElementById('btn-enviar');
-  btn.disabled = true;
-  status.textContent = 'Enviando...'; status.className = 'submit-status';
-
-  // Salvar local
-  const history = JSON.parse(localStorage.getItem('sz_reports') || '[]');
-  const idx = history.findIndex(r => r.weekKey === data.weekKey);
-  if (idx >= 0) history[idx] = data; else history.unshift(data);
+async function submitReport(){
+  var data=collectReport();
+  var status=document.getElementById('submit-status');
+  var btn=document.getElementById('btn-enviar');
+  btn.disabled=true; status.textContent='Enviando...'; status.className='submit-status';
+  // Firebase
+  fbSet('portal/reports/'+data.weekKey, data);
+  // localStorage sync
+  var history=JSON.parse(localStorage.getItem('sz_reports')||'[]');
+  var idx=history.findIndex(function(r){return r.weekKey===data.weekKey;});
+  if(idx>=0)history[idx]=data;else history.unshift(data);
   localStorage.setItem('sz_reports', JSON.stringify(history));
-
-  // Enviar Discord
-  const msg = buildReportDiscord(data);
-  const ok = await sendDiscord(msg);
-
-  // Checar alertas
-  const riskPlayers = data.players.filter(p => p.risco);
-  if (riskPlayers.length) {
-    await sendDiscord(`⚠️ **ALERTA DE RISCO — SAFEZONE**\n\nOs seguintes players foram marcados como risco:\n${riskPlayers.map(p=>`⚑ **${p.name}** (${p.role})`).join('\n')}\n\n*Semana: ${data.weekKey} — ${data.timestamp}*`);
+  // Discord
+  var msg=buildReportMsg(data);
+  var ok=await sendDiscord(msg);
+  var riskPs=data.players.filter(function(p){return p.risco;});
+  if(riskPs.length){
+    var riskNames=riskPs.map(function(p){return '! '+p.name+' ('+p.role+')';}).join('\n');
+    await sendDiscord('ALERTA DE RISCO - SAFEZONE\n\n'+riskNames+'\n\nSemana: '+data.weekKey+' - '+data.timestamp);
   }
-
-  status.textContent = ok ? '✓ Relatório enviado ao Discord com sucesso!' : '✓ Salvo localmente (erro ao enviar Discord)';
-  status.className = 'submit-status ok';
-  btn.disabled = false;
+  status.textContent=ok?'Relatorio enviado ao Discord e salvo no Firebase!':'Salvo no Firebase (verificar Discord).';
+  status.className='submit-status ok'; btn.disabled=false;
   renderDashboard();
 }
 
-function buildReportDiscord(d) {
-  const risk = d.players.filter(p => p.risco).map(p => `⚑ ${p.name}`).join(', ');
-  const playerLines = d.players
-    .filter(p => p.pos || p.neg || p.mental || p.nota)
-    .map(p => {
-      const nota = p.nota ? '★'.repeat(p.nota) + '☆'.repeat(5-p.nota) : '—';
-      return `**${p.name}${p.risco?' ⚑':''}** | ${p.role}\nNota: ${nota} | Forma: ${p.status||'—'} | Técnico: ${p.tecnico||'—'}\n✅ ${p.pos||'—'}\n🔧 ${p.neg||'—'}\n🧠 ${p.mental||'—'}`;
-    }).join('\n\n');
-
+function buildReportMsg(d){
+  var playerLines=d.players.filter(function(p){return p.pos||p.neg||p.mental||p.nota;}).map(function(p){
+    var nota=p.nota?p.nota+'/5':'-';
+    return '**'+p.name+(p.risco?' [RISCO]':'')+'** | '+p.role+'\nNota: '+nota+' | Forma: '+(p.status||'-')+' | Tecnico: '+(p.tecnico||'-')+'\nPositivos: '+(p.pos||'-')+'\nMelhorar: '+(p.neg||'-')+'\nMental: '+(p.mental||'-');
+  }).join('\n\n');
   return [
-    `# 📋 RELATÓRIO SEMANAL — SAFEZONE`,
-    `**Semana:** ${d.weekKey} | **Enviado:** ${d.timestamp} | **Por:** ${d.author}`,
-    ``,
-    `## 📊 VISÃO GERAL`,
-    `**Resumo:** ${d.geral.resumo||'—'}`,
-    `**Scrims:** ${d.geral.scrims||'—'} | **Win Rate:** ${d.geral.wr||'—'}% | **Clima:** ${d.geral.clima||'—'}`,
-    `**Próxima semana:** ${d.geral.prox||'—'}`,
-    ``,
-    `## 🎯 TREINOS`,
-    `**Conteúdo:** ${d.treinos.conteudo||'—'}`,
-    `**Evolução:** ${d.treinos.evolucao||'—'}`,
-    `**Corrigir:** ${d.treinos.correcao||'—'}`,
-    ``,
-    `## 👤 AVALIAÇÃO DOS PLAYERS`,
-    playerLines || '—',
-    ``,
-    risk ? `## ⚑ ALERTAS DE RISCO\n${risk}\n` : '',
-    `## 🎯 METAS`,
-    `**Cumpridas:** ${d.metas.cumpridas||'—'}`,
-    `**Próximas:** ${d.metas.proximas||'—'}`,
-    ``,
-    `## 📝 OBSERVAÇÕES`,
-    `**Comportamental:** ${d.obs.comp||'—'}`,
-    `**Para a direção:** ${d.obs.dir||'—'}`,
-    ``,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    '# RELATORIO SEMANAL - SAFEZONE',
+    '**Semana:** '+d.weekKey+' | **Por:** '+d.author+' | '+d.timestamp,
+    '',
+    '## VISAO GERAL',
+    '**Resumo:** '+(d.geral.resumo||'-'),
+    '**Scrims:** '+(d.geral.scrims||'-')+' | **WR:** '+(d.geral.wr||'-')+'% | **Clima:** '+(d.geral.clima||'-'),
+    '**Proxima semana:** '+(d.geral.prox||'-'),
+    '',
+    '## TREINOS',
+    '**Conteudo:** '+(d.treinos.conteudo||'-'),
+    '**Evolucao:** '+(d.treinos.evolucao||'-'),
+    '**Corrigir:** '+(d.treinos.correcao||'-'),
+    '',
+    '## PLAYERS',
+    playerLines||'-',
+    '',
+    '## METAS',
+    '**Cumpridas:** '+(d.metas.cumpridas||'-'),
+    '**Proximas:** '+(d.metas.proximas||'-'),
+    '',
+    '## OBSERVACOES',
+    '**Comportamental:** '+(d.obs.comp||'-'),
+    '**Para a direcao:** '+(d.obs.dir||'-'),
+    '',
+    '---',
   ].join('\n');
 }
 
 // ═══════════════ SUBMIT PLANO ═══════════════
-async function submitPlano() {
-  const btn = document.getElementById('btn-salvar-plano');
-  const status = document.getElementById('plano-status');
-  btn.disabled = true;
-  status.textContent = 'Salvando...'; status.className = 'submit-status';
-
-  const mapa = document.getElementById('mapa-semana').value.trim();
-  const dates = getWeekDates();
-  const plano = {};
-  dates.forEach((date, i) => {
-    const isSun = isSunday(date);
-    plano[i] = isSun ? {
-      analise: document.getElementById(`cal-${i}-analise`)?.value.trim() || '',
-      foco: document.getElementById(`cal-${i}-foco`)?.value.trim() || '',
-    } : {
-      hora: document.getElementById(`cal-${i}-hora`)?.value.trim() || '',
-      foco: document.getElementById(`cal-${i}-foco`)?.value.trim() || '',
-      obj: document.getElementById(`cal-${i}-obj`)?.value.trim() || '',
-      vod: document.getElementById(`cal-${i}-vod`)?.value.trim() || '',
-    };
+async function submitPlano(){
+  var btn=document.getElementById('btn-salvar-plano');
+  var status=document.getElementById('plano-status');
+  btn.disabled=true; status.textContent='Salvando...'; status.className='submit-status';
+  var mapa=document.getElementById('mapa-semana').value.trim();
+  var dates=getWeekDates(); var wk=getWeekKey(); var plano={mapa:mapa};
+  dates.forEach(function(date,i){
+    var isSun=isSunday(date);
+    plano[i]=isSun?{analise:(document.getElementById('cal-'+i+'-analise')||{}).value||'',foco:(document.getElementById('cal-'+i+'-foco')||{}).value||''}
+      :{hora:(document.getElementById('cal-'+i+'-hora')||{}).value||'',foco:(document.getElementById('cal-'+i+'-foco')||{}).value||'',obj:(document.getElementById('cal-'+i+'-obj')||{}).value||'',vod:(document.getElementById('cal-'+i+'-vod')||{}).value||''};
   });
-
-  localStorage.setItem('sz_plano_' + getWeekKey(), JSON.stringify(plano));
-
-  // Discord
-  const lines = [`# 📅 PLANO DE ENSINO SEMANAL — SAFEZONE`, `**Semana:** ${getWeekKey()}`, `**Mapa do Premier:** ${mapa||'—'}`, ``];
-  dates.forEach((date, i) => {
-    const isSun = isSunday(date);
-    const p = plano[i];
-    lines.push(`## ${DAYS[i]} (${formatDate(date)})${isSun?' 🌟 DOMINGO':''}`);
-    if (isSun) {
-      lines.push(`**Análise da semana:** ${p.analise||'—'}`);
-      lines.push(`**Foco próxima semana:** ${p.foco||'—'}`);
-    } else {
-      lines.push(`**Horário:** ${p.hora||'—'} | **Foco:** ${p.foco||'—'}`);
-      lines.push(`**Objetivo:** ${p.obj||'—'}`);
-      if (p.vod) lines.push(`**VOD:** ${p.vod}`);
-    }
-    lines.push('');
-  });
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-  const ok = await sendDiscord(lines.join('\n'));
-  status.textContent = ok ? '✓ Plano enviado ao Discord!' : '✓ Salvo localmente.';
-  status.className = 'submit-status ok';
-  btn.disabled = false;
+  fbSet('portal/planos/'+wk, plano); fbPlanos[wk]=plano;
+  var lines=['# PLANO DE ENSINO - SAFEZONE','**Semana:** '+wk,'**Mapa Premier:** '+(mapa||'-'),''];
+  dates.forEach(function(date,i){var isSun=isSunday(date);var p=plano[i];lines.push('## '+DAYS[i]+' ('+formatDate(date)+')');if(isSun){lines.push('**Analise:** '+(p.analise||'-'));lines.push('**Foco:** '+(p.foco||'-'));}else{lines.push('**Horario:** '+(p.hora||'-')+' | **Foco:** '+(p.foco||'-'));lines.push('**Objetivo:** '+(p.obj||'-'));if(p.vod)lines.push('**VOD:** '+p.vod);}lines.push('');});
+  lines.push('---');
+  var ok=await sendDiscord(lines.join('\n'));
+  status.textContent=ok?'Plano salvo no Firebase e enviado ao Discord!':'Salvo no Firebase.';
+  status.className='submit-status ok'; btn.disabled=false;
 }
 
-// ═══════════════ SUBMIT PRESENÇA ═══════════════
-async function submitPresenca() {
-  const status = document.getElementById('presenca-status');
-  status.textContent = 'Enviando...'; status.className = 'submit-status';
-
-  const wk = getWeekKey();
-  localStorage.setItem('sz_presenca', JSON.stringify(presencaData));
-  const dates = getWeekDates();
-  const pData = presencaData[wk] || {};
-
-  const lines = [`# 📋 PRESENÇA SEMANAL — SAFEZONE`, `**Semana:** ${wk}`, ``];
-  dates.forEach((date, dayIdx) => {
-    lines.push(`**${DAYS[dayIdx]} (${formatDate(date)})**`);
-    PLAYERS.forEach(p => {
-      const state = pData[p.id]?.[dayIdx] || '—';
-      const icon = {presente:'✅',atrasado:'⏰',faltou:'❌',destaque:'⭐','—':'➖'}[state]||'➖';
-      lines.push(`${icon} ${p.name}: ${state.toUpperCase()}`);
-    });
+// ═══════════════ SUBMIT PRESENCA ═══════════════
+async function submitPresenca(){
+  var status=document.getElementById('presenca-status');
+  status.textContent='Enviando...'; status.className='submit-status';
+  var wk=getWeekKey(); var dates=getWeekDates(); var pData=presencaData[wk]||{};
+  var lines=['# PRESENCA SEMANAL - SAFEZONE','**Semana:** '+wk,''];
+  dates.forEach(function(date,dayIdx){
+    lines.push('**'+DAYS[dayIdx]+' ('+formatDate(date)+')**');
+    PLAYERS.forEach(function(p){var state=(pData[p.id]&&pData[p.id][dayIdx])||'_';var icon={presente:'OK',atrasado:'ATR',faltou:'FALT',destaque:'DEST','_':'-'}[state]||'-';lines.push(icon+' '+p.name);});
     lines.push('');
   });
-  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-  const ok = await sendDiscord(lines.join('\n'));
-  status.textContent = ok ? '✓ Presença enviada ao Discord!' : '✓ Salva localmente.';
-  status.className = 'submit-status ok';
+  lines.push('---');
+  var ok=await sendDiscord(lines.join('\n'));
+  status.textContent=ok?'Presenca enviada ao Discord!':'Dados salvos no Firebase.';
+  status.className='submit-status ok';
 }
 
 // ═══════════════ RANKING ═══════════════
-function renderRankingFull() {
-  const el = document.getElementById('ranking-full');
-  if (!el) return;
-  const sorted = getRankedPlayers();
-  el.innerHTML = sorted.map((p,i) => buildRankItem(p,i)).join('');
+function renderRankingFull(){
+  var el=document.getElementById('ranking-full'); if(!el)return;
+  el.innerHTML=getRankedPlayers().map(function(p,i){return buildRankItem(p,i);}).join('');
+}
+async function sendRankingDiscord(){
+  var sorted=getRankedPlayers();
+  var lines=['# RANKING SAFEZONE - '+getWeekKey(),''];
+  sorted.forEach(function(p,i){lines.push((i+1)+'. **'+p.name+'** ('+p.role+') - '+(p.nota>0?p.nota+'/5':'sem nota'));});
+  lines.push('','---');
+  var ok=await sendDiscord(lines.join('\n'));
+  alert(ok?'Ranking enviado ao Discord!':'Erro ao enviar.');
 }
 
-async function sendRankingDiscord() {
-  const sorted = getRankedPlayers();
-  const medals = ['🥇','🥈','🥉'];
-  const lines = [
-    `# 🏆 RANKING SAFEZONE — ${getWeekKey()}`,
-    ``,
-    ...sorted.map((p,i) => {
-      const nota = p.nota > 0 ? '★'.repeat(p.nota) + '☆'.repeat(5-p.nota) : '— Sem nota';
-      return `${medals[i]||`${i+1}.`} **${p.name}** (${p.role}) — ${nota} ${p.nota>0?`[${p.nota}/5]`:''}`;
-    }),
-    ``,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
-  ];
-  const ok = await sendDiscord(lines.join('\n'));
-  alert(ok ? '✓ Ranking enviado ao Discord!' : '⚠ Erro ao enviar. Verifique o webhook.');
-}
-
-// ═══════════════ HISTÓRICO ═══════════════
-function renderHistory() {
-  const list = document.getElementById('history-list');
-  const reports = JSON.parse(localStorage.getItem('sz_reports') || '[]');
-  if (!reports.length) {
-    list.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>NENHUM RELATÓRIO ENCONTRADO</p></div>`;
-    return;
-  }
-  list.innerHTML = reports.map((r,i) => {
-    const riskPs = (r.players||[]).filter(p=>p.risco);
-    const tags = (r.players||[]).map(p => {
-      const opt = STATUS_OPTIONS.find(s=>s.val===p.status);
-      return `<div class="history-player-tag"><div class="status-dot ${opt?opt.cls:''}" style="width:8px;height:8px;"></div>${p.name}</div>`;
-    }).join('');
-    return `<div class="history-entry" onclick="openModal(${i})">
-      <div class="history-meta">
-        <div>
-          <div class="history-week">Semana ${r.weekKey}</div>
-          <div class="history-author">${r.author}</div>
-        </div>
-        <div class="history-date">${r.timestamp}</div>
-      </div>
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:10px;">${r.geral?.resumo?r.geral.resumo.slice(0,120)+'...':'—'}</div>
-      <div class="history-players">${tags}</div>
-      ${riskPs.length?`<div style="font-family:var(--mono);font-size:9px;color:var(--red);margin-top:10px;">⚑ Risco: ${riskPs.map(p=>p.name).join(', ')}</div>`:''}
-    </div>`;
+// ═══════════════ HISTORICO ═══════════════
+function renderHistory(){
+  var list=document.getElementById('history-list');
+  var reports=JSON.parse(localStorage.getItem('sz_reports')||'[]');
+  if(!reports.length){list.innerHTML='<div class="empty-state"><div class="icon">-</div><p>NENHUM RELATORIO ENCONTRADO</p></div>';return;}
+  list.innerHTML=reports.map(function(r,i){
+    var riskPs=(r.players||[]).filter(function(p){return p.risco;});
+    var tags=(r.players||[]).map(function(p){var opt=STATUS_OPTIONS.find(function(s){return s.val===p.status;});return '<div class="history-player-tag"><div class="status-dot '+(opt?opt.cls:'')+'" style="width:8px;height:8px;"></div>'+p.name+'</div>';}).join('');
+    return '<div class="history-entry" onclick="openModal('+i+')"><div class="history-meta"><div><div class="history-week">Semana '+r.weekKey+'</div><div class="history-author">'+r.author+'</div></div><div class="history-date">'+r.timestamp+'</div></div><div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:10px;">'+(r.geral&&r.geral.resumo?r.geral.resumo.slice(0,120)+'...':'-')+'</div><div class="history-players">'+tags+'</div>'+(riskPs.length?'<div style="font-family:var(--mono);font-size:9px;color:var(--red);margin-top:10px;">! Risco: '+riskPs.map(function(p){return p.name;}).join(', ')+'</div>':'')+'</div>';
   }).join('');
 }
 
-function openModal(idx) {
-  const reports = JSON.parse(localStorage.getItem('sz_reports') || '[]');
-  const r = reports[idx]; if (!r) return;
-  const playerHtml = (r.players||[]).map(p => {
-    const nota = p.nota ? '★'.repeat(p.nota)+'☆'.repeat(5-p.nota) : '—';
-    return `<div style="border:1px solid var(--border);padding:16px;margin-bottom:12px;background:rgba(30,144,255,0.03);">
-      <div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--blue);margin-bottom:12px;letter-spacing:1px;">${p.name} ${p.risco?'<span style="color:var(--red);">⚑</span>':''} <span style="font-family:var(--mono);font-size:9px;color:var(--text-dim);">${p.role}</span></div>
-      <div class="detail-row"><div class="detail-key">Nota</div><div class="detail-val">${nota}</div></div>
-      <div class="detail-row"><div class="detail-key">Forma</div><div class="detail-val">${p.status||'—'}</div></div>
-      <div class="detail-row"><div class="detail-key">Técnico</div><div class="detail-val">${p.tecnico||'—'}</div></div>
-      <div class="detail-row"><div class="detail-key">Positivos</div><div class="detail-val">${p.pos||'—'}</div></div>
-      <div class="detail-row"><div class="detail-key">A melhorar</div><div class="detail-val">${p.neg||'—'}</div></div>
-      <div class="detail-row"><div class="detail-key">Mental</div><div class="detail-val">${p.mental||'—'}</div></div>
-    </div>`;
+function openModal(idx){
+  var reports=JSON.parse(localStorage.getItem('sz_reports')||'[]');
+  var r=reports[idx]; if(!r)return;
+  var playerHtml=(r.players||[]).map(function(p){
+    var nota=p.nota?p.nota+'/5':'-';
+    return '<div style="border:1px solid var(--border);padding:16px;margin-bottom:12px;background:rgba(30,144,255,0.03);">'+
+      '<div style="font-family:var(--display);font-size:15px;font-weight:700;color:var(--blue);margin-bottom:12px;letter-spacing:1px;">'+p.name+' '+(p.risco?'[RISCO]':'')+' <span style="font-family:var(--mono);font-size:9px;color:var(--text-dim);">'+p.role+'</span></div>'+
+      '<div class="detail-row"><div class="detail-key">Nota</div><div class="detail-val">'+nota+'</div></div>'+
+      '<div class="detail-row"><div class="detail-key">Forma</div><div class="detail-val">'+(p.status||'-')+'</div></div>'+
+      '<div class="detail-row"><div class="detail-key">Tecnico</div><div class="detail-val">'+(p.tecnico||'-')+'</div></div>'+
+      '<div class="detail-row"><div class="detail-key">Positivos</div><div class="detail-val">'+(p.pos||'-')+'</div></div>'+
+      '<div class="detail-row"><div class="detail-key">Melhorar</div><div class="detail-val">'+(p.neg||'-')+'</div></div>'+
+      '<div class="detail-row"><div class="detail-key">Mental</div><div class="detail-val">'+(p.mental||'-')+'</div></div>'+
+    '</div>';
   }).join('');
-
-  document.getElementById('modal-body').innerHTML = `
-    <div class="modal-title">Semana ${r.weekKey}</div>
-    <div class="modal-sub">${r.timestamp} · ${r.author}</div>
-    <div style="margin-bottom:20px;">
-      <div class="section-title" style="font-size:10px;">Visão Geral</div>
-      <div class="detail-row"><div class="detail-key">Resumo</div><div class="detail-val">${r.geral?.resumo||'—'}</div></div>
-      <div class="detail-row"><div class="detail-key">Scrims</div><div class="detail-val">${r.geral?.scrims||'—'} partidas · WR ${r.geral?.wr||'—'}%</div></div>
-      <div class="detail-row"><div class="detail-key">Clima</div><div class="detail-val">${r.geral?.clima||'—'}</div></div>
-    </div>
-    <div class="section-title" style="font-size:10px;">Players</div>
-    ${playerHtml}
-    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
-      <div class="section-title" style="font-size:10px;">Metas</div>
-      <div class="detail-row"><div class="detail-key">Cumpridas</div><div class="detail-val">${r.metas?.cumpridas||'—'}</div></div>
-      <div class="detail-row"><div class="detail-key">Próximas</div><div class="detail-val">${r.metas?.proximas||'—'}</div></div>
-    </div>`;
+  document.getElementById('modal-body').innerHTML=
+    '<div class="modal-title">Semana '+r.weekKey+'</div>'+
+    '<div class="modal-sub">'+r.timestamp+' - '+r.author+'</div>'+
+    '<div style="margin-bottom:20px;"><div class="section-title" style="font-size:10px;">Visao Geral</div>'+
+    '<div class="detail-row"><div class="detail-key">Resumo</div><div class="detail-val">'+(r.geral&&r.geral.resumo||'-')+'</div></div>'+
+    '<div class="detail-row"><div class="detail-key">Scrims</div><div class="detail-val">'+(r.geral&&r.geral.scrims||'-')+' partidas - WR '+(r.geral&&r.geral.wr||'-')+'%</div></div>'+
+    '<div class="detail-row"><div class="detail-key">Clima</div><div class="detail-val">'+(r.geral&&r.geral.clima||'-')+'</div></div></div>'+
+    '<div class="section-title" style="font-size:10px;">Players</div>'+playerHtml+
+    '<div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">'+
+    '<div class="section-title" style="font-size:10px;">Metas</div>'+
+    '<div class="detail-row"><div class="detail-key">Cumpridas</div><div class="detail-val">'+(r.metas&&r.metas.cumpridas||'-')+'</div></div>'+
+    '<div class="detail-row"><div class="detail-key">Proximas</div><div class="detail-val">'+(r.metas&&r.metas.proximas||'-')+'</div></div></div>';
   document.getElementById('modal-overlay').classList.add('open');
 }
 
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-
-// ═══════════════ INIT PRESENÇA ═══════════════
-const savedPresenca = localStorage.getItem('sz_presenca');
-if (savedPresenca) presencaData = JSON.parse(savedPresenca);
-
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
 </script>
 </body>
-</html>
+</html><script>
+// PATCH INJECTION — sobrescreve funções existentes
+
+// ═══ TAGS CONFIG ═══
+var TAGS = [
+  {id:'tilt',       label:'Tilt',        color:'red'},
+  {id:'comunicacao',label:'Comunicação',  color:'red'},
+  {id:'ego',        label:'Ego',          color:'red'},
+  {id:'disciplina', label:'Disciplina',   color:'green'},
+  {id:'lideranca',  label:'Liderança',    color:'green'},
+  {id:'confianca',  label:'Confiança',    color:'green'},
+  {id:'mental',     label:'Mental',       color:'blue'},
+  {id:'horario',    label:'Horário',      color:'blue'},
+  {id:'consistencia',label:'Consistência',color:'blue'},
+];
+
+var playerTags = {};    // {wk: {pid: [tagIds]}}
+var playerClips = {};   // {pid: [{label, url, date}]}
+
+// Carregar do firebase ao bindar
+var origBindFirebase = window.bindFirebase;
+
+// ═══ TAGS NO BLOCK DO PLAYER ═══
+var origBuildPlayerBlock = window.buildPlayerBlock;
+
+window.buildPlayerBlock = function(p) {
+  var base = origBuildPlayerBlock ? origBuildPlayerBlock(p) : '';
+  // injeta bloco de tags antes do fechamento do player-block
+  var tagBtns = TAGS.map(function(t){
+    return '<button class="tag-btn" id="tag-'+p.id+'-'+t.id+'" onclick="toggleTag(\''+p.id+'\',\''+t.id+'\')" title="'+t.label+'">'+t.label+'</button>';
+  }).join('');
+  var tagSection = '<div class="tags-section"><span class="tags-label">Tags da semana</span><div class="tags-grid">'+tagBtns+'</div></div>';
+  // Adicionar clip
+  var clipSection = '<div class="tags-section" style="margin-top:10px;"><span class="tags-label">Clips / VODs</span>'
+    +'<div style="display:flex;gap:8px;margin-bottom:6px;">'
+    +'<input type="text" id="clip-label-'+p.id+'" placeholder="Descrição (ex: Round 14 postplant)" style="flex:1;font-size:11px;padding:6px 10px;">'
+    +'<input type="text" id="clip-url-'+p.id+'" placeholder="https://..." style="flex:1;font-size:11px;padding:6px 10px;">'
+    +'<button onclick="addClip(\''+p.id+'\')" style="background:var(--blue);color:#fff;border:none;padding:6px 14px;font-family:var(--mono);font-size:9px;cursor:pointer;">+</button>'
+    +'</div>'
+    +'<div id="clips-list-'+p.id+'"></div>'
+    +'</div>';
+  return base.replace('</div>', tagSection + clipSection + '</div>');
+};
+
+function toggleTag(pid, tagId) {
+  var wk = getWeekKey();
+  if(!playerTags[wk]) playerTags[wk]={};
+  if(!playerTags[wk][pid]) playerTags[wk][pid]=[];
+  var arr = playerTags[wk][pid];
+  var idx = arr.indexOf(tagId);
+  if(idx>=0) arr.splice(idx,1); else arr.push(tagId);
+  fbSet('portal/tags/'+wk+'/'+pid, arr.length ? arr : null);
+  updateTagDisplay(pid, wk);
+}
+
+function updateTagDisplay(pid, wk) {
+  var wk2 = wk || getWeekKey();
+  var active = (playerTags[wk2] && playerTags[wk2][pid]) || [];
+  TAGS.forEach(function(t){
+    var btn = document.getElementById('tag-'+pid+'-'+t.id);
+    if(!btn) return;
+    btn.className = 'tag-btn';
+    if(active.indexOf(t.id)>=0) btn.classList.add('active-'+t.color);
+  });
+}
+
+function addClip(pid) {
+  var labelEl = document.getElementById('clip-label-'+pid);
+  var urlEl = document.getElementById('clip-url-'+pid);
+  if(!labelEl||!urlEl) return;
+  var label = labelEl.value.trim();
+  var url = urlEl.value.trim();
+  if(!label && !url) return;
+  if(!playerClips[pid]) playerClips[pid]=[];
+  var clip = {label:label||url, url:url, date:new Date().toLocaleDateString('pt-BR')};
+  playerClips[pid].unshift(clip);
+  fbSet('portal/clips/'+pid, playerClips[pid]);
+  labelEl.value=''; urlEl.value='';
+  renderClipsList(pid);
+}
+
+function renderClipsList(pid) {
+  var el = document.getElementById('clips-list-'+pid); if(!el) return;
+  var clips = playerClips[pid] || [];
+  if(!clips.length){el.innerHTML='';return;}
+  el.innerHTML = clips.slice(0,3).map(function(c,i){
+    return '<div class="clip-item">'
+      +'<span class="clip-date">'+c.date+'</span>'
+      +(c.url?'<a class="clip-link" href="'+c.url+'" target="_blank">🎥 '+c.label+'</a>'
+             :'<span class="clip-label">'+c.label+'</span>')
+      +'<button onclick="removeClip(\''+pid+'\','+i+')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:11px;">✕</button>'
+      +'</div>';
+  }).join('');
+  if(clips.length>3) el.innerHTML+='<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);padding:4px 0;">+'+( clips.length-3)+' clips no perfil completo</div>';
+}
+
+function removeClip(pid, idx){
+  if(!playerClips[pid]) return;
+  playerClips[pid].splice(idx,1);
+  fbSet('portal/clips/'+pid, playerClips[pid].length ? playerClips[pid] : null);
+  renderClipsList(pid);
+}
+
+// ═══ RANKING PONDERADO ═══
+function calcPresencaPct(pid) {
+  var total=0, present=0;
+  Object.keys(presencaData).forEach(function(wk){
+    var pd = presencaData[wk][pid] || {};
+    Object.values(pd).forEach(function(state){
+      total++;
+      if(state==='presente'||state==='destaque') present++;
+      if(state==='atrasado') present+=0.5;
+    });
+  });
+  return total>0 ? Math.round((present/total)*100) : null;
+}
+
+function calcEvolucao(pid) {
+  var reports = JSON.parse(localStorage.getItem('sz_reports')||'[]');
+  var notas = reports.map(function(r){
+    var p = (r.players||[]).find(function(x){return x.id===pid||x.name===pid;});
+    return p ? p.nota : null;
+  }).filter(function(n){return n!=null;});
+  if(notas.length<2) return 0;
+  return notas[0] - notas[notas.length-1]; // positivo = melhorou
+}
+
+function calcScore(p) {
+  var nota = (notaRatings[p.id]||0) / 5 * 40;  // 40%
+  var presPct = calcPresencaPct(p.id);
+  var pres = presPct!=null ? (presPct/100)*25 : 0;   // 25%
+  var evo = calcEvolucao(p.id);
+  var evolucao = Math.min(Math.max((evo+4)/8, 0),1)*20; // 20%
+  var wk = getWeekKey();
+  var activeTags = (playerTags[wk]&&playerTags[wk][p.id])||[];
+  var positivoTags = activeTags.filter(function(t){var found=TAGS.find(function(x){return x.id===t;});return found&&found.color==='green';}).length;
+  var negativoTags = activeTags.filter(function(t){var found=TAGS.find(function(x){return x.id===t;});return found&&found.color==='red';}).length;
+  var comportamento = Math.min(Math.max(0.5 + (positivoTags*0.1) - (negativoTags*0.1),0),1)*10; // 10%
+  var destaque = activeTags.indexOf('confianca')>=0||activeTags.indexOf('lideranca')>=0 ? 5 : 0; // 5%
+  var total = nota+pres+evolucao+comportamento+destaque;
+  return {total:Math.round(total*10)/10, nota:Math.round(nota*10)/10, pres:Math.round(pres*10)/10, evolucao:Math.round(evolucao*10)/10, comportamento:Math.round(comportamento*10)/10, presPct:presPct};
+}
+
+window.getRankedPlayers = function() {
+  return PLAYERS.map(function(p){
+    var sc = calcScore(p);
+    return Object.assign({},p,{nota:notaRatings[p.id]||0, score:sc.total, scoreDetail:sc});
+  }).sort(function(a,b){return b.score-a.score;});
+};
+
+window.buildRankItem = function(p,i){
+  var posCls=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+  var sc = p.scoreDetail || {total:p.nota,nota:p.nota,pres:0,evolucao:0,comportamento:0,presPct:null};
+  var pres = sc.presPct!=null ? sc.presPct+'%' : '—';
+  var wk=getWeekKey();
+  var activeTags=(playerTags[wk]&&playerTags[wk][p.id])||[];
+  var tagHtml = activeTags.slice(0,3).map(function(tid){
+    var t=TAGS.find(function(x){return x.id===tid;}); if(!t)return'';
+    return '<span class="tag-badge '+t.color+'">'+t.label+'</span>';
+  }).join(' ');
+  return '<div class="ranking-item" onclick="openPlayerProfile(\''+p.id+'\')" style="cursor:pointer;">'
+    +'<div class="rank-pos '+posCls+'">'+(i+1)+'</div>'
+    +'<div class="rank-info">'
+      +'<div class="rank-name">'+p.name+'</div>'
+      +'<div class="rank-role">'+p.role+' · '+p.line+'</div>'
+      +(tagHtml?'<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">'+tagHtml+'</div>':'')
+    +'</div>'
+    +'<div style="text-align:right;">'
+      +'<div class="rank-score">'+(sc.total>0?sc.total:'—')+'</div>'
+      +'<div style="font-family:var(--mono);font-size:8px;color:var(--text-dim);">N:'+(p.nota||'—')+' P:'+pres+' E:'+(p.nota>0?sc.evolucao.toFixed(1):'—')+'</div>'
+    +'</div>'
+  +'</div>';
+};
+
+// ═══ PLAYER PROFILE ═══
+function openPlayerProfile(pid) {
+  var p = PLAYERS.find(function(x){return x.id===pid;}); if(!p) return;
+  var reports = JSON.parse(localStorage.getItem('sz_reports')||'[]');
+  var sc = calcScore(p);
+  var presPct = sc.presPct!=null ? sc.presPct+'%' : '—';
+  var avgNota = (function(){
+    var ns=reports.map(function(r){var pl=(r.players||[]).find(function(x){return x.name===p.name;});return pl?pl.nota:null;}).filter(function(n){return n;});
+    return ns.length?( ns.reduce(function(a,b){return a+b;},0)/ns.length).toFixed(1):'—';
+  })();
+
+  // Histórico de tags por semana
+  var tagHistory = '';
+  Object.keys(playerTags).sort().reverse().forEach(function(wk){
+    var tags = playerTags[wk][pid] || [];
+    if(!tags.length) return;
+    tagHistory += '<div class="week-history-item">'
+      +'<div class="week-history-key">'+wk+'</div>'
+      +'<div style="display:flex;gap:4px;flex-wrap:wrap;">'
+      +tags.map(function(tid){var t=TAGS.find(function(x){return x.id===tid;});return t?'<span class="tag-badge '+t.color+'">'+t.label+'</span>':'';}).join('')
+      +'</div></div>';
+  });
+
+  // Histórico de notas
+  var notaHistory = '';
+  reports.slice(0,8).reverse().forEach(function(r){
+    var pl=(r.players||[]).find(function(x){return x.name===p.name;}); if(!pl) return;
+    var bars=[1,2,3,4,5].map(function(n){return '<div class="spark-bar" style="height:'+(n<=pl.nota?pl.nota*4:2)+'px;background:'+(n<=pl.nota?'var(--blue)':'var(--border)')+';"></div>';}).join('');
+    notaHistory+='<div class="week-history-item">'
+      +'<div class="week-history-key">'+r.weekKey+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;">'
+        +'<div class="week-history-nota">'+(pl.nota?pl.nota+'/5':'—')+'</div>'
+        +'<div class="sparkline">'+bars+'</div>'
+        +(pl.pos?'<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);max-width:200px;">'+pl.pos.slice(0,80)+'</div>':'')
+      +'</div></div>';
+  });
+
+  // Clips
+  var clips = playerClips[pid] || [];
+  var clipsHtml = clips.length
+    ? clips.map(function(c){return '<div class="clip-item"><span class="clip-date">'+c.date+'</span>'+(c.url?'<a class="clip-link" href="'+c.url+'" target="_blank">🎥 '+c.label+'</a>':'<span class="clip-label">'+c.label+'</span>')+'</div>';}).join('')
+    : '<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:12px;">Nenhum clip adicionado ainda.</div>';
+
+  // Tag patterns — detectar recorrência
+  var tagCount = {};
+  Object.values(playerTags).forEach(function(wkData){
+    var tags = wkData[pid]||[];
+    tags.forEach(function(tid){ tagCount[tid]=(tagCount[tid]||0)+1; });
+  });
+  var patterns = Object.keys(tagCount).filter(function(tid){return tagCount[tid]>=2;}).map(function(tid){
+    var t=TAGS.find(function(x){return x.id===tid;}); if(!t)return'';
+    return '<span class="tag-badge '+t.color+'" style="font-size:9px;">'+t.label+' ×'+tagCount[tid]+'</span>';
+  }).join(' ');
+
+  var html = '<div class="profile-header">'
+    +'<div class="profile-avatar">'+p.name.charAt(0)+'</div>'
+    +'<div><div class="profile-name">'+p.name+'</div><div class="profile-role">'+p.role+' · '+p.line+'</div></div>'
+    +'</div>'
+    +'<div class="profile-stats">'
+      +'<div class="profile-stat"><div class="profile-stat-val">'+(avgNota)+'</div><div class="profile-stat-lbl">MÉDIA NOTAS</div></div>'
+      +'<div class="profile-stat"><div class="profile-stat-val '+(sc.presPct!=null&&sc.presPct<70?'low':sc.presPct!=null&&sc.presPct<85?'mid':'')+'">'+presPct+'</div><div class="profile-stat-lbl">PRESENÇA</div></div>'
+      +'<div class="profile-stat"><div class="profile-stat-val">'+sc.total+'</div><div class="profile-stat-lbl">SCORE GERAL</div></div>'
+      +'<div class="profile-stat"><div class="profile-stat-val">'+reports.length+'</div><div class="profile-stat-lbl">SEMANAS</div></div>'
+    +'</div>'
+    +(patterns?'<div style="margin-bottom:20px;"><div class="section-title" style="font-size:10px;">⚠ Padrões recorrentes</div><div style="display:flex;gap:6px;flex-wrap:wrap;">'+patterns+'</div></div>':'')
+    +'<div class="profile-tabs">'
+      +'<button class="profile-tab active" onclick="showProfileTab(this,\'notas\')">Evolução</button>'
+      +'<button class="profile-tab" onclick="showProfileTab(this,\'tags\')">Tags</button>'
+      +'<button class="profile-tab" onclick="showProfileTab(this,\'clips\')">🎥 Clips</button>'
+    +'</div>'
+    +'<div id="ptab-notas">'+(notaHistory||'<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:20px;">Sem histórico ainda.</div>')+'</div>'
+    +'<div id="ptab-tags" style="display:none;">'+(tagHistory||'<div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:20px;">Nenhuma tag registrada ainda.</div>')+'</div>'
+    +'<div id="ptab-clips" style="display:none;">'+clipsHtml+'</div>';
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function showProfileTab(btn, name) {
+  document.querySelectorAll('.profile-tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  ['notas','tags','clips'].forEach(function(n){
+    var el=document.getElementById('ptab-'+n); if(el) el.style.display=n===name?'block':'none';
+  });
+}
+
+// ═══ BIND FIREBASE TAGS E CLIPS ═══
+var origBind = window.bindFirebase;
+window.bindFirebase = function(){
+  if(origBind) origBind();
+  var wk=getWeekKey();
+  // Tags
+  fbOn('portal/tags/'+wk, function(val){
+    if(!val) return;
+    playerTags[wk]=val;
+    PLAYERS.forEach(function(p){ updateTagDisplay(p.id, wk); });
+  });
+  // Clips
+  fbOn('portal/clips', function(val){
+    if(!val) return;
+    playerClips=val;
+    PLAYERS.forEach(function(p){ renderClipsList(p.id); });
+  });
+};
+
+// ═══ PLAYER DA SEMANA no Dashboard ═══
+var origRenderDash = window.renderDashboard;
+window.renderDashboard = function(){
+  if(origRenderDash) origRenderDash();
+  renderPlayerOfWeek();
+};
+
+function renderPlayerOfWeek(){
+  var el=document.getElementById('dash-pow'); if(!el)return;
+  var ranked=getRankedPlayers();
+  if(!ranked.length||!ranked[0].score){el.innerHTML='';return;}
+  var p=ranked[0];
+  el.innerHTML='<div class="player-of-week">'
+    +'<div class="pow-crown">👑</div>'
+    +'<div><div class="pow-label">PLAYER DA SEMANA</div><div class="pow-name">'+p.name+'</div><div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);">'+p.role+'</div></div>'
+    +'<div class="pow-score">'+p.score+'</div>'
+    +'</div>';
+}
+
+// Ranking envia Discord com score ponderado
+var origSendRanking = window.sendRankingDiscord;
+window.sendRankingDiscord = async function(){
+  var sorted=getRankedPlayers();
+  var medals=['🥇','🥈','🥉'];
+  var lines=['# 🏆 RANKING SAFEZONE — '+getWeekKey(),'*(Score: 40% nota · 25% presença · 20% evolução · 10% comportamento · 5% destaque)*',''];
+  sorted.forEach(function(p,i){
+    var sc=p.scoreDetail||{};
+    var presPct=sc.presPct!=null?sc.presPct+'%':'—';
+    lines.push((medals[i]||( i+1)+'.') +' **'+p.name+'** ('+p.role+') — Score: **'+p.score+'** | Nota: '+(p.nota||'—')+'/5 | Presença: '+presPct);
+  });
+  lines.push('','---');
+  var ok=await sendDiscord(lines.join('\n'));
+  alert(ok?'Ranking enviado ao Discord!':'Erro ao enviar.');
+};
+</script>
