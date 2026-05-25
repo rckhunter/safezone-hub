@@ -1478,8 +1478,12 @@ function calcEvolucao(pid) {
 }
 
 function calcScore(p) {
-  var nota = (notaRatings[p.id]||0) / 5 * 40;  // 40%
+  var notaVal = notaRatings[p.id]||0;
   var presPct = calcPresencaPct(p.id);
+  // Se não tem nota E não tem presença, score é 0
+  var temDados = notaVal > 0 || presPct != null;
+  if(!temDados) return {total:0, nota:0, pres:0, evolucao:0, comportamento:0, presPct:null};
+  var nota = notaVal / 5 * 40;  // 40%
   var pres = presPct!=null ? (presPct/100)*25 : 0;   // 25%
   var evo = calcEvolucao(p.id);
   var evolucao = Math.min(Math.max((evo+4)/8, 0),1)*20; // 20%
@@ -1487,7 +1491,7 @@ function calcScore(p) {
   var activeTags = (playerTags[wk]&&playerTags[wk][p.id])||[];
   var positivoTags = activeTags.filter(function(t){var found=TAGS.find(function(x){return x.id===t;});return found&&found.color==='green';}).length;
   var negativoTags = activeTags.filter(function(t){var found=TAGS.find(function(x){return x.id===t;});return found&&found.color==='red';}).length;
-  var comportamento = Math.min(Math.max(0.5 + (positivoTags*0.1) - (negativoTags*0.1),0),1)*10; // 10%
+  var comportamento = Math.min(Math.max((positivoTags*0.1) - (negativoTags*0.1),0),1)*10; // 10% — sem base
   var destaque = activeTags.indexOf('confianca')>=0||activeTags.indexOf('lideranca')>=0 ? 5 : 0; // 5%
   var total = nota+pres+evolucao+comportamento+destaque;
   return {total:Math.round(total*10)/10, nota:Math.round(nota*10)/10, pres:Math.round(pres*10)/10, evolucao:Math.round(evolucao*10)/10, comportamento:Math.round(comportamento*10)/10, presPct:presPct};
