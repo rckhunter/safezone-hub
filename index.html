@@ -1,463 +1,1185 @@
-Use o HTML atual do **FOX COACH** que estou fornecendo como base.
-
-NÃO recrie o projeto do zero e NÃO remova funcionalidades que já funcionam.
-
-Quero uma V2 mais organizada e correta, principalmente na separação dos modos de jogo.
-
-## 1. PORTAL SAFEZONE ANTES DO FOX COACH
-
-Ao abrir o HTML, NÃO quero que o dashboard apareça diretamente.
-
-Criar primeiro uma tela de entrada:
-
-# SAFEZONE ESPORTS
-
-**FOX COACH**
-
-Uma página inicial visual, limpa e premium, com:
-
-**ENTRAR NO FOX COACH**
-
-Ao clicar, abrir o dashboard atual.
-
-A tela inicial deve parecer um portal de entrada do sistema, e não uma página intermediária exagerada.
-
----
-
-# 2. SEPARAR COMPLETAMENTE OS MODOS DE JOGO
-
-Esse é o ponto mais importante.
-
-O sistema NÃO pode misturar partidas de modos diferentes.
-
-Quero abas/filtros independentes:
-
-### COMPETITIVO
-Somente partidas competitivas/ranked.
-
-### DUELO
-Partidas de **Duelo / Skirmish / modo Mix**, conforme o `mode` real retornado pela API.
-
-IMPORTANTE:
-O mapa "Mix" NÃO é um mapa normal de Valorant.
-
-Ele é o mapa/modo utilizado nas partidas de Duelo.
-
-Portanto:
-
-**NÃO mostrar "Mix" como se fosse um mapa competitivo.**
-
-O sistema deve identificar corretamente o modo da partida usando os dados reais da API.
-
-### MATA-MATA EM EQUIPE
-Separar as partidas de Team Deathmatch.
-
-### OUTROS
-Se a API retornar outro modo não identificado, colocar em uma categoria "Outros", sem tentar adivinhar.
-
----
-
-# 3. CADA MODO DEVE TER SUAS PRÓPRIAS ESTATÍSTICAS
-
-Não quero apenas um filtro visual.
-
-Cada modo deve possuir estatísticas independentes.
-
-Exemplo:
-
-## COMPETITIVO
-
-- partidas
-- vitórias
-- derrotas
-- win rate
-- K/D
-- HS%
-- ACS
-- Fox Score
-- melhor partida
-- pior partida
-- melhor mapa competitivo
-- pior mapa competitivo
-- evolução
-
-## DUELO
-
-- partidas
-- K/D
-- HS%
-- ACS
-- Fox Score
-- melhor partida de Duelo
-- pior partida de Duelo
-- evolução no Duelo
-
-## MATA-MATA EM EQUIPE
-
-- partidas
-- K/D
-- HS%
-- ACS
-- Fox Score
-- melhor partida
-- pior partida
-- evolução
-
-Não misturar os dados.
-
----
-
-# 4. "MELHORES PARTIDAS"
-
-Criar uma área:
-
-## MELHORES PARTIDAS
-
-Com abas:
-
-**COMPETITIVO | DUELO | MATA-MATA**
-
-Cada aba mostra as melhores partidas daquele modo.
-
-Exemplo:
-
-COMPETITIVO
-
-1. Vitória — 28/14/6 — ACS 287 — FOX 94
-2. Vitória — 24/12/8 — ACS 271 — FOX 91
-3. Vitória — 21/11/10 — ACS 256 — FOX 89
-
-DUELO
-
-1. 38/22 — ACS 312 — FOX 96
-2. 34/25 — ACS 289 — FOX 91
-
-MATA-MATA EM EQUIPE
-
-1. 41/18 — ACS 301 — FOX 95
-
-O ranking deve ser calculado com os dados reais das partidas.
-
----
-
-# 5. MAPAS
-
-Só mostrar análise de mapas onde isso fizer sentido.
-
-No COMPETITIVO:
-
-- melhor mapa
-- pior mapa
-- win rate por mapa
-- Fox Score por mapa
-- K/D por mapa
-
-Não colocar "Mix" nessa lista de mapas competitivos.
-
-Para Duelo e Mata-Mata, tratar o nome do mapa e o modo corretamente.
-
----
-
-# 6. FOX SCORE
-
-Manter o Fox Score, mas deixar muito mais claro.
-
-O score deve ser calculado com os dados realmente disponíveis.
-
-Não inventar métricas que a API não fornece.
-
-Se determinada métrica não existir, mostrar:
-
-**Dado indisponível**
-
-e não inventar um valor.
-
----
-
-# 7. DECISION MAKING / POSITIONING / TEAMPLAY
-
-Atualmente existem avaliações como:
-
-- Decision Making
-- Positioning
-- Teamplay
-
-Quero deixar isso mais transparente.
-
-Não apresentar essas notas como se fossem dados diretamente medidos pela API.
-
-Criar uma indicação:
-
-**ESTIMATIVA**
-
-E explicar claramente:
-
-### TOMADA DE DECISÃO
-Estimativa baseada nos dados disponíveis, como mortes, dano causado/recebido, eliminações, assistências e consistência.
-
-### POSICIONAMENTO
-Estimativa indireta baseada principalmente em mortes, dano recebido/causado e consistência.
-
-### TEAMPLAY
-Estimativa baseada principalmente em assistências, dano e participação nas rodadas.
-
-Se não houver dados suficientes, mostrar:
-
-**Dados insuficientes para estimar com confiança.**
-
-Também adicionar um pequeno indicador de confiança:
-
-**Confiança: Alta / Média / Baixa**
-
-Não quero que o sistema passe uma estimativa como fato.
-
----
-
-# 8. "PIORANDO -4.0" PRECISA EXPLICAR O QUE ESTÁ PIORANDO
-
-Não mostrar simplesmente:
-
-**PIORANDO -4.0**
-
-Isso não explica nada.
-
-Mostrar:
-
-### FOX SCORE
-**Piorando — 4,0 pontos**
-
-E abaixo:
-
-**Comparação: últimas 5 partidas vs. 5 partidas anteriores**
-
-Exemplo:
-
-Fox Score atual: **74,2**  
-Fox Score anterior: **78,2**  
-Variação: **-4,0 pontos**
-
-Ou, se estiver analisando HS%:
-
-**HS% atual: 21,4%**  
-**HS% anterior: 25,1%**  
-**Variação: -3,7 pontos percentuais**
-
-Sempre explicar:
-
-1. QUAL métrica está piorando;
-2. QUAL período está sendo comparado;
-3. QUAL era o valor anterior;
-4. QUAL é o valor atual;
-5. QUAL foi a diferença.
-
-Não usar "piorando" sem contexto.
-
----
-
-# 9. EVOLUÇÃO SEPARADA POR MODO
-
-A página Evolução deve ter:
-
-### COMPETITIVO
-gráficos apenas de partidas competitivas.
-
-### DUELO
-gráficos apenas de Duelo.
-
-### MATA-MATA EM EQUIPE
-gráficos apenas de Team Deathmatch.
-
-Isso é MUITO importante.
-
-Não quero que uma sequência de partidas de Duelo altere minha evolução competitiva.
-
----
-
-# 10. AGENTE PRINCIPAL E RANK
-
-Corrigir qualquer situação em que o sistema invente ou apresente dados incorretos.
-
-O **Agente principal** deve ser calculado somente a partir das partidas realmente carregadas e válidas.
-
-Mostrar:
-
-**Agente mais utilizado**
-
-e, separadamente:
-
-**Agente com melhor desempenho**
-
-Não confundir os dois.
-
-Quanto ao rank:
-
-usar exclusivamente o rank retornado pelo endpoint de MMR da API.
-
-NUNCA usar valor mockado, fallback inventado ou valor antigo.
-
-Se o endpoint não retornar rank:
-
-**Rank indisponível**
-
-Não colocar "Ouro", "Prata" etc. só para preencher espaço.
-
-Também mostrar claramente:
-
-**Rank atual**
-**Peak rank**
-
-somente quando esses dados forem realmente retornados pela API.
-
----
-
-# 11. PARTIDAS RECENTES
-
-Adicionar filtros:
-
-**Todas | Competitivo | Duelo | Mata-Mata | Outros**
-
-Cada partida deve mostrar claramente o modo.
-
-Exemplo:
-
-COMPETITIVO
-Ascent
-Phoenix
-21/14/5
-
-DUELO
-Mix
-Raze
-38/22/4
-
-MATA-MATA
-Kasbah
-Jett
-41/18/3
-
-Não deixar o usuário ter que adivinhar qual é o modo.
-
----
-
-# 12. SEM EMOJIS
-
-Remover os emojis do projeto.
-
-NÃO usar:
-
-📈
-📉
-🎯
-🧠
-🔥
-🟢
-🔴
-etc.
-
-Substituir por:
-
-- cores;
-- badges;
-- linhas;
-- barras;
-- indicadores;
-- ícones SVG;
-- ícones PNG se necessário.
-
-Preferência: **SVG/CSS**, para não depender de imagens externas.
-
-Exemplo:
-
-EVOLUINDO
-→ texto azul + indicador visual azul
-
-ESTÁVEL
-→ texto neutro
-
-PIORANDO
-→ texto vermelho
-
-Sem emoji.
-
----
-
-# 13. DESIGN
-
-Manter o tema:
-
-**AZUL ESCURO / NAVY**
-
-com:
-
-- azul elétrico;
-- ciano;
-- branco;
-- cinza;
-- vermelho apenas para alertas;
-- verde apenas quando necessário.
-
-Quero uma aparência premium de plataforma de análise de esports.
-
-Nada de visual colorido demais.
-
----
-
-# 14. IMPORTANTE SOBRE A API
-
-Antes de classificar um modo, verificar exatamente quais valores o endpoint atual retorna em:
-
-`metadata.mode`
-
-Não inventar nomes.
-
-Criar uma função central, por exemplo:
-
-`getGameMode(match)`
-
-que classifique cada partida.
-
-Essa função deve ser usada em TODO o sistema.
-
-Assim não teremos uma lógica para o Dashboard e outra diferente para Partidas.
-
-Também revisar o parser atual para garantir que partidas de Duelo e Mata-Mata NÃO sejam descartadas automaticamente.
-
----
-
-# 15. DADOS INSUFICIENTES
-
-Quando a API não fornecer determinado dado:
-
-mostrar claramente:
-
-**NÃO DISPONÍVEL**
-
-ou
-
-**ESTIMATIVA**
-
-Nunca fabricar informações para preencher cards.
-
----
-
-# 16. PRIORIDADE
-
-Faça primeiro nesta ordem:
-
-1. Corrigir identificação dos modos.
-2. Separar Competitivo / Duelo / Mata-Mata.
-3. Corrigir rank e agente.
-4. Corrigir explicação das tendências.
-5. Remover emojis.
-6. Criar melhores partidas por modo.
-7. Separar evolução por modo.
-8. Criar tela inicial SafeZone.
-9. Refinar o visual.
-
-Não fique me explicando o que você pretende fazer.
-
-**Edite o HTML existente e entregue o código completo funcionando.**
-
-Não recrie uma versão simplificada.
-Não remova a integração atual.
-Não substitua funcionalidades existentes por placeholders.
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOX COACH · SafeZone Esports</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #050b1a; --surface: #081226; --card: #0b1a33; --card2: #0f2142; --border: #16294d;
+    --accent: #00d4ff; --accent2: #2f7bff; --gold: #8fb4ff; --red: #ff4655; --green: #00d4ff;
+    --text: #e8eaf0; --muted: #6f84ab;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; min-height: 100vh;
+    background-image: radial-gradient(ellipse at 15% 10%, #0a1f4a33 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 90%, #001a3333 0%, transparent 55%),
+      repeating-linear-gradient(0deg, transparent, transparent 40px, #ffffff04 40px, #ffffff04 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, #ffffff04 40px, #ffffff04 41px);
+    background-attachment: fixed;
+  }
+  .hidden { display: none !important; }
+  .muted { color: var(--muted); }
+  .pad { padding: 16px; }
+  .mono { font-family: monospace; }
+  h1,h2,h3,.exo { font-family: "Exo 2", sans-serif; }
+
+  /* LAYOUT */
+  .app { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+  .side { position: sticky; top: 0; height: 100vh; background: #080d1bee; border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 6px; backdrop-filter: blur(12px); }
+  .brand { padding: 4px 10px 18px; }
+  .brand-name { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 20px; letter-spacing: .06em; }
+  .brand-name span { color: var(--accent); text-shadow: 0 0 14px #00d4ff66; }
+  .brand-sub { font-size: 10px; color: var(--muted); letter-spacing: .25em; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 8px; color: var(--muted); cursor: pointer; font-weight: 600; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; border: 1px solid transparent; transition: all .2s; user-select: none; }
+  .nav-item .ic { font-size: 16px; width: 20px; text-align: center; }
+  .nav-item:hover { color: var(--text); background: #ffffff06; }
+  .nav-item.active { color: var(--accent); background: linear-gradient(90deg, #00d4ff18, transparent); border-color: #00d4ff33; box-shadow: inset 2px 0 0 var(--accent); }
+  .side-foot { margin-top: auto; padding: 10px; font-size: 11px; color: var(--muted); letter-spacing: .1em; }
+  .side-foot button { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 11px; letter-spacing: .08em; margin-top: 8px; width: 100%; }
+  .side-foot button:hover { color: var(--red); border-color: #ff465566; }
+  .live { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 1.5s infinite alternate; }
+  @keyframes pulse { from { box-shadow: 0 0 5px var(--green); } to { box-shadow: 0 0 14px var(--green); } }
+
+  main { padding: 24px 28px 60px; min-width: 0; max-width: 1180px; width: 100%; margin: 0 auto; }
+  .topbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 22px; }
+  .topbar input { flex: 1; min-width: 200px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--text); font-size: 14px; font-family: monospace; outline: none; transition: border-color .2s, box-shadow .2s; }
+  .topbar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #00d4ff14; }
+  select { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 11px 12px; color: var(--text); font-size: 13px; outline: none; font-family: inherit; }
+  .btn { background: var(--accent); color: #050b1a; border: none; border-radius: 8px; padding: 11px 24px; font-size: 13px; font-weight: 800; letter-spacing: .1em; cursor: pointer; font-family: "Exo 2", sans-serif; box-shadow: 0 0 16px #00d4ff44; transition: all .2s; }
+  .btn:hover { background: #33deff; transform: translateY(-1px); }
+  .btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; box-shadow: none; transform: none; }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1px solid #00d4ff55; box-shadow: none; padding: 8px 16px; }
+  .btn.ghost:hover { background: #00d4ff14; }
+  .btn.sm { padding: 7px 14px; font-size: 11px; }
+  .error-box { width: 100%; padding: 10px 14px; background: #ff465515; border: 1px solid #ff465544; border-radius: 8px; color: var(--red); font-size: 13px; }
+  .warn-box { width: 100%; padding: 10px 14px; background: #8fb4ff12; border: 1px solid #8fb4ff44; border-radius: 8px; color: var(--gold); font-size: 13px; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 18px; animation: rise .35s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .card-title { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 13px; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .card-title b { color: var(--accent); font-weight: 800; }
+  .page-title { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 24px; margin-bottom: 4px; }
+  .page-title span { color: var(--accent); }
+  .page-sub { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 18px; }
+  .hero .card { margin-bottom: 0; }
+  .hero-wrap { margin-bottom: 18px; }
+
+  /* PROFILE */
+  .player { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .player img { width: 54px; height: 54px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; }
+  .player-name { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 20px; }
+  .player-name span { color: var(--muted); font-weight: 400; }
+  .player-meta { color: var(--muted); font-size: 12px; letter-spacing: .05em; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .chip { padding: 4px 12px; background: #00d4ff12; border: 1px solid #00d4ff3a; border-radius: 20px; color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .06em; }
+  .chip.gold { background: #8fb4ff12; border-color: #8fb4ff44; color: var(--gold); }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; transition: border-color .2s; }
+  .tile:hover { border-color: #00d4ff44; }
+  .tile-l { font-size: 10px; color: var(--muted); letter-spacing: .15em; text-transform: uppercase; }
+  .tile-v { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 20px; margin-top: 2px; }
+  .tile-v small { font-size: 11px; color: var(--muted); font-weight: 400; }
+
+  /* FOX SCORE */
+  .score-wrap { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+  .ring { position: relative; width: 140px; height: 140px; flex-shrink: 0; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring-num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-num b { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 40px; line-height: 1; }
+  .ring-num small { font-size: 10px; color: var(--muted); letter-spacing: .2em; }
+  .subs { flex: 1; min-width: 200px; }
+  .stat-wrap { margin-bottom: 9px; }
+  .stat-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .stat-label span:first-child { color: var(--muted); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  .stat-label span:last-child { font-size: 12px; font-family: monospace; }
+  .stat-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .stat-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
+  .trend { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: .05em; }
+  .trend.up { background: #00d4ff18; color: var(--green); border: 1px solid #00d4ff44; }
+  .trend.flat { background: #8fb4ff14; color: var(--gold); border: 1px solid #8fb4ff44; }
+  .trend.down { background: #ff465518; color: var(--red); border: 1px solid #ff465544; }
+  .trend.na { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+  .seg { display: inline-flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { background: none; border: none; color: var(--muted); padding: 6px 14px; font-family: "Exo 2", sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; letter-spacing: .05em; transition: all .2s; }
+  .seg button.on { background: #00d4ff1c; color: var(--accent); }
+  .foot-note { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 12px; }
+
+  /* CHART */
+  .chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .chart .pt { transition: r .15s; cursor: pointer; }
+  .chart .pt:hover { r: 6; }
+  .chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; }
+  .chart-name { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .chart-val { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 18px; }
+
+  /* MATCHES */
+  .match-item { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; cursor: pointer; transition: all .2s; }
+  .match-item:hover { border-color: var(--accent); background: #0d1f3c; box-shadow: 0 0 18px #00d4ff22; transform: translateX(2px); }
+  .match-bar { width: 5px; height: 44px; border-radius: 3px; flex-shrink: 0; }
+  .m-main { flex: 1; min-width: 0; }
+  .m-top { display: flex; justify-content: space-between; gap: 8px; }
+  .m-agent { font-weight: 700; font-size: 16px; }
+  .m-res { font-size: 11px; font-weight: 800; letter-spacing: .1em; }
+  .m-det { display: flex; gap: 14px; margin-top: 4px; flex-wrap: wrap; font-size: 12px; }
+  .m-det .map { color: var(--muted); }
+  .m-det .kda { color: var(--accent); font-family: monospace; }
+  .m-det .gd { color: var(--gold); }
+  .m-det .dim { color: var(--muted); }
+  .m-fox { text-align: center; min-width: 54px; }
+  .m-fox b { font-family: "Exo 2", sans-serif; font-size: 24px; font-weight: 800; line-height: 1; display: block; }
+  .m-fox small { font-size: 9px; color: var(--muted); letter-spacing: .15em; }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+  th { text-align: left; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); font-weight: 700; }
+  td { padding: 11px 10px; border-bottom: 1px solid #1a254066; }
+  tr:hover td { background: #00d4ff08; }
+  td.name { font-weight: 700; }
+  .tag { display: inline-block; font-size: 9px; font-weight: 800; letter-spacing: .12em; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+  .tag.best { background: #00d4ff18; color: var(--green); border: 1px solid #00d4ff44; }
+  .tag.worst { background: #ff465518; color: var(--red); border: 1px solid #ff465544; }
+  .hl { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .hl .card { margin: 0; }
+  .hl-label { font-size: 11px; letter-spacing: .2em; font-weight: 800; }
+  .hl-name { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 26px; margin: 4px 0; }
+  .hl-sub { font-size: 12px; color: var(--muted); }
+
+  /* INSIGHTS */
+  .ins { display: flex; gap: 12px; padding: 11px 14px; background: var(--surface); border-radius: 8px; border-left: 3px solid var(--accent); margin-bottom: 8px; font-size: 14px; line-height: 1.45; }
+  .ins.warn { border-left-color: var(--red); }
+  .ins.good { border-left-color: var(--green); }
+  .ins.na { border-left-color: var(--muted); color: var(--muted); }
+  .ins .ico { font-size: 15px; }
+  .ai-box { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
+  .ai-main { background: linear-gradient(135deg, #1a3a6a44, var(--card)); border: 1px solid #00d4ff44; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; font-size: 15px; font-weight: 600; line-height: 1.45; }
+  .ai-main small { display: block; color: var(--accent); letter-spacing: .18em; font-size: 10px; margin-bottom: 4px; }
+  .na-list { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .na-list li { margin-left: 16px; }
+
+  /* TRAINING */
+  .train { border: 1px solid #8fb4ff44; border-radius: 12px; padding: 20px; margin-bottom: 16px; background: linear-gradient(135deg, #10264a55, var(--card)); animation: rise .35s ease both; }
+  .train-p { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 11px; letter-spacing: .22em; color: var(--gold); }
+  .train-t { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 22px; margin: 4px 0 12px; }
+  .train-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid #8fb4ff22; font-size: 14px; line-height: 1.45; }
+  .train-row b { font-size: 11px; letter-spacing: .15em; color: var(--muted); text-transform: uppercase; padding-top: 2px; }
+  .goal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .goal-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  .goal-name { font-weight: 700; font-size: 15px; }
+  .goal-nums { font-size: 12px; color: var(--muted); margin: 6px 0 8px; font-family: monospace; }
+  .x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; }
+  .x:hover { color: var(--red); }
+
+  /* DRAWER (FOX REPORT) */
+  .drawer { position: fixed; inset: 0; z-index: 300; display: flex; justify-content: flex-end; }
+  .drawer-bg { position: absolute; inset: 0; background: #000a; backdrop-filter: blur(3px); animation: fade .2s ease; }
+  @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+  .drawer-panel { position: relative; width: min(620px, 100%); height: 100%; overflow-y: auto; background: var(--bg); border-left: 1px solid var(--border); padding: 22px; animation: slidein .3s ease; box-shadow: -10px 0 40px #00d4ff10; }
+  @keyframes slidein { from { transform: translateX(40px); opacity: 0 } to { transform: none; opacity: 1 } }
+  .drawer-close { position: absolute; top: 14px; right: 16px; background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 16px; z-index: 2; }
+  .drawer-close:hover { border-color: var(--accent); color: var(--accent); }
+  .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-right: 40px; }
+  .report-title { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 22px; }
+  .report-title span { color: var(--accent); }
+  .report-sub { color: var(--muted); font-size: 11px; letter-spacing: .1em; }
+  .score-num { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 44px; line-height: 1; text-align: center; }
+  .score-den { font-size: 10px; color: var(--muted); letter-spacing: .1em; text-align: center; }
+  .summary { background: var(--surface); border-radius: 6px; padding: 10px 14px; font-size: 14px; line-height: 1.6; border-left: 2px solid var(--accent); }
+  .section-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 3px solid; }
+  .section-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .section-title { font-size: 12px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+  .section-item { padding: 8px 12px; margin-bottom: 6px; background: var(--surface); border-radius: 6px; font-size: 14px; line-height: 1.5; }
+  .mission-card { border: 1px solid #00d4ff44; border-radius: 12px; padding: 18px; margin-bottom: 12px; background: linear-gradient(135deg, #1a3a6a44, var(--card)); }
+  .mission-label { font-size: 11px; color: var(--accent); letter-spacing: .15em; margin-bottom: 8px; text-transform: uppercase; }
+  .mission-text { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .mental-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 12px; }
+  .mental-label { color: var(--muted); font-size: 11px; letter-spacing: .2em; margin-bottom: 6px; }
+  .mental-text { color: var(--accent); font-size: 16px; font-weight: 600; font-style: italic; }
+  .treino-card { border: 1px solid #8fb4ff44; border-radius: 12px; padding: 18px; margin-bottom: 12px; background: linear-gradient(135deg, #10264a55, var(--card)); }
+  .treino-title { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 14px; letter-spacing: .15em; color: var(--gold); text-transform: uppercase; }
+  .treino-sub { color: var(--muted); font-size: 12px; margin: 2px 0 14px; }
+  .treino-item { display: flex; gap: 12px; padding: 10px 14px; margin-bottom: 8px; background: var(--surface); border-radius: 8px; border-left: 3px solid var(--gold); }
+  .treino-num { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 18px; color: var(--gold); min-width: 24px; }
+  .treino-nome { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .treino-desc { font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .treino-duracao { font-size: 11px; color: var(--gold); margin-top: 4px; font-family: monospace; }
+  .loading-card { text-align: center; padding: 30px; }
+  .loading-text { color: var(--accent); font-size: 14px; letter-spacing: .15em; margin-bottom: 8px; }
+  .loading-sub { color: var(--muted); font-size: 12px; }
+  .loading-bar { margin-top: 18px; height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; }
+  .loading-fill { height: 100%; width: 40%; background: var(--accent); border-radius: 1px; animation: slide 1.4s infinite; }
+  @keyframes slide { 0% { transform: translateX(-150%) } 100% { transform: translateX(300%) } }
+  .empty { text-align: center; padding: 70px 0; }
+  .empty-title { font-family: "Exo 2", sans-serif; font-weight: 800; font-size: 20px; color: var(--muted); letter-spacing: .1em; }
+  .empty-sub { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+  @media (max-width: 960px) { .hero, .grid2 { grid-template-columns: 1fr; } .grid3 { grid-template-columns: 1fr; } .tiles { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 860px) {
+    .app { grid-template-columns: 1fr; }
+    .side { position: fixed; bottom: 0; left: 0; right: 0; top: auto; height: 64px; flex-direction: row; justify-content: space-around; align-items: center; padding: 6px; border-right: none; border-top: 1px solid var(--border); z-index: 200; gap: 2px; }
+    .brand, .side-foot { display: none; }
+    .nav-item { flex-direction: column; gap: 2px; padding: 6px 4px; font-size: 9px; letter-spacing: .04em; flex: 1; text-align: center; }
+    .nav-item .ic { font-size: 17px; }
+    main { padding: 16px 14px 90px; }
+    .hl { grid-template-columns: 1fr; }
+    .train-row { grid-template-columns: 1fr; gap: 2px; }
+  }
+
+  .ic svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .ico { display:none; } .section-head span:empty { display:none; }
+  .seg { flex-wrap:wrap; } .modebar { margin:0 0 16px; } .flt { margin-bottom:14px; }
+  .tr { border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:10px; background:var(--surface); }
+  .tr-h { display:flex; align-items:center; gap:8px; font-family:"Exo 2",sans-serif; font-size:13px; flex-wrap:wrap; }
+  .tr-h i { width:9px; height:9px; border-radius:50%; background:var(--muted); }
+  .tr-h b { letter-spacing:.1em; text-transform:uppercase; } .tr-h span { font-weight:800; }
+  .tr-up .tr-h i { background:#2f7bff; box-shadow:0 0 8px #2f7bff; } .tr-up .tr-h span { color:#5aa9ff; }
+  .tr-down .tr-h i { background:var(--red); box-shadow:0 0 8px var(--red); } .tr-down .tr-h span { color:var(--red); }
+  .tr-na .tr-h span { color:var(--muted); }
+  .tr-c { font-size:12px; color:var(--muted); margin:6px 0; }
+  .tr-v { display:flex; justify-content:space-between; font-size:13px; padding:2px 0; } .tr-v span { color:var(--muted); }
+  .est { font-size:9px; font-weight:800; letter-spacing:.12em; padding:2px 7px; border-radius:10px; border:1px solid #8fb4ff55; color:#8fb4ff; margin-left:6px; vertical-align:middle; }
+  .conf { font-size:11px; font-weight:700; padding:2px 9px; border-radius:10px; border:1px solid var(--border); }
+  .c-Alta { color:#00d4ff; border-color:#00d4ff55; } .c-Média { color:#8fb4ff; } .c-Baixa { color:#ff4655; border-color:#ff465555; }
+  .est-row { margin-bottom:14px; } .est-h { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px; letter-spacing:.1em; }
+  .na { color:var(--muted); font-size:11px; letter-spacing:.1em; font-weight:700; }
+  .mb { font-size:10px; font-weight:800; letter-spacing:.12em; padding:2px 9px; border-radius:10px; border:1px solid; }
+  .mb-comp { color:#00d4ff; border-color:#00d4ff55; background:#00d4ff12; } .mb-duel { color:#5aa9ff; border-color:#2f7bff77; background:#2f7bff14; }
+  .mb-tdm { color:#c9d6f2; border-color:#8fb4ff55; background:#8fb4ff10; } .mb-other { color:var(--muted); border-color:var(--border); }
+  .chip.na { color:var(--muted); background:var(--surface); border-color:var(--border); }
+  .tiles.t2 { grid-template-columns:1fr 1fr; margin-top:10px; }
+  details summary { list-style:none; cursor:pointer; }
+  #portal { position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 35%, #0f2a5c 0%, #050b1a 62%); transition:opacity .5s; }
+  #portal.out { opacity:0; pointer-events:none; }
+  .p-grid { position:absolute; inset:0; background-image:linear-gradient(#ffffff06 1px,transparent 1px),linear-gradient(90deg,#ffffff06 1px,transparent 1px); background-size:48px 48px; -webkit-mask-image:radial-gradient(circle at 50% 45%,#000 15%,transparent 70%); mask-image:radial-gradient(circle at 50% 45%,#000 15%,transparent 70%); }
+  .p-box { position:relative; text-align:center; padding:24px; }
+  .p-mark { width:64px; height:64px; margin-bottom:22px; }
+  .p-org { font-family:"Exo 2",sans-serif; letter-spacing:.5em; font-size:13px; color:var(--muted); font-weight:600; margin-bottom:12px; }
+  .p-title { font-family:"Exo 2",sans-serif; font-weight:800; font-size:clamp(44px,9vw,92px); letter-spacing:.06em; line-height:1; }
+  .p-title span { color:var(--accent); text-shadow:0 0 30px #00d4ff66; }
+  .p-line { width:90px; height:2px; background:linear-gradient(90deg,transparent,var(--accent),transparent); margin:26px auto 30px; }
+  .p-btn { padding:15px 38px; font-size:14px; }
+</style>
+</head>
+<body>
+
+<div id="portal"><div class="p-grid"></div><div class="p-box">
+  <svg class="p-mark" viewBox="0 0 64 64" fill="none" stroke="#00d4ff" stroke-width="2.5" stroke-linejoin="round"><path d="M32 4l24 14v28L32 60 8 46V18z"/><path d="M20 38l12-14 12 14" stroke="#e8eaf0"/></svg>
+  <div class="p-org">SAFEZONE ESPORTS</div>
+  <h1 class="p-title">FOX <span>COACH</span></h1>
+  <div class="p-line"></div>
+  <button class="btn p-btn" onclick="enterApp()">ENTRAR NO FOX COACH</button>
+</div></div>
+
+<div class="app hidden">
+  <nav class="side" id="side">
+    <div class="brand">
+      <div class="brand-name">FOX <span>COACH</span></div>
+      <div class="brand-sub">SAFEZONE ESPORTS</div>
+    </div>
+    <div class="nav-item active" data-view="dashboard" onclick="setView('dashboard')"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>Dashboard</div>
+    <div class="nav-item" data-view="partidas" onclick="setView('partidas')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>Partidas</div>
+    <div class="nav-item" data-view="melhores" onclick="setView('melhores')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></svg></span>Melhores</div>
+    <div class="nav-item" data-view="evolucao" onclick="setView('evolucao')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>Evolução</div>
+    <div class="nav-item" data-view="mapas" onclick="setView('mapas')"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span>Mapas</div>
+    <div class="nav-item" data-view="agentes" onclick="setView('agentes')"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>Agentes</div>
+    <div class="nav-item" data-view="treino" onclick="setView('treino')"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg></span>Treino</div>
+    <div class="side-foot">
+      <div class="live"><div class="dot"></div><span>SISTEMA ATIVO</span></div>
+      <button onclick="clearData()">APAGAR DADOS LOCAIS</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="topbar">
+      <input type="text" id="riotId" placeholder="NomeJogador#BR1" autocomplete="off">
+      <select id="region">
+        <option value="br">BR</option><option value="na">NA</option><option value="eu">EU</option>
+        <option value="ap">AP</option><option value="latam">LATAM</option>
+      </select>
+      <button class="btn" id="btnAnalyze" onclick="fetchMatches()">ANALISAR</button>
+      <div class="error-box hidden" id="errorBox"></div>
+      <div class="warn-box hidden" id="warnBox"></div>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<div id="drawer" class="drawer hidden">
+  <div class="drawer-bg" onclick="closeReport()"></div>
+  <div class="drawer-panel">
+    <button class="drawer-close" onclick="closeReport()">&times;</button>
+    <div id="drawerBody"></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   FOX COACH — estrutura
+   1. CONFIG        chaves, endpoints, fórmula do Fox Score (ajuste aqui)
+   2. API           Henrik (via proxy /henrik) + IA (/.netlify/functions/coach)
+   3. STORE         localStorage (histórico, metas, diagnósticos)
+   4. METRICS       parse de partidas, Fox Score, agregações, tendências
+   5. INSIGHTS      FOX AI local (regras) + IA
+   6. TRAINING      FOX TRAINING
+   7. CHARTS        gráficos SVG sem dependências
+   8. VIEWS         Dashboard / Partidas / Evolução / Mapas / Agentes / Treino
+   9. REPORT        FOX REPORT detalhado
+   Futuro: VOD_ANALYSIS e IA avançada entram como novos módulos que
+   escrevem em match.vod / player.vodInsights e são lidos pelas views.
+   ===================================================================== */
+
+/* ---------- 1. CONFIG ---------- */
+const API_KEY = "HDEV-4c39f4dc-9cef-4a57-bfdd-dd541a5577c0";
+const BASE = "https://api.henrikdev.xyz";
+const COACH_ENDPOINT = "/.netlify/functions/coach";
+
+const SUBKEYS = ["aim","duels","decision","positioning","teamplay","impact","consistency"];
+const SUBPT = { aim:"Mira", duels:"Duelos", decision:"Tomada de decisão", positioning:"Posicionamento", teamplay:"Jogo em equipe", impact:"Impacto", consistency:"Consistência" };
+const SUBLABEL = { aim:"Aim", duels:"Duels", decision:"Decision Making", positioning:"Positioning", teamplay:"Teamplay", impact:"Impact", consistency:"Consistency" };
+
+/* Fórmula do Fox Score. Cada faixa [min,max] mapeia o valor para 0–100
+   (se min > max a escala é invertida: menor = melhor). */
+const FOX = {
+  weights: { aim:.15, duels:.20, decision:.15, positioning:.10, teamplay:.10, impact:.20, consistency:.10 },
+  resultBonus: 4,                 // +/- pontos por vitória/derrota
+  ranges: {
+    hs:       [5, 30],            // HS%
+    adr:      [70, 170],          // dano médio por round
+    kd:       [0.5, 1.8],
+    fdiff:    [-0.15, 0.15],      // (first kills - first deaths) por round
+    dpr:      [1.0, 0.45],        // mortes por round (invertido)
+    fdRate:   [0.25, 0.08],       // first deaths por round (invertido)
+    dmgRatio: [0.7, 1.6],         // dano causado / dano recebido
+    apr:      [0.05, 0.35],
+    part:     [0.4, 1.1],           // (kills+assists) por round       // assists por round
+    acs:      [120, 300],
+    kpr:      [0.4, 1.1],
+    consistencyK: 160             // sensibilidade ao desvio do ACS em relação à sua média
+  },
+  /* peso interno de cada componente dentro de cada subnota */
+  mix: {
+    aim:         { hs:.6, adr:.4 },
+    duels:       { kd:.7, fdiff:.3 },
+    decision:    { dpr:.5, fdRate:.3, ratio:.2 },
+    positioning: { dmgRatio:.6, dpr:.4 },
+    teamplay:    { apr:.6, part:.4 },
+    impact:      { acs:.7, kpr:.3 }
+  }
+};
+
+/* ---------- helpers ---------- */
+const subName = k => `${SUBLABEL[k]} · ${SUBPT[k]}`;
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
+const fmt = (v,d=0) => (v==null || isNaN(v)) ? "—" : Number(v).toFixed(d).replace(".", ",");
+const avgN = a => { a = a.filter(v => v != null && !isNaN(v)); return a.length ? avg(a) : null; };
+const scale = (v, [lo,hi]) => clamp((v-lo)/(hi-lo), 0, 1) * 100;
+const scoreColor = v => v == null ? "#6f84ab" : v >= 70 ? "#00d4ff" : v >= 50 ? "#8fb4ff" : "#ff4655";
+const dateLbl = m => new Date(m.start).toLocaleDateString("pt-BR", {day:"2-digit", month:"2-digit"});
+
+/* ---------- 2. API ---------- */
+async function apiFetch(url) {
+  const sep = url.includes("?") ? "&" : "?";
+  const urlWithKey = url + sep + "api_key=" + API_KEY;
+  const proxyUrl = urlWithKey.replace("https://api.henrikdev.xyz", "/henrik");
+  const viaFile = location.protocol === "file:";
+  /* 1) proxy (Netlify). Em file:// ele não existe, então pula direto para a chamada direta. */
+  if (!viaFile) {
+    try {
+      const res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return await res.json();
+    } catch (err) { console.warn("Proxy falhou, tentando direto:", err.message); }
+  }
+  /* 2) chamada direta à API da Henrik (funciona ao abrir o HTML localmente) */
+  try {
+    const res = await fetch(urlWithKey);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } catch (err) {
+    throw new Error("Falha ao acessar a API: " + err.message + (viaFile ? " (aberto como arquivo local — a API precisa permitir CORS)" : ""));
+  }
+}
+
+async function callCoach(prompt) {
+  if (location.protocol === "file:") throw new Error("A análise por IA precisa do deploy do Netlify (função /coach). Estatísticas, Fox Score, gráficos e insights locais funcionam normalmente aqui.");
+  const res = await fetch(COACH_ENDPOINT, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(typeof data.error === "string" ? data.error : JSON.stringify(data.error));
+  return data.content?.[0]?.text || "";
+}
+
+function parseJSON(text) {
+  const cleaned = text.replace(/```json|```/g, "").trim();
+  try { return JSON.parse(cleaned); } catch (e) {
+    const m = cleaned.match(/\{[\s\S]*\}/);
+    if (m) return JSON.parse(m[0]);
+    throw e;
+  }
+}
+
+/* ---------- 3. STORE ---------- */
+const Store = {
+  KEY: "fox_coach_v2",
+  data: { last: null, players: {} },
+  load() { try { this.data = JSON.parse(localStorage.getItem(this.KEY)) || this.data; } catch (e) {} if (!this.data.players) this.data.players = {}; },
+  save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); } catch (e) { console.warn("localStorage:", e); } },
+  player(puuid) {
+    if (!this.data.players[puuid]) this.data.players[puuid] = { puuid, matches:{}, goals:[], diagnoses:[], insightsAI:null };
+    return this.data.players[puuid];
+  },
+  wipe() { try { localStorage.removeItem(this.KEY); } catch (e) {} this.data = { last:null, players:{} }; }
+};
+
+/* ---------- STATE ---------- */
+const state = { p: null, view: "dashboard", win: 10, mode: "comp", best: "comp", pf: "all", trainCache: [], busy: false };
+
+/* ---------- 4. METRICS ---------- */
+/* Classificador ÚNICO de modo — usado em todo o sistema. Lê metadata.mode / metadata.mode_id reais da API.
+   Competitivo e Mata-Mata em equipe e Duelo são reconhecidos; qualquer outro valor vai para "Outros" (sem adivinhar). */
+const MODES = { comp:"COMPETITIVO", duel:"DUELO", tdm:"MATA-MATA EM EQUIPE", other:"OUTROS" };
+function getGameMode(x) {
+  const meta = x.metadata || x, raw = String(meta.mode ?? x.mode ?? "").trim(), id = String(meta.mode_id ?? x.modeId ?? "").trim();
+  const s = (raw + " " + id).toLowerCase();
+  let key = "other";
+  if (/team\s*deathmatch|\bhurm\b|mata.?mata em equipe/.test(s)) key = "tdm";
+  else if (/duel|skirmish/.test(s)) key = "duel";
+  else if (raw.toLowerCase() === "competitive" || raw.toLowerCase() === "competitivo" || id.toLowerCase() === "competitive") key = "comp";
+  return { key, raw: raw || "—", id };
+}
+
+function parseMatch(m, puuid) {
+  const me = m.players?.all_players?.find(p => p.puuid === puuid);
+  if (!me) return null;
+  const meta = m.metadata || {}, gm = getGameMode(m);
+  const rounds = meta.rounds_played || m.rounds?.length || 0;
+  if (!rounds && gm.key === "comp") return null;
+  const rate = rounds >= 3;       /* métricas por round só fazem sentido com rounds suficientes */
+  const st = me.stats || {};
+  const won = !!m.teams?.[(me.team || "").toLowerCase()]?.has_won;
+  const hsN = st.headshots || 0, bsN = st.bodyshots || 0, lsN = st.legshots || 0;
+  const shots = hsN + bsN + lsN;
+  let fk = null, fd = null;
+  if (rate && Array.isArray(m.kills) && m.kills.length) {
+    const first = {};
+    m.kills.forEach(k => {
+      const t = k.kill_time_in_round ?? 0;
+      if (!first[k.round] || t < first[k.round].t) first[k.round] = { t, killer: k.killer_puuid, victim: k.victim_puuid };
+    });
+    fk = 0; fd = 0;
+    Object.values(first).forEach(f => { if (f.killer === puuid) fk++; if (f.victim === puuid) fd++; });
+  }
+  const ac = me.ability_casts;
+  const casts = ac && typeof ac === "object" ? Object.values(ac).reduce((s,v)=> s + (typeof v === "number" ? v : 0), 0) : null;
+  const hasDmg = typeof me.damage_made === "number";
+  const start = meta.game_start ? meta.game_start * 1000 : Date.now();
+  return {
+    id: meta.matchid || (start + "_" + meta.map),
+    start, map: meta.map || "—", mode: gm.raw, modeId: gm.id, modeKey: gm.key, agent: me.character || "—",
+    won, rounds, k: st.kills || 0, d: st.deaths || 0, a: st.assists || 0,
+    score: st.score || 0, acs: rate ? (st.score || 0) / rounds : null,
+    hsN, bsN, lsN, hsPct: shots ? hsN / shots * 100 : 0,
+    dmg: hasDmg ? me.damage_made : null,
+    dmgRecv: typeof me.damage_received === "number" ? me.damage_received : null,
+    adr: hasDmg && rate ? me.damage_made / rounds : null,
+    kd: (st.kills || 0) / Math.max(1, st.deaths || 0),
+    fk, fd, casts, tier: me.currenttier_patched || null,
+    report: null, fs: null
+  };
+}
+
+/* Subnotas sem dado na API ficam null (nunca preenchidas com valor inventado); o peso é redistribuído. */
+function scoreMatch(m, meanAcs, n) {
+  const R = FOX.ranges, X = FOX.mix, r = m.rounds, ok = r >= 3;
+  const dpr = ok ? m.d / r : null, kpr = ok ? m.k / r : null, apr = ok ? m.a / r : null, part = ok ? (m.k + m.a) / r : null;
+  const ratio = (ok && m.dmg != null && m.dmgRecv != null) ? m.dmg / Math.max(1, m.dmgRecv) : null;
+  const sc = (v, rg) => v == null ? null : scale(v, rg);
+  const blend = parts => {
+    const o = parts.filter(p => p[0] != null);
+    if (!o.length) return null;
+    const w = o.reduce((s,p)=>s+p[1],0);
+    return o.reduce((s,p)=>s+p[0]*p[1],0) / w;
+  };
+  const s = {};
+  s.aim = blend([[scale(m.hsPct, R.hs), X.aim.hs], [sc(m.adr, R.adr), X.aim.adr]]);
+  s.duels = blend([[scale(m.kd, R.kd), X.duels.kd], [m.fk != null ? scale((m.fk - m.fd) / r, R.fdiff) : null, X.duels.fdiff]]);
+  s.decision = blend([[sc(dpr, R.dpr), X.decision.dpr], [m.fd != null ? scale(m.fd / r, R.fdRate) : null, X.decision.fdRate], [sc(ratio, R.dmgRatio), X.decision.ratio]]);
+  s.positioning = blend([[sc(ratio, R.dmgRatio), X.positioning.dmgRatio], [sc(dpr, R.dpr), X.positioning.dpr]]);
+  s.teamplay = blend([[sc(apr, R.apr), X.teamplay.apr], [sc(part, R.part), X.teamplay.part]]);
+  s.impact = blend([[sc(m.acs, R.acs), X.impact.acs], [sc(kpr, R.kpr), X.impact.kpr]]);
+  s.consistency = (meanAcs && m.acs != null && n >= 3) ? clamp(100 - Math.abs(m.acs - meanAcs) / meanAcs * R.consistencyK, 0, 100) : null;
+  const av = SUBKEYS.filter(k => s[k] != null), w = av.reduce((t,k) => t + FOX.weights[k], 0);
+  let overall = av.reduce((t,k) => t + s[k] * FOX.weights[k], 0) / (w || 1);
+  if (m.modeKey === "comp") overall += m.won ? FOX.resultBonus : -FOX.resultBonus;
+  s.overall = clamp(overall, 0, 100);
+  return s;
+}
+
+function allMatches(p) { return Object.values(p.matches).sort((a,b) => b.start - a.start); }
+function modeList(k) { return allMatches(state.p).filter(m => m.modeKey === k); }
+function windowList(n, key = state.mode) { return modeList(key).slice(0, n); }
+const kda = m => m.modeKey === "comp" ? `${m.k}/${m.d}/${m.a}` : `${m.k}/${m.d}`;
+
+function ensureScores(p) {
+  const list = Object.values(p.matches);
+  list.forEach(m => { const g = getGameMode(m); m.modeKey = g.key; });
+  Object.keys(MODES).forEach(k => {
+    const l = list.filter(m => m.modeKey === k), mean = avgN(l.map(m => m.acs));
+    l.forEach(m => { m.fs = scoreMatch(m, mean, l.length); });
+  });
+}
+
+function aggregate(list) {
+  const n = list.length;
+  if (!n) return null;
+  const sum = (k, l = list) => l.reduce((s,m) => s + (m[k] || 0), 0);
+  const wins = list.filter(m => m.won).length, shots = sum("hsN") + sum("bsN") + sum("lsN");
+  const rt = list.filter(m => m.rounds >= 3), wd = rt.filter(m => m.dmg != null), wb = wd.filter(m => m.dmgRecv != null), wf = rt.filter(m => m.fk != null);
+  const R = l => sum("rounds", l), subs = {};
+  SUBKEYS.forEach(k => subs[k] = avgN(list.map(m => m.fs[k])));
+  return {
+    n, wins, losses: n - wins, wr: wins / n * 100,
+    kd: sum("k") / Math.max(1, sum("d")), acs: avgN(list.map(m => m.acs)),
+    hsPct: shots ? sum("hsN") / shots * 100 : null,
+    adr: wd.length ? sum("dmg", wd) / R(wd) : null,
+    ratio: wb.length ? sum("dmg", wb) / Math.max(1, sum("dmgRecv", wb)) : null,
+    dpr: rt.length ? sum("d", rt) / R(rt) : null, apr: rt.length ? sum("a", rt) / R(rt) : null,
+    fdRate: wf.length ? sum("fd", wf) / R(wf) : null, fkRate: wf.length ? sum("fk", wf) / R(wf) : null,
+    fox: avgN(list.map(m => m.fs.overall)), subs
+  };
+}
+
+/* Tendência: SEMPRE últimas 5 vs. 5 anteriores do mesmo modo (vals em ordem cronológica). */
+function trendOf(vals, thr) {
+  const rec = vals.slice(-5), prev = vals.slice(-10, -5);
+  if (rec.length < 5 || prev.length < 3) return { dir: "na", delta: 0, n: vals.length };
+  const cur = avg(rec), pv = avg(prev), d = cur - pv;
+  return { dir: d >= thr ? "up" : d <= -thr ? "down" : "flat", delta: d, cur, prev: pv, nPrev: prev.length };
+}
+function trendBlock(label, vals, thr, dec, suf, du) {
+  const t = trendOf(vals, thr), nm = { up:"Evoluindo", flat:"Estável", down:"Piorando", na:"Dados insuficientes" };
+  if (t.dir === "na") return `<div class="tr tr-na"><div class="tr-h"><i></i><b>${label}</b><span>Dados insuficientes</span></div><div class="tr-c">A comparação precisa de 5 partidas recentes e de pelo menos 3 anteriores neste modo (com este dado: ${vals.length}).</div></div>`;
+  const dl = (t.delta > 0 ? "+" : t.delta < 0 ? "-" : "") + fmt(Math.abs(t.delta), dec);
+  return `<div class="tr tr-${t.dir}"><div class="tr-h"><i></i><b>${label}</b><span>${nm[t.dir]}${t.dir === "flat" ? "" : " — " + fmt(Math.abs(t.delta), dec) + " " + du}</span></div>
+    <div class="tr-c">Comparação: últimas 5 partidas vs. ${t.nPrev < 5 ? "as " + t.nPrev + " anteriores disponíveis" : "5 partidas anteriores"}</div>
+    <div class="tr-v"><span>${label} atual</span><b>${fmt(t.cur, dec)}${suf}</b></div><div class="tr-v"><span>${label} anterior</span><b>${fmt(t.prev, dec)}${suf}</b></div><div class="tr-v"><span>Variação</span><b>${dl}${suf && suf !== "%" ? suf : ""} ${du}</b></div></div>`;
+}
+
+const CHART_METRICS = [
+  { k:"fox",         label:"Fox Score",       get:m=>m.fs.overall,     thr:3,  dec:0, color:"#00d4ff", du:"pontos", bound:1 },
+  { k:"kd",          label:"K/D",             get:m=>m.kd,             thr:.1, dec:2, color:"#2f7bff", du:"de K/D" },
+  { k:"acs",         label:"ACS",             get:m=>m.acs,            thr:10, dec:0, color:"#5aa9ff", du:"de ACS" },
+  { k:"hs",          label:"HS%",             get:m=>(m.hsN+m.bsN+m.lsN) ? m.hsPct : null, thr:2, dec:1, color:"#9ec1ff", suffix:"%", du:"pontos percentuais" },
+  { k:"wr",          label:"Win Rate",        get:m=>m.won?100:0,      thr:15, dec:0, color:"#00d4ff", cumulative:true, suffix:"%", du:"pontos percentuais", comp:1, bound:1 },
+  { k:"aim",         label:"Aim",             get:m=>m.fs.aim,         thr:4,  dec:0, color:"#7a8cff", du:"pontos", bound:1 },
+  { k:"decision",    label:"Tomada de decisão", get:m=>m.fs.decision,  thr:4,  dec:0, color:"#4f6bff", du:"pontos", bound:1, est:1 },
+  { k:"positioning", label:"Posicionamento",  get:m=>m.fs.positioning, thr:4,  dec:0, color:"#2fd0ff", du:"pontos", bound:1, est:1 }
+];
+
+/* ---------- 7. CHARTS ---------- */
+let chartId = 0;
+function lineChart(vals, labels, o = {}) {
+  if (vals.length < 2) return `<div class="muted pad" style="font-size:13px">Dados insuficientes (mínimo 2 partidas).</div>`;
+  const color = o.color || "#00d4ff", dec = o.dec ?? 0, suf = o.suffix || "";
+  const W = 640, H = 210, P = { l: 40, r: 14, t: 14, b: 26 };
+  let lo = o.min ?? Math.min(...vals), hi = o.max ?? Math.max(...vals);
+  if (lo === hi) { lo -= 1; hi += 1; }
+  if (o.min == null) lo -= (hi - lo) * .12;
+  if (o.max == null) hi += (hi - lo) * .12;
+  const n = vals.length, id = "g" + (++chartId);
+  const x = i => P.l + i * (W - P.l - P.r) / (n - 1);
+  const y = v => P.t + (1 - (v - lo) / (hi - lo)) * (H - P.t - P.b);
+  const pts = vals.map((v,i) => [x(i), y(v)]);
+  const line = pts.map((p,i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const area = line + ` L${x(n-1).toFixed(1)} ${H-P.b} L${x(0).toFixed(1)} ${H-P.b} Z`;
+  let grid = "";
+  for (let i = 0; i < 4; i++) {
+    const v = lo + (hi - lo) * i / 3, yy = y(v);
+    grid += `<line x1="${P.l}" x2="${W-P.r}" y1="${yy}" y2="${yy}" stroke="#1a2540" stroke-width="1"/><text x="${P.l-6}" y="${yy+4}" fill="#6a7a9a" font-size="10" text-anchor="end">${v.toFixed(dec)}</text>`;
+  }
+  const step = Math.ceil(n / 8);
+  let xl = "";
+  labels.forEach((l,i) => { if (i % step === 0 || i === n - 1) xl += `<text x="${x(i)}" y="${H-8}" fill="#6a7a9a" font-size="10" text-anchor="middle">${esc(l)}</text>`; });
+  const dots = pts.map((p,i) => `<circle class="pt" cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#050b1a" stroke="${color}" stroke-width="2"><title>${esc(labels[i])}: ${vals[i].toFixed(dec)}${suf}</title></circle>`).join("");
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".28"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    ${grid}${xl}<path d="${area}" fill="url(#${id})"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round" style="filter:drop-shadow(0 0 5px ${color}88)"/>${dots}</svg></div>`;
+}
+
+function chartSeries(metric, n, key) {
+  const full = modeList(key).slice().reverse().filter(m => metric.get(m) != null);
+  const chron = full.slice(-n);
+  let vals = chron.map(metric.get);
+  if (metric.cumulative) { let w = 0; vals = chron.map((m,i) => { w += m.won ? 1 : 0; return w / (i + 1) * 100; }); }
+  return { chron, vals, full: full.map(metric.get), labels: chron.map(dateLbl) };
+}
+
+/* ---------- UI helpers ---------- */
+function statBar(label, val, pct, color) {
+  return `<div class="stat-wrap"><div class="stat-label"><span>${label}</span><span>${val}</span></div><div class="stat-track"><div class="stat-fill" style="width:${clamp(pct,0,100)}%;background:${color};box-shadow:0 0 8px ${color}"></div></div></div>`;
+}
+function ring(val, size=140) {
+  if (val == null) val = 0;
+  const r = size/2 - 10, c = 2 * Math.PI * r, col = scoreColor(val);
+  return `<div class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#1a2540" stroke-width="8"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - val/100)}" style="filter:drop-shadow(0 0 6px ${col}88);transition:stroke-dashoffset 1s ease"/></svg>
+    <div class="ring-num"><b style="color:${col};text-shadow:0 0 16px ${col}66">${Math.round(val)}</b><small>FOX SCORE</small></div></div>`;
+}
+function winSeg() {
+  return `<div class="seg">${[5,10,20].map(n => `<button class="${state.win===n?"on":""}" onclick="setWin(${n})">${n}</button>`).join("")}</div>`;
+}
+const EST = {
+  decision:    ["TOMADA DE DECISÃO", "Estimativa baseada nos dados disponíveis, como mortes, dano causado/recebido, eliminações, assistências e consistência."],
+  positioning: ["POSICIONAMENTO", "Estimativa indireta baseada principalmente em mortes, dano recebido/causado e consistência."],
+  teamplay:    ["TEAMPLAY", "Estimativa baseada principalmente em assistências, dano e participação nas rodadas."]
+};
+const subHTML = k => subName(k) + (EST[k] ? ' <span class="est">ESTIMATIVA</span>' : "");
+const subBar = (k, v) => v == null
+  ? `<div class="stat-wrap"><div class="stat-label"><span>${subHTML(k)}</span><span class="na">DADO INDISPONÍVEL</span></div></div>`
+  : statBar(subHTML(k), fmt(v), v, scoreColor(v));
+function estConf(k, l) {
+  const v = l.filter(m => m.fs[k] != null);
+  if (v.length < 3) return null;
+  const rich = avg(v.map(m => k === "decision" ? (m.fd != null ? 1 : .5) : k === "positioning" ? (m.dmg != null && m.dmgRecv != null ? 1 : .5) : (m.adr != null ? 1 : .5)));
+  return v.length >= 10 && rich >= .9 ? "Alta" : v.length >= 5 && rich >= .6 ? "Média" : "Baixa";
+}
+function estCard(l, a) {
+  return `<div class="card"><div class="card-title"><span>LEITURAS INDIRETAS <span class="est">ESTIMATIVA</span></span></div>
+    <div class="foot-note" style="margin:0 0 12px">A API não mede estas notas diretamente: elas são calculadas a partir de outros dados e não devem ser lidas como fatos.</div>
+    ${Object.keys(EST).map(k => { const c = estConf(k, l), v = a.subs[k], ok = c && v != null;
+      return `<div class="est-row"><div class="est-h"><b>${EST[k][0]}</b>${ok ? `<span class="conf c-${c}">Confiança: ${c}</span>` : ""}</div>
+      ${ok ? statBar("Nota estimada", fmt(v), v, scoreColor(v)) : '<div class="muted" style="font-size:13px">Dados insuficientes para estimar com confiança.</div>'}
+      <div class="foot-note" style="margin-top:4px">${EST[k][1]}</div></div>`; }).join("")}</div>`;
+}
+function foxExplain(l) {
+  const c = f => l.filter(f).length;
+  return `<details class="card"><summary class="card-title" style="margin:0"><span>COMO O FOX SCORE É CALCULADO</span></summary>
+    <div class="foot-note" style="font-size:13px">Média ponderada de 7 subnotas (0–100): ${SUBKEYS.map(k => `${SUBPT[k]} ${Math.round(FOX.weights[k] * 100)}%`).join(", ")}. No Competitivo, vitória/derrota soma ou subtrai ${FOX.resultBonus} pontos; nos demais modos não há bônus. Quando a API não fornece uma métrica, ela é ignorada e o peso é redistribuído — nenhum valor é inventado. Disponibilidade nesta amostra (${l.length} partidas): dano causado/recebido em ${c(m => m.dmg != null && m.dmgRecv != null)}, first kills/deaths em ${c(m => m.fk != null)}, ACS em ${c(m => m.acs != null)}. ${SUBNOTE}</div></details>`;
+}
+function modeSeg(cur, fn, keys = ["comp","duel","tdm"]) {
+  const L = { comp:"COMPETITIVO", duel:"DUELO", tdm:"MATA-MATA" };
+  return `<div class="modebar"><div class="seg">${keys.map(k => `<button class="${cur === k ? "on" : ""}" onclick="${fn}('${k}')">${L[k]}</button>`).join("")}</div></div>`;
+}
+function enterApp() { $("#portal").classList.add("out"); $(".app").classList.remove("hidden"); setTimeout(() => $("#portal")?.remove(), 600); }
+function emptyView() {
+  return `<div class="empty"><div class="empty-title">FOX AGUARDANDO</div><div class="empty-sub">Digite seu Riot ID e clique em ANALISAR para começar o acompanhamento.</div></div>`;
+}
+const SUBNOTE = `Decision Making, Positioning e Teamplay são <b>estimativas</b> a partir de mortes, trocas de dano e assists — a API não expõe posicionamento real nem comunicação. First kills/deaths só entram quando a API devolve a lista de kills.`;
+
+/* ---------- 5. INSIGHTS (FOX AI) ---------- */
+function groupBy(list, key) {
+  const g = {};
+  list.forEach(m => { (g[m[key]] = g[m[key]] || []).push(m); });
+  return Object.entries(g).map(([name, ms]) => ({ name, ...aggregate(ms) }));
+}
+function bestWorst(groups) {
+  if (groups.length < 2) return { best: groups[0] || null, worst: null };
+  let pool = groups.filter(g => g.n >= 2);
+  if (pool.length < 2) pool = groups;
+  const s = pool.slice().sort((a,b) => b.fox - a.fox);
+  return { best: s[0], worst: s[s.length - 1], lowSample: pool.every(g => g.n < 2) };
+}
+
+function localInsights(all) {
+  const out = [], a = aggregate(all);
+  if (!a) return out;
+  const isComp = all[0].modeKey === "comp";
+  if (all.length < 5) out.push({ t:"na", x:`Apenas ${all.length} partida(s) no histórico — os padrões ficam confiáveis a partir de ~10 partidas.` });
+
+  const ss = SUBKEYS.filter(k => a.subs[k] != null && (k !== "consistency" || all.length >= 5)).sort((x,y) => a.subs[x] - a.subs[y]);
+  const weak = ss[0], strong = ss[ss.length - 1];
+  if (weak === "aim") out.push({ t:"warn", x:`Seu maior ponto de melhoria hoje é a mira (Aim ${fmt(a.subs.aim)}), enquanto seu ponto mais forte é ${subName(strong)} (${fmt(a.subs[strong])}).` });
+  else out.push({ t:"warn", x:`Seu maior problema atualmente ${a.subs.aim >= a.subs[weak] + 8 ? "não é mira (" + fmt(a.subs.aim) + ")" : "está em"}${a.subs.aim >= a.subs[weak] + 8 ? ", mas " : " "}${subName(weak)} (${fmt(a.subs[weak])}). Ponto mais forte: ${subName(strong)} (${fmt(a.subs[strong])}).` });
+
+  const chron = all.slice().reverse();
+  const tr = trendOf(chron.map(m => m.fs.overall), 3);
+  if (tr.dir === "up" || tr.dir === "down") out.push({ t: tr.dir === "up" ? "good" : "warn", x:`Fox Score ${tr.dir === "up" ? "subiu" : "caiu"} ${fmt(Math.abs(tr.delta), 1)} pontos: ${fmt(tr.cur, 1)} nas últimas 5 partidas contra ${fmt(tr.prev, 1)} nas 5 anteriores.` });
+
+  /* queda após 2 derrotas seguidas */
+  const after = [], rest = [];
+  chron.forEach((m, i) => { if (i >= 2) ((!chron[i-1].won && !chron[i-2].won) ? after : rest).push(m.fs.overall); });
+  if (isComp && after.length >= 3 && rest.length >= 3) {
+    const d = avg(after) - avg(rest);
+    if (d <= -5) out.push({ t:"warn", x:`Você apresenta queda de performance depois de duas derrotas consecutivas: Fox Score médio ${fmt(avg(after))} contra ${fmt(avg(rest))} nas demais (${after.length} partidas na amostra).` });
+    else if (d >= 5) out.push({ t:"good", x:`Você reage bem a sequências ruins: Fox Score ${fmt(avg(after))} depois de 2 derrotas seguidas, contra ${fmt(avg(rest))} no resto.` });
+    else out.push({ t:"info", x:`Sem queda relevante depois de duas derrotas seguidas (${fmt(avg(after))} vs ${fmt(avg(rest))}).` });
+  } else if (isComp) out.push({ t:"na", x:"Efeito de derrotas consecutivas: amostra insuficiente para avaliar (precisa de pelo menos 3 casos)." });
+
+  /* utilidade — proxy via ability_casts */
+  const wc = all.filter(m => m.casts != null);
+  if (wc.length >= 8) {
+    const cpr = wc.map(m => m.casts / m.rounds).sort((x,y) => x - y), med = cpr[Math.floor(cpr.length / 2)];
+    const hi = wc.filter(m => m.casts / m.rounds >= med), lo = wc.filter(m => m.casts / m.rounds < med);
+    if (hi.length >= 3 && lo.length >= 3) {
+      const d = avg(hi.map(m => m.fs.overall)) - avg(lo.map(m => m.fs.overall));
+      if (Math.abs(d) >= 4) out.push({ t: d > 0 ? "good" : "info", x: d > 0 ? `Seu Fox Score é ${d.toFixed(1)} pontos maior quando você usa mais habilidades por round (proxy de uso de utilidade).` : `Seu Fox Score é ${Math.abs(d).toFixed(1)} pontos menor quando você usa mais habilidades por round — vale revisar se o uso está gerando valor.` });
+    }
+  }
+
+  /* vitórias vs derrotas */
+  const w = all.filter(m => m.won), l = all.filter(m => !m.won);
+  if (isComp && w.length >= 3 && l.length >= 3) out.push({ t:"info", x:`ACS médio de ${fmt(avg(w.map(m=>m.acs)))} nas vitórias e ${fmt(avg(l.map(m=>m.acs)))} nas derrotas; K/D ${fmt(aggregate(w).kd,2)} vs ${fmt(aggregate(l).kd,2)}.` });
+
+  if (a.hsPct < 15) out.push({ t:"warn", x:`HS% de ${fmt(a.hsPct,1)}% está baixo — priorize altura de mira antes de peekar.` });
+  else if (a.hsPct >= 25) out.push({ t:"good", x:`HS% de ${fmt(a.hsPct,1)}% é um ponto forte consistente.` });
+
+  if (a.fdRate != null) out.push({ t: a.fdRate > .16 ? "warn" : "info", x:`First deaths em ${fmt(a.fdRate*100,1)}% dos rounds e first kills em ${fmt(a.fkRate*100,1)}%.` });
+  else out.push({ t:"na", x:"First kills/deaths: a API não retornou a lista de kills nas suas partidas — não é possível avaliar." });
+
+  const mp = bestWorst(groupBy(isComp ? all : [], "map"));
+  if (mp.best && mp.worst) out.push({ t:"info", x:`Melhor mapa: ${mp.best.name} (Fox ${fmt(mp.best.fox)}). Pior mapa: ${mp.worst.name} (Fox ${fmt(mp.worst.fox)}).` });
+  const ag = bestWorst(groupBy(all, "agent"));
+  if (ag.best && ag.worst) out.push({ t:"info", x:`Melhor agente: ${ag.best.name} (Fox ${fmt(ag.best.fox)}). Pior: ${ag.worst.name} (Fox ${fmt(ag.worst.fox)}).` });
+
+  out.push({ t:"na", x:"Lado atacante vs defensor: a API não informa o lado por jogador/round — não é possível avaliar esse recorte." });
+  return out;
+}
+
+function insightsPanel(all, key) {
+  const ins = localInsights(all);
+  const ai = (state.p.aiByMode || {})[key];
+  let aiHTML = "";
+  if (ai?.data) {
+    const d = ai.data, stale = ai.n !== all.length;
+    aiHTML = `<div class="ai-box">
+      <div class="card-title" style="margin-bottom:10px"><span> Análise da IA ${stale ? '<span class="muted" style="text-transform:none;letter-spacing:0">(desatualizada — há partidas novas)</span>' : ""}</span></div>
+      ${d.diagnostico_principal ? `<div class="ai-main"><small>DIAGNÓSTICO PRINCIPAL</small>${esc(d.diagnostico_principal)}</div>` : ""}
+      ${(d.insights || []).map(i => `<div class="ins ${i.tipo === "alerta" ? "warn" : i.tipo === "positivo" ? "good" : ""}"><span class="ico">${i.tipo === "alerta" ? "" : i.tipo === "positivo" ? "" : ""}</span><div><b>${esc(i.titulo)}</b><br>${esc(i.texto)}</div></div>`).join("")}
+      ${(d.dados_indisponiveis || []).length ? `<ul class="na-list"><b>Não é possível avaliar:</b>${d.dados_indisponiveis.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    </div>`;
+  }
+  return `<div class="card">
+    <div class="card-title"><span> <b>FOX AI</b> INSIGHTS</span><button class="btn ghost sm" id="btnAI" onclick="genAI('${key}')" ${all.length < 3 ? "disabled" : ""}>${ai?.data ? "ATUALIZAR COM IA" : "GERAR COM IA"}</button></div>
+    ${ins.map(i => `<div class="ins ${i.t}"><div>${esc(i.x)}</div></div>`).join("")}
+    <div id="aiErr"></div>${aiHTML}
+  </div>`;
+}
+
+async function genAI(key) {
+  const all = modeList(key), a = aggregate(all);
+  const btn = $("#btnAI"); if (btn) { btn.disabled = true; btn.textContent = "ANALISANDO..."; }
+  const byMap = groupBy(all, "map").map(g => ({ mapa:g.name, partidas:g.n, winrate:+g.wr.toFixed(0), kd:+g.kd.toFixed(2), acs:(g.acs == null ? null : +g.acs.toFixed(0)), fox:+g.fox.toFixed(0) }));
+  const byAgent = groupBy(all, "agent").map(g => ({ agente:g.name, partidas:g.n, winrate:+g.wr.toFixed(0), kd:+g.kd.toFixed(2), acs:(g.acs == null ? null : +g.acs.toFixed(0)), fox:+g.fox.toFixed(0) }));
+  const summary = {
+    partidas: a.n, winrate: +a.wr.toFixed(1), kd: +a.kd.toFixed(2), acs: a.acs == null ? null : +a.acs.toFixed(0), hs_pct: a.hsPct == null ? null : +a.hsPct.toFixed(1),
+    dano_por_round: a.adr != null ? +a.adr.toFixed(0) : null, razao_dano_causado_recebido: a.ratio != null ? +a.ratio.toFixed(2) : null,
+    first_deaths_por_round_pct: a.fdRate != null ? +(a.fdRate * 100).toFixed(1) : null,
+    fox_score: +a.fox.toFixed(0), subnotas: Object.fromEntries(SUBKEYS.map(k => [k, (a.subs[k] == null ? null : +a.subs[k].toFixed(0))])),
+    mapas: byMap, agentes: byAgent,
+    ultimas_partidas_cronologicas: all.slice(0, 20).reverse().map(m => ({ r: m.won ? "V" : "D", mapa: m.map, agente: m.agent, kda: `${m.k}/${m.d}/${m.a}`, acs: m.acs == null ? null : +m.acs.toFixed(0), hs: +m.hsPct.toFixed(0), fox: +m.fs.overall.toFixed(0) }))
+  };
+  const prompt = `Você é o Fox Coach, analista de Valorant da SafeZone Esports. Modo analisado: ${MODES[key]} (não misture com outros modos). Analise o histórico agregado abaixo e identifique PADRÕES. Use SOMENTE os dados fornecidos; não invente métricas. Se algo não puder ser avaliado com esses dados (ex.: lado atacante/defensor, posicionamento real, comunicação), liste em dados_indisponiveis. Responda em português do Brasil e retorne APENAS JSON válido, sem markdown:
+{"diagnostico_principal":"<1 frase direta sobre o maior problema atual>","insights":[{"titulo":"<curto>","texto":"<1-2 frases baseadas nos números>","tipo":"alerta|positivo|padrao"}],"dados_indisponiveis":["<item>"]}
+Gere de 4 a 6 insights.
+DADOS: ${JSON.stringify(summary)}`;
+  try {
+    const data = parseJSON(await callCoach(prompt));
+    (state.p.aiByMode = state.p.aiByMode || {})[key] = { t: Date.now(), n: all.length, data };
+    state.p.diagnoses.push({ t: Date.now(), n: all.length, fox: a.fox, kind: "ai", diag: data.diagnostico_principal || "" });
+    state.p.diagnoses = state.p.diagnoses.slice(-60);
+    Store.save(); render();
+  } catch (e) {
+    render();
+    const box = $("#aiErr"); if (box) box.innerHTML = `<div class="error-box">Falha ao gerar análise da IA: ${esc(e.message)}</div>`;
+  }
+}
+
+/* ---------- 6. TRAINING ---------- */
+const GOALMETRIC = {
+  hsPct:   { label:"HS%",                   get:a=>a.hsPct,                dec:1, unit:"%", dir:"up" },
+  kd:      { label:"K/D",                   get:a=>a.kd,                   dec:2, unit:"",  dir:"up" },
+  fdRate:  { label:"First deaths (% rounds)", get:a=>a.fdRate!=null?a.fdRate*100:null, dec:1, unit:"%", dir:"down" },
+  dpr:     { label:"Mortes por round",      get:a=>a.dpr,                  dec:2, unit:"",  dir:"down" },
+  ratio:   { label:"Dano causado/recebido", get:a=>a.ratio,                dec:2, unit:"",  dir:"up" },
+  apr:     { label:"Assists por round",     get:a=>a.apr,                  dec:2, unit:"",  dir:"up" },
+  acs:     { label:"ACS",                   get:a=>a.acs,                  dec:0, unit:"",  dir:"up" },
+  consist: { label:"Consistency (nota)",    get:a=>a.subs.consistency,     dec:0, unit:"",  dir:"up" }
+};
+
+const TRAIN = {
+  aim: a => ({ problem:"Precisão (HS% e dano por round)", metric:"hsPct", target:Math.min(a.hsPct + 4, 40),
+    objective:"Aumentar a taxa de headshot sem perder volume de dano.",
+    exercise:"Aquecimento fixo: 15 min de range (bots Hard, só cabeça) + 1 Deathmatch focando a altura da mira ANTES de cada peek. Antes de jogar ranqueada, repita o mesmo aquecimento.",
+    duration:"15–20 min/dia durante 7 dias" }),
+  duels: a => ({ problem:"Duelos individuais (K/D)", metric:"kd", target:+(a.kd + .1).toFixed(2),
+    objective:"Vencer mais duelos 1v1 com disciplina de tiro.",
+    exercise:"2 Deathmatches por dia: counter-strafe antes de cada tiro, não correr atirando e trocar de posição após cada kill.",
+    duration:"2 partidas de DM/dia por 7 dias" }),
+  decision: a => a.fdRate != null
+    ? ({ problem:"First Deaths", metric:"fdRate", target:+(a.fdRate * 100 * .8).toFixed(1),
+        objective:"Parar de entregar o primeiro contato sem informação ou utilidade.",
+        exercise:"3 partidas evitando o primeiro contato sem informação ou utilidade: espere o time abrir espaço, use habilidade antes do peek e jogue o primeiro duelo com troca disponível.",
+        duration:"3 partidas ranqueadas/competitivas" })
+    : ({ problem:"Tomada de decisão (mortes por round)", metric:"dpr", target:+(a.dpr - .05).toFixed(2),
+        objective:"Morrer menos em rounds que poderiam ser jogados com informação.",
+        exercise:"Antes de cada engajamento pergunte: tenho informação? tenho troca? tenho saída? Se alguma resposta for não, recue e reposicione. Anote 1 morte evitável por partida.",
+        duration:"3 partidas com anotação pós-jogo" }),
+  positioning: a => ({ problem:"Posicionamento (troca de dano)", metric:"ratio", target:+((a.ratio ?? 1) + .1).toFixed(2),
+    objective:"Dar mais dano do que recebe em cada confronto.",
+    exercise:"Em cada round defina o ângulo de saída antes do contato, jogue perto de cover e troque de posição depois de dar informação ou dano.",
+    duration:"3 partidas com foco em 1 regra por mapa" }),
+  teamplay: a => ({ problem:"Jogo em equipe (assists)", metric:"apr", target:+(a.apr + .03).toFixed(2),
+    objective:"Gerar mais valor para o time com utilidade e trocas.",
+    exercise:"3 partidas jogando junto: fique a uma habilidade de distância do aliado para trocar e use utilidade para abrir espaço antes de entrar.",
+    duration:"3 partidas" }),
+  impact: a => ({ problem:"Impacto (ACS)", metric:"acs", target:Math.round(a.acs + 15),
+    objective:"Aumentar o dano e as kills com impacto nos rounds decisivos.",
+    exercise:"Escolha 1 agente principal por 5 partidas e jogue de forma proativa no início de cada round (iniciar a ação com utilidade).",
+    duration:"5 partidas com o mesmo agente" }),
+  consistency: a => ({ problem:"Consistência de desempenho", metric:"consist", target:Math.round(a.subs.consistency + 8),
+    objective:"Reduzir a variação de performance entre partidas.",
+    exercise:"Rotina fixa pré-jogo (10 min de warm-up), pausa obrigatória após 2 derrotas seguidas e revisão de 1 round por partida.",
+    duration:"5 partidas seguindo a rotina" })
+};
+
+function buildTraining(all) {
+  const a = aggregate(all);
+  if (!a) return [];
+  const order = SUBKEYS.filter(k => a.subs[k] != null && (k !== "consistency" || all.length >= 5)).sort((x,y) => a.subs[x] - a.subs[y]).slice(0, 3);
+  return order.map(k => {
+    const t = TRAIN[k](a), gm = GOALMETRIC[t.metric];
+    return { key:k, ...t, label:gm.label, dec:gm.dec, unit:gm.unit, baseline:gm.get(a), subScore:a.subs[k] };
+  });
+}
+
+function goalProgress(g) {
+  const ag = aggregate(windowList(5, "comp")), cur = ag ? GOALMETRIC[g.metric].get(ag) : null;
+  if (cur == null) return { cur:null, pct:0 };
+  const pct = clamp((cur - g.baseline) / ((g.target - g.baseline) || 1), 0, 1) * 100;
+  return { cur, pct };
+}
+
+function adoptGoal(i) {
+  const t = state.trainCache[i]; if (!t) return;
+  if (state.p.goals.some(g => g.key === t.key && !g.done)) return;
+  state.p.goals.push({ id: "g" + Date.now(), key:t.key, metric:t.metric, problem:t.problem, label:t.label, dec:t.dec, unit:t.unit, baseline:t.baseline, target:+t.target, created:Date.now(), matchesAtStart:modeList("comp").length, done:false });
+  Store.save(); render();
+}
+function removeGoal(id) { state.p.goals = state.p.goals.filter(g => g.id !== id); Store.save(); render(); }
+
+function goalsHTML() {
+  const gs = state.p.goals;
+  if (!gs.length) return `<div class="muted" style="font-size:13px">Nenhuma meta ativa. Adote uma prioridade abaixo para acompanhar seu progresso.</div>`;
+  return gs.map(g => {
+    const pr = goalProgress(g), done = pr.pct >= 100;
+    return `<div class="goal"><div class="goal-top"><span class="goal-name">${esc(g.problem)} ${done ? '<span class="tag best">CONCLUÍDA</span>' : ""}</span><button class="x" title="Remover" onclick="removeGoal('${g.id}')">&times;</button></div>
+      <div class="goal-nums">${esc(g.label)}: base ${fmt(g.baseline, g.dec)}${g.unit} → meta ${fmt(g.target, g.dec)}${g.unit} · atual (últimas 5) ${fmt(pr.cur, g.dec)}${g.unit}</div>
+      ${statBar("Progresso", Math.round(pr.pct) + "%", pr.pct, done ? "#00d4ff" : "#00d4ff")}</div>`;
+  }).join("");
+}
+
+/* ---------- 8. VIEWS ---------- */
+function setView(v) {
+  state.view = v;
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.view === v));
+  render(); window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function setWin(n) { state.win = n; render(); }
+function setMode(k) { state.mode = k; render(); }
+function setBest(k) { state.best = k; render(); }
+function setPF(k) { state.pf = k; render(); }
+
+function render() {
+  const el = $("#view");
+  if (!state.p || !Object.keys(state.p.matches).length) { el.innerHTML = emptyView(); return; }
+  ensureScores(state.p);
+  const fn = { dashboard: viewDashboard, partidas: viewPartidas, melhores: viewMelhores, evolucao: viewEvolucao, mapas: viewMapas, agentes: viewAgentes, treino: viewTreino }[state.view];
+  el.innerHTML = fn();
+}
+const noMatches = k => `<div class="empty"><div class="empty-title">SEM PARTIDAS DE ${MODES[k] || ""}</div><div class="empty-sub">Nenhuma partida deste modo foi carregada. Clique em ANALISAR para buscar novamente.</div></div>`;
+
+function viewDashboard() {
+  const p = state.p, key = state.mode, comp = key === "comp", all = modeList(key), list = all.slice(0, state.win), a = aggregate(list);
+  const head = `<div class="page-title">DASH<span>BOARD</span></div>${modeSeg(key, "setMode")}`;
+  if (!a) return head + noMatches(key);
+  const ag = groupBy(all.filter(m => m.agent !== "—"), "agent"), most = ag.slice().sort((x,y) => y.n - x.n)[0];
+  let bestA = ag.filter(g => g.n >= 2).sort((x,y) => y.fox - x.fox)[0]; const small = !bestA;
+  bestA = bestA || ag.slice().sort((x,y) => y.fox - x.fox)[0];
+  const byF = all.slice().sort((x,y) => y.fs.overall - x.fs.overall), bm = byF[0], wm = byF[byF.length - 1];
+  const chronA = all.slice().reverse(), rank = p.rank, mp = bestWorst(groupBy(comp ? all : [], "map"));
+  const T = (l, v, s) => `<div class="tile"><div class="tile-l">${l}</div><div class="tile-v">${v == null || v === "—" ? '<span class="na">NÃO DISPONÍVEL</span>' : v}${v != null && v !== "—" && s ? `<small> ${s}</small>` : ""}</div></div>`;
+  const tiles = [T("Partidas", a.n), ...(comp ? [T("V / D", `${a.wins} / ${a.losses}`), T("Win Rate", fmt(a.wr), "%")] : []),
+    T("K/D", fmt(a.kd, 2)), T("HS%", fmt(a.hsPct, 1), "%"), T("ACS", fmt(a.acs)), T("Dano/round", fmt(a.adr)), ...(comp ? [T("Dano caus./rec.", fmt(a.ratio, 2))] : [])];
+  const mLine = m => `${esc(m.map)} · ${esc(m.agent)} · ${kda(m)} · ACS ${m.acs != null ? fmt(m.acs) : "indisp."} · FOX ${Math.round(m.fs.overall)}`;
+  return `${head}
+  <div class="page-sub">Estatísticas das últimas ${a.n} partidas de ${MODES[key]} · histórico deste modo: ${all.length}. Nenhum dado de outro modo entra aqui.</div>
+  <div class="hero-wrap"><div class="hero">
+    <div class="card">
+      <div class="player">${p.card ? `<img src="${esc(p.card)}" alt="" onerror="this.style.display='none'">` : ""}
+        <div><div class="player-name">${esc(p.name)}<span>#${esc(p.tag)}</span></div>
+        <div class="player-meta">Nível ${esc(p.level ?? "—")} · ${esc((p.region || "").toUpperCase())}</div></div></div>
+      <div class="chips">${rank && rank.current ? `<span class="chip">RANK ATUAL ${esc(rank.current)}${rank.rr != null ? " · " + esc(rank.rr) + " RR" : ""}</span>` : '<span class="chip na">RANK INDISPONÍVEL</span>'}
+        ${rank && rank.peak ? `<span class="chip gold">PEAK RANK ${esc(rank.peak)}</span>` : '<span class="chip na">PEAK INDISPONÍVEL</span>'}</div>
+      <div class="tiles">${tiles.join("")}</div>
+      <div class="tiles t2">${T("Agente mais utilizado", most ? esc(most.name) : null, most ? most.n + " partida(s)" : "")}${T("Agente com melhor desempenho", bestA ? esc(bestA.name) : null, bestA ? `Fox ${fmt(bestA.fox)} · ${bestA.n} partida(s)${small ? " · amostra pequena" : ""}` : "")}</div>
+      ${rank?.at ? `<div class="foot-note">Rank vindo do endpoint MMR em ${new Date(rank.at).toLocaleString("pt-BR")}.</div>` : ""}
+    </div>
+    <div class="card">
+      <div class="card-title"><span><b>FOX</b> SCORE · ${MODES[key]}</span>${winSeg()}</div>
+      <div class="score-wrap">${ring(a.fox)}<div class="subs">${SUBKEYS.map(k => subBar(k, a.subs[k])).join("")}</div></div>
+    </div>
+  </div></div>
+  <div class="grid2">
+    <div class="card"><div class="card-title"><span>TENDÊNCIA · ${MODES[key]}</span></div>
+      ${trendBlock("Fox Score", chronA.map(m => m.fs.overall), 3, 1, "", "pontos")}
+      ${trendBlock("HS%", chronA.filter(m => m.hsN + m.bsN + m.lsN > 0).map(m => m.hsPct), 2, 1, "%", "pontos percentuais")}</div>
+    <div class="card"><div class="card-title"><span>MELHOR E PIOR PARTIDA</span></div>
+      <div class="ins good"><div><b>Melhor partida de ${MODES[key]}</b><br>${mLine(bm)}</div></div>
+      <div class="ins warn"><div><b>Pior partida de ${MODES[key]}</b><br>${mLine(wm)}</div></div>
+      ${comp ? (mp.best && mp.worst ? `<div class="ins good"><div>Melhor mapa competitivo: <b>${esc(mp.best.name)}</b> — Fox ${fmt(mp.best.fox)} · ${fmt(mp.best.wr)}% WR</div></div>
+      <div class="ins warn"><div>Pior mapa competitivo: <b>${esc(mp.worst.name)}</b> — Fox ${fmt(mp.worst.fox)} · ${fmt(mp.worst.wr)}% WR</div></div>` : '<div class="muted" style="font-size:13px">Mapas: precisa de pelo menos 2 mapas competitivos diferentes.</div>') : '<div class="foot-note">Análise de mapas existe apenas no Competitivo.</div>'}</div>
+  </div>
+  <div class="card"><div class="chart-head"><span class="chart-name">Evolução do Fox Score · ${MODES[key]}</span><span class="chart-val" style="color:${scoreColor(a.fox)}">${fmt(a.fox)}</span></div>
+    ${(() => { const s = chartSeries(CHART_METRICS[0], state.win, key); return lineChart(s.vals, s.labels, { color: "#00d4ff", min: 0, max: 100 }); })()}</div>
+  ${estCard(list, a)}
+  ${comp ? `<div class="card"><div class="card-title"><span>METAS ATIVAS</span><span class="chip" style="cursor:pointer" onclick="setView('treino')">FOX TRAINING</span></div>${goalsHTML()}</div>` : ""}
+  ${insightsPanel(all, key)}
+  ${foxExplain(list)}`;
+}
+
+function viewPartidas() {
+  const all = allMatches(state.p), f = state.pf, l = f === "all" ? all : all.filter(m => m.modeKey === f);
+  const cnt = k => k === "all" ? all.length : all.filter(m => m.modeKey === k).length;
+  const raws = {};
+  all.forEach(m => { const t = m.mode + (m.modeId ? " / " + m.modeId : ""); raws[t] = (raws[t] || 0) + 1; });
+  return `<div class="page-title">HISTÓ<span>RICO</span></div>
+  <div class="page-sub">${all.length} partidas salvas · clique para abrir o FOX REPORT detalhado</div>
+  <div class="seg flt">${[["all","Todas"],["comp","Competitivo"],["duel","Duelo"],["tdm","Mata-Mata"],["other","Outros"]].map(([k,t]) => `<button class="${f === k ? "on" : ""}" onclick="setPF('${k}')">${t} (${cnt(k)})</button>`).join("")}</div>
+  <div class="foot-note" style="margin:0 0 14px">Modos recebidos da API (metadata.mode / mode_id): ${Object.entries(raws).map(([t,n]) => esc(t) + " × " + n).join(" · ")}</div>
+  ${l.map(m => {
+    const comp = m.modeKey === "comp", col = comp ? (m.won ? "#00d4ff" : "#ff4655") : "#2f7bff", fc = scoreColor(m.fs.overall);
+    return `<div class="match-item" onclick="openReport('${esc(m.id)}')">
+      <div class="match-bar" style="background:${col};box-shadow:0 0 8px ${col}"></div>
+      <div class="m-main"><div class="m-top"><span class="m-agent"><span class="mb mb-${m.modeKey}">${MODES[m.modeKey]}</span>${m.modeKey === "other" ? ` <span class="muted" style="font-size:12px">${esc(m.mode)}</span>` : ""}</span><span class="m-res" style="color:${col}">${comp ? (m.won ? "VITÓRIA" : "DERROTA") : ""}</span></div>
+        <div class="m-det"><span class="map">${esc(m.map)}</span><span>${esc(m.agent)}</span><span class="kda">${kda(m)}</span><span class="dim">K/D ${fmt(m.kd, 2)}</span><span class="gd">ACS ${m.acs != null ? fmt(m.acs) : "indisp."}</span><span class="dim">HS ${fmt(m.hsPct)}%</span><span class="dim">${dateLbl(m)}</span></div></div>
+      <div class="m-fox"><b style="color:${fc};text-shadow:0 0 12px ${fc}66">${Math.round(m.fs.overall)}</b><small>FOX</small></div></div>`;
+  }).join("") || '<div class="empty"><div class="empty-sub">Nenhuma partida neste filtro.</div></div>'}`;
+}
+
+function viewMelhores() {
+  const k = state.best, l = modeList(k).slice().sort((x,y) => y.fs.overall - x.fs.overall).slice(0, 5);
+  return `<div class="page-title">MELHORES <span>PARTIDAS</span></div>
+  <div class="page-sub">Ranking pelo Fox Score das partidas carregadas de cada modo.</div>${modeSeg(k, "setBest")}
+  ${l.map((m, i) => { const fc = scoreColor(m.fs.overall);
+    return `<div class="match-item" onclick="openReport('${esc(m.id)}')"><div class="treino-num" style="color:var(--accent)">${i + 1}</div>
+      <div class="m-main"><div class="m-top"><span class="m-agent">${k === "comp" ? (m.won ? "Vitória" : "Derrota") + " — " : ""}${kda(m)}</span></div>
+      <div class="m-det"><span class="map">${esc(m.map)} · ${esc(m.agent)} · ${dateLbl(m)}</span><span class="gd">ACS ${m.acs != null ? fmt(m.acs) : "indisp."}</span></div></div>
+      <div class="m-fox"><b style="color:${fc}">${Math.round(m.fs.overall)}</b><small>FOX</small></div></div>`; }).join("") || noMatches(k)}`;
+}
+
+function viewEvolucao() {
+  const key = state.mode, ms = CHART_METRICS.filter(m => !m.comp || key === "comp");
+  const head = `<div class="page-title">EVO<span>LUÇÃO</span></div><div class="page-sub">Somente partidas de ${MODES[key]}. A tendência compara as últimas 5 partidas com as 5 anteriores do mesmo modo.</div>${modeSeg(key, "setMode")}<div style="margin:0 0 16px">${winSeg()}</div>`;
+  if (!modeList(key).length) return head + noMatches(key);
+  return head + `<div class="grid2">${ms.map(m => {
+    const s = chartSeries(m, state.win, key), last = s.vals[s.vals.length - 1];
+    return `<div class="card"><div class="chart-head"><span class="chart-name">${m.label}${m.est ? ' <span class="est">ESTIMATIVA</span>' : ""}</span><span class="chart-val" style="color:${m.color}">${last != null ? last.toFixed(m.dec).replace(".", ",") + (m.suffix || "") : '<span class="na">NÃO DISPONÍVEL</span>'}</span></div>
+      ${trendBlock(m.label, s.full, m.thr, m.dec, m.suffix || "", m.du)}${lineChart(s.vals, s.labels, { color:m.color, dec:m.dec, suffix:m.suffix, ...(m.bound ? { min:0, max:100 } : {}) })}</div>`;
+  }).join("")}</div>`;
+}
+
+function groupTable(groups, label, bw) {
+  const rows = groups.slice().sort((x,y) => y.fox - x.fox);
+  return `<div class="card tbl-wrap"><table><thead><tr><th>${label}</th><th>Partidas</th><th>V</th><th>D</th><th>Win Rate</th><th>K/D</th><th>ACS</th><th>Fox Score</th></tr></thead><tbody>
+    ${rows.map(g => `<tr><td class="name">${esc(g.name)}${bw.best && g.name === bw.best.name ? '<span class="tag best">MELHOR</span>' : ""}${bw.worst && g.name === bw.worst.name ? '<span class="tag worst">PIOR</span>' : ""}</td>
+      <td>${g.n}</td><td style="color:var(--green)">${g.wins}</td><td style="color:var(--red)">${g.losses}</td><td>${fmt(g.wr)}%</td><td class="mono">${fmt(g.kd,2)}</td><td>${g.acs != null ? fmt(g.acs) : '<span class="na">N/D</span>'}</td>
+      <td><b style="color:${scoreColor(g.fox)}">${fmt(g.fox)}</b></td></tr>`).join("")}</tbody></table></div>`;
+}
+function hlCards(bw, nameLabel) {
+  if (!bw.best) return "";
+  const c = (g, lab, col) => g ? `<div class="card" style="border-color:${col}55"><div class="hl-label" style="color:${col}">${lab}</div><div class="hl-name">${esc(g.name)}</div><div class="hl-sub">Fox ${fmt(g.fox)} · ${fmt(g.wr)}% WR · K/D ${fmt(g.kd,2)} · ACS ${fmt(g.acs)} · ${g.n} partida(s)</div></div>` : "";
+  return `<div class="hl">${c(bw.best, "MELHOR " + nameLabel, "#00d4ff")}${bw.worst ? c(bw.worst, "PIOR " + nameLabel, "#ff4655") : ""}</div>${bw.lowSample ? '<div class="warn-box" style="margin-bottom:14px">Amostra pequena (menos de 2 partidas por item) — a comparação ainda não é confiável.</div>' : ""}`;
+}
+
+function viewMapas() {
+  const c = modeList("comp"), g = groupBy(c, "map"), bw = bestWorst(g), others = {};
+  allMatches(state.p).filter(m => m.modeKey !== "comp").forEach(m => { const t = MODES[m.modeKey] + ": " + m.map; others[t] = (others[t] || 0) + 1; });
+  return `<div class="page-title">ANÁLISE POR <span>MAPA</span></div><div class="page-sub">Somente partidas competitivas. Mapas de Duelo, Mata-Mata e Outros não entram nesta análise.</div>
+  ${c.length ? hlCards(bw, "MAPA") + groupTable(g, "Mapa", bw) : noMatches("comp")}
+  ${Object.keys(others).length ? `<div class="foot-note">Fora desta análise: ${Object.entries(others).map(([t,n]) => esc(t) + " × " + n).join(" · ")}</div>` : ""}`;
+}
+function viewAgentes() {
+  const key = state.mode, l = modeList(key).filter(m => m.agent !== "—"), g = groupBy(l, "agent"), bw = bestWorst(g);
+  return `<div class="page-title">ANÁLISE POR <span>AGENTE</span></div><div class="page-sub">Somente partidas de ${MODES[key]}.</div>${modeSeg(key, "setMode")}
+  ${l.length ? hlCards(bw, "AGENTE") + groupTable(g, "Agente", bw) : noMatches(key)}`;
+}
+
+function viewTreino() {
+  const all = modeList("comp"), tr = buildTraining(all);
+  state.trainCache = tr;
+  const dg = state.p.diagnoses.slice(-6).reverse();
+  return `<div class="page-title">FOX <span>TRAINING</span></div>
+  <div class="page-sub">Prioridades geradas a partir das suas piores subnotas (somente partidas competitivas). Adote uma meta para acompanhar o progresso (medido nas últimas 5 partidas).</div>
+  <div class="card"><div class="card-title"><span>METAS EM ANDAMENTO</span></div>${goalsHTML()}</div>
+  ${tr.map((t, i) => {
+    const adopted = state.p.goals.some(g => g.key === t.key && !g.done);
+    return `<div class="train"><div class="train-p">PRIORIDADE #${i + 1}</div><div class="train-t">${esc(t.problem)}</div>
+      <div class="train-row"><b>Objetivo</b><span>${esc(t.objective)}</span></div>
+      <div class="train-row"><b>Meta</b><span>${esc(t.label)}: de <b style="color:var(--text)">${fmt(t.baseline, t.dec)}${t.unit}</b> para <b style="color:var(--gold)">${fmt(t.target, t.dec)}${t.unit}</b> <span class="muted">(nota atual ${fmt(t.subScore)}/100)</span></span></div>
+      <div class="train-row"><b>Exercício</b><span>${esc(t.exercise)}</span></div>
+      <div class="train-row"><b>Duração</b><span>${esc(t.duration)}</span></div>
+      <div style="margin-top:12px"><button class="btn ghost sm" ${adopted ? "disabled" : ""} onclick="adoptGoal(${i})">${adopted ? "META ADOTADA" : "ADOTAR META"}</button></div></div>`;
+  }).join("")}
+  ${insightsPanel(all, "comp")}
+  ${dg.length ? `<div class="card"><div class="card-title"><span>DIAGNÓSTICOS ANTERIORES</span></div>${dg.map(d => `<div class="ins ${d.kind === "ai" ? "" : "na"}"><span class="ico">${d.kind === "ai" ? "" : ""}</span><div><span class="muted">${new Date(d.t).toLocaleString("pt-BR")} · ${d.n} partidas · Fox ${fmt(d.fox)}</span>${d.diag ? "<br>" + esc(d.diag) : (d.weak ? "<br>Ponto mais fraco: " + esc(SUBLABEL[d.weak] ? subName(d.weak) : d.weak) : "")}</div></div>`).join("")}</div>` : ""}`;
+}
+
+/* ---------- 9. REPORT ---------- */
+function openReport(id) {
+  const m = state.p.matches[id]; if (!m) return;
+  $("#drawer").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  const col = scoreColor(m.fs.overall);
+  $("#drawerBody").innerHTML = `
+    <div class="card" style="border-top:3px solid ${col}">
+      <div class="report-header"><div><div class="report-title">FOX <span>REPORT</span></div><div class="report-sub">${esc(MODES[m.modeKey])} · ${esc(m.map)} · ${esc(m.agent)} · ${m.modeKey === "comp" ? (m.won ? "VITÓRIA" : "DERROTA") + " · " : ""}${new Date(m.start).toLocaleDateString("pt-BR")}</div></div>
+        <div><div class="score-num" style="color:${col};text-shadow:0 0 20px ${col}">${Math.round(m.fs.overall)}</div><div class="score-den">FOX SCORE</div></div></div>
+      <div class="tiles" style="grid-template-columns:repeat(4,1fr)">
+        <div class="tile"><div class="tile-l">K/D/A</div><div class="tile-v" style="font-size:17px">${kda(m)}</div></div>
+        <div class="tile"><div class="tile-l">K/D</div><div class="tile-v" style="font-size:17px">${fmt(m.kd,2)}</div></div>
+        <div class="tile"><div class="tile-l">ACS</div><div class="tile-v" style="font-size:17px">${m.acs != null ? fmt(m.acs) : '<span class="na">N/D</span>'}</div></div>
+        <div class="tile"><div class="tile-l">HS%</div><div class="tile-v" style="font-size:17px">${fmt(m.hsPct)}%</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title"><span>SUBNOTAS</span></div>
+      ${SUBKEYS.map(k => subBar(k, m.fs[k])).join("")}
+      ${m.adr != null ? statBar("Dano por round", fmt(m.adr), m.adr / 2, "#2f7bff") : ""}
+      <div class="foot-note">${SUBNOTE}</div></div>
+    <div id="reportAI"></div>`;
+  if (m.report) renderReportAI(m, m.report); else runReportAI(m);
+}
+function closeReport() { $("#drawer").classList.add("hidden"); document.body.style.overflow = ""; }
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeReport(); });
+
+async function runReportAI(m) {
+  const box = $("#reportAI");
+  box.innerHTML = `<div class="card loading-card"><div class="loading-text">FOX ANALISANDO...</div><div class="loading-sub">Processando dados com IA</div><div class="loading-bar"><div class="loading-fill"></div></div></div>`;
+  const extra = [
+    m.adr != null ? `Dano médio por round: ${Math.round(m.adr)}` : null,
+    (m.dmg != null && m.dmgRecv != null) ? `Dano causado/recebido: ${m.dmg}/${m.dmgRecv}` : null,
+    m.fk != null ? `First kills: ${m.fk}, First deaths: ${m.fd}` : null
+  ].filter(Boolean).join(", ");
+  const prompt = `Analise essa partida de Valorant do jogador da SafeZone Esports e retorne APENAS JSON válido:
+DADOS: Modo: ${MODES[m.modeKey]}, Agente: ${m.agent}, Mapa: ${m.map}, ${m.modeKey === "comp" ? "Resultado: " + (m.won ? "VITÓRIA" : "DERROTA") + ", " : ""}KDA: ${m.k}/${m.d}/${m.a}, ACS: ${m.acs != null ? Math.round(m.acs) : "indisponível"}, Headshot%: ${Math.round(m.hsPct)}%, K/D: ${m.kd.toFixed(2)}, Rounds: ${m.rounds}${extra ? ", " + extra : ""}
+SUBNOTAS FOX (0-100): ${SUBKEYS.map(k => SUBLABEL[k] + " " + (m.fs[k] == null ? "indisponível" : Math.round(m.fs[k]))).join(", ")}; Fox Score ${Math.round(m.fs.overall)}.
+Use apenas os dados acima; não invente métricas (ex.: posicionamento no mapa, uso de utilidade) que não foram informadas.
+Retorne EXATAMENTE este JSON sem markdown:
+{"nota_geral":<0-10>,"resumo":"<2 frases diretas>","pontos_fortes":["<p1>","<p2>"],"pontos_fracos":["<p1>","<p2>"],"missao_proxima_partida":"<1 missão objetiva>","mentalidade":"<1 frase SafeZone>","treino_individual":{"titulo":"<título do plano de treino baseado nos dados>","exercicios":[{"nome":"<nome do exercício>","descricao":"<o que fazer e como>","duracao":"<ex: 15 min>"},{"nome":"<nome>","descricao":"<descrição>","duracao":"<tempo>"},{"nome":"<nome>","descricao":"<descrição>","duracao":"<tempo>"}]}}`;
+  try {
+    const a = parseJSON(await callCoach(prompt));
+    m.report = a; Store.save();
+    if (!$("#drawer").classList.contains("hidden")) renderReportAI(m, a);
+  } catch (e) {
+    box.innerHTML = `<div class="card" style="color:var(--red);text-align:center">Erro ao processar análise. Tente novamente.<br><small style="color:var(--muted)">${esc(e.message || "")}</small><br><br><button class="btn ghost sm" onclick="regenReport('${esc(m.id)}')">TENTAR NOVAMENTE</button></div>`;
+  }
+}
+function regenReport(id) { const m = state.p.matches[id]; if (m) { m.report = null; runReportAI(m); } }
+
+function renderReportAI(m, a) {
+  const color = scoreColor((a.nota_geral || 0) * 10);
+  const list = arr => (arr || []).map(p => `<div class="section-item">${esc(p)}</div>`).join("");
+  const tr = a.treino_individual;
+  $("#reportAI").innerHTML = `
+    <div class="card"><div class="report-header" style="padding-right:0"><div class="card-title" style="margin:0"><span>ANÁLISE DA IA</span></div><div style="text-align:right"><b class="exo" style="font-size:24px;color:${color}">${esc(a.nota_geral)}</b><span class="muted"> / 10</span></div></div><div class="summary">${esc(a.resumo)}</div></div>
+    <div class="section-card" style="border-left-color:#00d4ff"><div class="section-head"><span></span><span class="section-title" style="color:#00d4ff">Pontos Fortes</span></div>${list(a.pontos_fortes)}</div>
+    <div class="section-card" style="border-left-color:#ff4655"><div class="section-head"><span></span><span class="section-title" style="color:#ff4655">Pontos a Melhorar</span></div>${list(a.pontos_fracos)}</div>
+    <div class="mission-card"><div class="mission-label"> Missão — Próxima Partida</div><div class="mission-text">${esc(a.missao_proxima_partida)}</div></div>
+    ${tr && tr.exercicios ? `<div class="treino-card"><div class="treino-title"> Plano de Treino Individual</div><div class="treino-sub">${esc(tr.titulo || "Baseado no seu desempenho")}</div>
+      ${tr.exercicios.map((ex,i) => `<div class="treino-item"><div class="treino-num">${i+1}</div><div><div class="treino-nome">${esc(ex.nome)}</div><div class="treino-desc">${esc(ex.descricao)}</div><div class="treino-duracao"> ${esc(ex.duracao)}</div></div></div>`).join("")}</div>` : ""}
+    <div class="mental-card"><div class="mental-label">MENTALIDADE SAFEZONE</div><div class="mental-text">"${esc(a.mentalidade)}"</div></div>
+    <div style="text-align:center"><button class="btn ghost sm" onclick="regenReport('${esc(m.id)}')">REGERAR ANÁLISE</button></div>`;
+}
+
+/* ---------- FETCH / BOOT ---------- */
+function showErr(msg) { const b = $("#errorBox"); b.textContent = msg; b.classList.remove("hidden"); }
+function hideErr() { $("#errorBox").classList.add("hidden"); $("#warnBox").classList.add("hidden"); }
+function showWarn(msg) { const b = $("#warnBox"); b.textContent = msg; b.classList.remove("hidden"); }
+
+async function fetchMatches() {
+  const rid = $("#riotId").value.trim(), region = $("#region").value, btn = $("#btnAnalyze");
+  if (!rid.includes("#")) { showErr("Formato inválido. Use: NomeJogador#TAG"); return; }
+  hideErr(); btn.disabled = true; btn.textContent = "BUSCANDO...";
+  const [name, tag] = [rid.slice(0, rid.lastIndexOf("#")), rid.slice(rid.lastIndexOf("#") + 1)];
+  try {
+    const acc = await apiFetch(`${BASE}/valorant/v1/account/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`);
+    if (acc.status !== 200) { showErr("Jogador não encontrado."); return; }
+    const puuid = acc.data.puuid, p = Store.player(puuid);
+    Object.assign(p, { name: acc.data.name, tag: acc.data.tag, region, level: acc.data.account_level, card: acc.data.card?.small || p.card || null });
+
+    /* rank / peak / RR — SOMENTE do endpoint MMR; sem fallback, sem valor antigo */
+    p.rank = null;
+    try {
+      const mmr = await apiFetch(`${BASE}/valorant/v2/mmr/${region}/${encodeURIComponent(name)}/${encodeURIComponent(tag)}`);
+      if (mmr.status === 200 && mmr.data) {
+        const cur = mmr.data.current_data?.currenttierpatched || null, pk = mmr.data.highest_rank?.patched_tier || null;
+        if (cur || pk) p.rank = { current: cur, rr: cur ? (mmr.data.current_data?.ranking_in_tier ?? null) : null, peak: pk, at: Date.now() };
+      }
+    } catch (e) { showWarn("Rank/Peak/RR indisponíveis agora (endpoint MMR falhou). O restante da análise segue normal."); }
+
+    let mr = null;
+    try { mr = await apiFetch(`${BASE}/valorant/v3/matches/${region}/${encodeURIComponent(name)}/${encodeURIComponent(tag)}?size=20`); } catch (e) {}
+    if (!mr || mr.status !== 200 || !mr.data?.length) mr = await apiFetch(`${BASE}/valorant/v3/matches/${region}/${encodeURIComponent(name)}/${encodeURIComponent(tag)}?size=10`);
+    if (mr.status !== 200 || !mr.data?.length) { showErr("Nenhuma partida encontrada."); return; }
+
+    let added = 0;
+    mr.data.forEach(raw => {
+      const rec = parseMatch(raw, puuid);
+      if (!rec) return;
+      if (p.matches[rec.id]) { rec.report = p.matches[rec.id].report; }  /* preserva análise já feita */
+      else added++;
+      p.matches[rec.id] = rec;
+    });
+    p.region = region; p.riotId = rid; p.updated = Date.now();
+    state.p = p; Store.data.last = puuid;
+    ensureScores(p);
+    const all = allMatches(p), ag = aggregate(all);
+    if (added > 0 && ag) {
+      const weak = SUBKEYS.slice().sort((x,y) => ag.subs[x] - ag.subs[y])[0];
+      p.diagnoses.push({ t: Date.now(), n: all.length, fox: ag.fox, weak, kind: "auto" });
+      p.diagnoses = p.diagnoses.slice(-60);
+    }
+    Store.save();
+    if (!added) showWarn("Nenhuma partida nova desde a última análise — histórico mantido.");
+    render();
+  } catch (e) {
+    showErr("Erro: " + (e.message || e));
+  } finally {
+    btn.disabled = false; btn.textContent = "ANALISAR";
+  }
+}
+
+function clearData() {
+  if (!confirm("Apagar todo o histórico, metas e diagnósticos salvos neste navegador?")) return;
+  Store.wipe(); state.p = null; render();
+}
+
+(function boot() {
+  Store.load();
+  const last = Store.data.last && Store.data.players[Store.data.last];
+  if (last) {
+    state.p = last;
+    $("#riotId").value = last.riotId || (last.name ? last.name + "#" + last.tag : "");
+    if (last.region) $("#region").value = last.region;
+  }
+  $("#riotId").addEventListener("keydown", e => { if (e.key === "Enter") fetchMatches(); });
+  render();
+  $("#portal .btn").focus();
+})();
+</script>
+</body>
+</html>
